@@ -8,11 +8,13 @@ namespace SmartLogistics.Core.Planning;
 /// with a dynamic programme (spec R24, R32, R38, R39).
 /// <para>
 /// <b>Algorithm.</b>
-/// (0) Input checks (<see cref="PreparedScenario"/>): a globally invalid input throws <see cref="ArgumentException"/>
-/// listing all errors (R37, T25). Each order is then classified in scenario order: invalid data is K4, a machine
-/// heavier than every truck is K1, an order whose stand-alone route (base -> pickup -> delivery -> base) exceeds the
-/// working day is K2; all other orders are "plannable". All legs are rounded first and kept in whole tenths of a
-/// km (<c>int</c>, T24), so sums and comparisons are exact.
+/// (0) Input checks (<see cref="Feasibility.Check"/>): scenario data never throws (R37 as amended, T31, T32).
+/// Unusable trucks (duplicate ID, capacity or max machines &lt;= 0) get no route; each order is classified in
+/// scenario order: invalid data (unknown / duplicated / invalid machine or location, pickup == delivery, duplicate
+/// order ID, machine reused, missing base) is K4, a machine heavier than every usable truck is K1, an order whose
+/// stand-alone route (base -> pickup -> delivery -> base) exceeds the working day is K2; all other orders are
+/// "plannable". Only invalid <see cref="PlanningOptions"/> and null arguments throw <see cref="ArgumentException"/>.
+/// All legs are rounded first and kept in whole tenths of a km (<c>int</c>, T24), so sums and comparisons are exact.
 /// (1) Assignment: a plannable order may only go to a truck that can carry its machine (<see cref="Truck.CanCarry"/>,
 /// R13). Every combination is enumerated (for two trucks: 2^k for the k orders both can carry; an order only one
 /// truck can carry goes to that truck), in a fixed odometer order: the first order in the scenario is the most
@@ -26,9 +28,11 @@ namespace SmartLogistics.Core.Planning;
 /// truck exceeds it is infeasible.
 /// (4) The feasible assignment with the smallest total km wins; on equal km the first one in enumeration order
 /// wins (strictly smaller replaces the best), and inside the DP the first transition in scenario order wins (R39).
-/// (5) If no assignment of all plannable orders is feasible, the search is repeated with an extra option
+/// (5) If no assignment of all plannable orders fits the working day, the search is repeated with an extra option
 /// "unassigned" (tried last) for every order and the objective becomes: most planned orders, then fewest km (R32,
-/// T23). Unassigned plannable orders are K3 (they fit alone, otherwise they would be K2).
+/// T23). "Most planned" is the same as "fewest omitted" (first 1, then 2, ...; R40), and among plans with the same
+/// number of omitted orders the one with the fewest km wins (first in enumeration order on equal km). Omitted
+/// orders are K3 with a message starting "Ne stane u radni dan" (they fit alone, otherwise they would be K2).
 /// (6) The plan is checked with <see cref="PlanValidator.Validate"/>; any violation is a bug and throws
 /// <see cref="InvalidOperationException"/>.
 /// </para>
@@ -71,7 +75,12 @@ public sealed class ExactDpPlanner : IRoutePlanner
     /// <summary>Same as <see cref="Solve"/>, but also returns how much search was needed.</summary>
     public ExactDpResult SolveWithStatistics(Scenario scenario, PlanningOptions options)
     {
-        var input = PreparedScenario.Create(scenario, options);
+        ArgumentNullException.ThrowIfNull(scenario);
+        ArgumentNullException.ThrowIfNull(options);
+
+        // Step 0: input checks never throw for scenario data; only invalid options do (R37, T31, T32).
+        var report = Feasibility.Check(scenario, options);
+        var input = PreparedScenario.Create(report, options);
         if (input.Plannable.Count > MaxPlannableOrders)
         {
             throw new NotSupportedException(
@@ -96,7 +105,7 @@ public sealed class ExactDpPlanner : IRoutePlanner
 
         var statistics = new ExactDpStatistics(
             search.AssignmentsTried, search.AssignmentsEvaluated, extended, search.DpRuns, search.DpStates);
-        return new ExactDpResult(plan, statistics);
+        return new ExactDpResult(plan, statistics) { Feasibility = report };
     }
 
     private static Plan BuildPlan(PreparedScenario input, AssignmentSearch search, Assignment best)
@@ -160,7 +169,8 @@ public sealed class ExactDpPlanner : IRoutePlanner
                 result.Orders.Count));
         }
 
-        var infeasible = input.Rejected.Select(r => (r.ScenarioIndex, r.Infeasible)).ToList();
+        var infeasible = input.Report.Rejected.Select(r => (r.ScenarioIndex, r.Infeasible)).ToList();
+        var omitted = best.Choice.Count(c => c == Unassigned);
         for (var i = 0; i < input.Plannable.Count; i++)
         {
             if (best.Choice[i] != Unassigned)
@@ -169,18 +179,47 @@ public sealed class ExactDpPlanner : IRoutePlanner
             }
 
             var order = input.Plannable[i];
-            var trucks = string.Join(", ", order.CapableTrucks.Select(t => $"{input.Trucks[t].Id} {input.Trucks[t].CapacityKg} kg"));
             infeasible.Add((order.ScenarioIndex, new InfeasibleOrder(order.Order, InfeasibilityReason.DoesNotFitWithOtherOrders,
-                $"K3: order {order.Order.Id} fits alone (machine {order.Machine.Id} {order.Machine.WeightKg} kg fits {trucks}; "
-                + $"alone it needs {PreparedScenario.Format(order.StandaloneMinutes)} min <= {PreparedScenario.Format(options.MaxMinutes)} min, {input.ModeName}), "
-                + $"but no plan with it fits the trucks' capacity and working day; the best plan executes {best.PlannedCount} of "
-                + $"{input.Plannable.Count} plannable orders with {PreparedScenario.Format(best.Km10 / 10.0)} km.")));
+                DoesNotFitMessage(input, search, best, i, omitted))));
         }
 
         return new Plan(
             routes,
             infeasible.OrderBy(x => x.ScenarioIndex).Select(x => x.Infeasible).ToList(),
             totalKm10 / 10.0);
+    }
+
+    /// <summary>
+    /// K3 message (R40) for the omitted plannable order <paramref name="i"/>. The "needed minutes" are those of each
+    /// capable truck if the order were added to that truck's orders in the chosen plan. Every one of them exceeds
+    /// the limit: otherwise a plan with one more order would exist, contradicting the maximum number of planned
+    /// orders. Capacity is never the cause, because every plannable order fits each capable truck alone and orders
+    /// can always be served one after another.
+    /// </summary>
+    private static string DoesNotFitMessage(PreparedScenario input, AssignmentSearch search, Assignment best, int i, int omitted)
+    {
+        var options = input.Options;
+        var order = input.Plannable[i];
+        var needed = new List<string>(order.CapableTrucks.Count);
+        foreach (var t in order.CapableTrucks)
+        {
+            var mask = best.Masks[t] | (1UL << i);
+            var truckId = input.Trucks[t].Id;
+            if (ulong.PopCount(mask) > (ulong)RouteDp.MaxOrders)
+            {
+                needed.Add($"kamion {truckId} više od {RouteDp.MaxOrders} naloga");
+                continue;
+            }
+
+            var result = search.Evaluate(t, mask);
+            needed.Add($"kamion {truckId} {Feasibility.Format(input.WorkdayMinutes(result.Dp.Km10, 2 * result.Orders.Count))} min");
+        }
+
+        return $"Ne stane u radni dan ({Feasibility.ModeDescription(options)}, limit {Feasibility.Format(options.MaxMinutes)} min): "
+            + $"nalog {order.Order.Id} sam traži {Feasibility.Format(order.StandaloneMinutes)} min, "
+            + $"ali uz ostale isplanirane naloge trebao bi: {string.Join(", ", needed)}. "
+            + $"Svi izvedivi nalozi zajedno ne stanu u radni dan, pa je izostavljen najmanji mogući broj naloga "
+            + $"({omitted} od {input.Plannable.Count}); među takvim planovima ovaj ima najmanje km ({Feasibility.Format(best.Km10 / 10.0)} km).";
     }
 
     /// <summary>The chosen truck per plannable order (<see cref="Unassigned"/> = not planned) and the per-truck order masks.</summary>

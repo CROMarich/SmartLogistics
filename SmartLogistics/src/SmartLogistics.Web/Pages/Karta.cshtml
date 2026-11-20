@@ -20,7 +20,7 @@
     <div class="panel">
         <div class="panel-header">
             <h2 class="panel-title">Rute kamiona</h2>
-            <a class="panel-action" asp-page="/PlanRuta" asp-route-nacin="@vm.ActiveModeQuery">Detalji plana @Icons.Get("arrow-right")</a>
+            <a class="panel-action" asp-page="/PlanRuta" asp-route-nacin="@vm.ActiveModeQuery" asp-route-scenarij="@vm.ActiveScenarioId">Detalji plana @Icons.Get("arrow-right")</a>
         </div>
         <div class="panel-body map-large">
             <partial name="_LocationMap" model="vm.Map" />

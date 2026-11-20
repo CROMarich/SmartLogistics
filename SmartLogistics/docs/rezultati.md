@@ -107,7 +107,7 @@ plan računa jednom po načinu i verziji `scenario.json`, zatim se čuva u memor
 
 ## Testovi
 
-`dotnet test`: **89 / 89 prolazi** (stanje nakon faze 4).
+`dotnet test`: **144 / 144 prolazi** (stanje nakon faze 5).
 
 | Skupina | Testova | Što dokazuje |
 |---------|--------:|--------------|
@@ -117,3 +117,16 @@ plan računa jednom po načinu i verziji `scenario.json`, zatim se čuva u memor
 | `PlanValidatorValidPlanTests` | 15 | ispravni planovi i granični slučajevi prolaze (točno 10.000 kg, točno 540 min, radnje u bazi…) |
 | `PlanValidatorViolationTests` | 38 | validator odbija: preopterećenje (R11), previše strojeva (R12), isporuka prije preuzimanja (R6), preuzima A / isporučuje B (R5), bez povratka (R2), stroj ostao u kamionu (R28), krivi km (R16), radni dan (R20/R21) i dr. |
 | `ReferenceSolutionTests` | 9 | 200,1 / 182,2 km, plan prolazi validator, jedna ruta po kamionu, determinizam, DrivingOnly ≤ Total |
+| `InvalidInputPlanningTests` | 36 | neispravan ulaz nikad ne ruši planer: stroj 11.000 kg (K1), nepostojeća lokacija, preuzimanje == isporuka, masa ≤ 0, duplikat naloga, nepostojeći ili ponovljeni stroj, nema baze, neupotrebljivi kamioni (K4/K1) |
+| `WorkdayOverflowPlanningTests` | 19 | prekratak radni dan (300 / 200 / 80 min): plan prolazi validator, izostavljeni su K3 "Ne stane u radni dan", najmanji broj izostavljenih i km potvrđeni neovisnim iscrpnim oracleom |
+
+## Rubni slučajevi (faza 5)
+
+Primjeri se mogu birati u aplikaciji (Plan ruta → Scenarij); datoteke su u `data/primjeri/`. Validator: 0 prekršaja u svim slučajevima.
+
+| Primjer | Ukupno | Isplanirano | Neizvedivi nalozi |
+|---------|-------:|------------:|-------------------|
+| Pretežak stroj (N11, M11 11.000 kg) | 200,1 km | 10 / 11 | N11 – K1: "Stroj M11 (11000 kg) teži je od nosivosti svih kamiona (A 3500 kg, B 10000 kg)." |
+| Radni dan 300 min (Total) | 203,8 km (A 97,1, B 106,7) | 8 / 10 | N08, N09 – K3: "Ne stane u radni dan …" (najmanji mogući broj izostavljenih: 2) |
+| Nepostojeća lokacija (N11 s L99) | 200,1 km | 10 / 11 | N11 – K4: "Neispravni podaci naloga N11: lokacija preuzimanja L99 ne postoji." |
+| Neispravni podaci (masa 0, P == I, duplikat N05, stroj M99) | 200,1 km | 10 / 14 | N11, N12, drugi N05, N13 – svi K4 s razlogom |

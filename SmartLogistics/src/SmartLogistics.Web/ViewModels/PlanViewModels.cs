@@ -8,6 +8,9 @@ namespace SmartLogistics.Web.ViewModels;
 /// <summary>One option of the workday-mode switch (a plain link, no JavaScript).</summary>
 public sealed record ModeOptionViewModel(string Text, string QueryValue, bool IsActive);
 
+/// <summary>One selectable scenario example (data/primjeri/primjeri.json).</summary>
+public sealed record ScenarioOptionViewModel(string Id, string Title, bool IsActive);
+
 /// <summary>One row of a truck's route table, including the departure and return rows.</summary>
 public sealed record RouteRowViewModel(
     string Step,
@@ -43,6 +46,8 @@ public sealed record InfeasibleOrderViewModel(string Order, string Category, str
 /// <summary>Shared by the plan page and the map page.</summary>
 public sealed record PlanPageViewModel(
     PageHeaderViewModel Header,
+    IReadOnlyList<ScenarioOptionViewModel> Scenarios,
+    string ScenarioDescription,
     IReadOnlyList<ModeOptionViewModel> Modes,
     string? Error,
     IReadOnlyList<string> Facts,
@@ -53,10 +58,14 @@ public sealed record PlanPageViewModel(
     IReadOnlyList<TruckPlanViewModel> Trucks,
     IReadOnlyList<InfeasibleOrderViewModel> InfeasibleOrders,
     IReadOnlyList<ViolationRowViewModel> Violations,
-    MapViewModel? Map)
+    MapViewModel? Map,
+    IReadOnlyList<string>? ScenarioWarnings = null)
 {
     /// <summary>Query value of the selected mode, used by links that keep the mode.</summary>
     public string ActiveModeQuery => Modes.First(m => m.IsActive).QueryValue;
+
+    /// <summary>Id of the selected scenario example, used by links that keep the scenario.</summary>
+    public string ActiveScenarioId => Scenarios.First(s => s.IsActive).Id;
 }
 
 public static class PlanViewModelFactory
@@ -69,25 +78,33 @@ public static class PlanViewModelFactory
             ? WorkdayMode.DrivingOnly
             : WorkdayMode.Total;
 
-    public static PlanPageViewModel Create(PlanRunResult run, PageHeaderViewModel header)
+    public static PlanPageViewModel Create(PlanRunResult run, IReadOnlyList<ScenarioExample> examples, PageHeaderViewModel header)
     {
+        var limit = $"{Format.Coordinate(run.Options.MaxMinutes / 60)} h";
         var modes = new List<ModeOptionViewModel>
         {
-            new("Vožnja + radnje ≤ 9 h (zadano)", "total", run.Options.WorkdayMode == WorkdayMode.Total),
-            new("Samo vožnja ≤ 9 h", DrivingOnlyQueryValue, run.Options.WorkdayMode == WorkdayMode.DrivingOnly),
+            new($"Vožnja + radnje ≤ {limit} (zadano)", "total", run.Options.WorkdayMode == WorkdayMode.Total),
+            new($"Samo vožnja ≤ {limit}", DrivingOnlyQueryValue, run.Options.WorkdayMode == WorkdayMode.DrivingOnly),
         };
+        var scenarios = examples
+            .Select(e => new ScenarioOptionViewModel(e.Id, e.Title, e.Id == run.Example.Id))
+            .ToList();
+        if (!scenarios.Any(s => s.IsActive))
+        {
+            scenarios.Insert(0, new ScenarioOptionViewModel(run.Example.Id, run.Example.Title, IsActive: true));
+        }
 
         if (run.Scenario is null || run.Plan is null)
         {
-            return new PlanPageViewModel(header, modes, run.Error ?? "Plan nije izračunat.", [], string.Empty,
+            return new PlanPageViewModel(header, scenarios, run.Example.Description, modes, run.Error ?? "Plan nije izračunat.", [], string.Empty,
                 string.Empty, string.Empty, [], [], [], [], null);
         }
 
         var scenario = run.Scenario;
         var plan = run.Plan;
         var options = run.Options;
-        var matrix = new DistanceMatrix(scenario.Locations);
-        var ordersById = scenario.Orders.ToDictionary(o => o.Id);
+        var matrix = new DistanceMatrix(scenario.Locations.DistinctBy(l => l.Id).ToList());
+        var ordersById = scenario.Orders.DistinctBy(o => o.Id).ToDictionary(o => o.Id);
 
         var trucks = plan.Routes.Select(r => CreateTruck(r, scenario, options, matrix, ordersById)).ToList();
         var infeasible = plan.InfeasibleOrders.Select(CreateInfeasible).ToList();
@@ -125,8 +142,8 @@ public static class PlanViewModelFactory
             infeasible.Count == 0 ? "svi isplanirani" : $"{infeasible.Count} neizvedivo", "list",
             infeasible.Count == 0 ? "tone-success" : "tone-warning"));
 
-        return new PlanPageViewModel(header, modes, null, facts, statusText, statusCss, statusIcon, stats, trucks,
-            infeasible, violations, CreateMap(plan, scenario));
+        return new PlanPageViewModel(header, scenarios, run.Example.Description, modes, null, facts, statusText, statusCss, statusIcon, stats, trucks,
+            infeasible, violations, CreateMap(plan, scenario), run.ScenarioWarnings ?? []);
     }
 
     private static TruckPlanViewModel CreateTruck(
@@ -198,7 +215,7 @@ public static class PlanViewModelFactory
         {
             InfeasibilityReason.ExceedsAllCapacities => ("K1", "stroj je teži od nosivosti svih kamiona"),
             InfeasibilityReason.ExceedsWorkday => ("K2", "ni sam ne stane u radni dan"),
-            InfeasibilityReason.DoesNotFitWithOtherOrders => ("K3", "ne stane uz ostale naloge"),
+            InfeasibilityReason.DoesNotFitWithOtherOrders => ("K3", "ne stane u radni dan uz ostale naloge"),
             InfeasibilityReason.InvalidOrderData => ("K4", "neispravni podaci naloga"),
             _ => ("?", "nepoznat razlog"),
         };
@@ -208,7 +225,7 @@ public static class PlanViewModelFactory
 
     private static MapViewModel? CreateMap(Plan plan, Scenario scenario)
     {
-        var locationsById = scenario.Locations.ToDictionary(l => l.Id);
+        var locationsById = scenario.Locations.DistinctBy(l => l.Id).ToDictionary(l => l.Id);
         if (!locationsById.TryGetValue(scenario.BaseLocationId, out var baseLocation))
         {
             return null;

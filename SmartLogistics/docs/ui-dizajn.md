@@ -56,7 +56,8 @@ opisanih ovdje; ako komponenta ne postoji, dodaje se u `site.css` i u ovaj dokum
 | Segmentirana navigacija | `.segmented`, `.segmented-item` | Prebacivanje između srodnih prikaza (dokumenti, kamioni, način radnog dana) |
 | Markdown | `.markdown-body` | Prikaz `docs/*.md` |
 | Tablica podataka | `.table.data-table` u panelu (bez `panel-body`), brojke `.num.text-end`, sporedni tekst `.cell-muted` | Kamioni, strojevi, nalozi, lokacije, stopovi |
-| Prekidač načina | `_ModeSwitch` (`ModeOptionViewModel`, `.segmented`, parametar `?nacin=voznja`) | Total / DrivingOnly na stranicama plana i karte |
+| Prekidači scenarija i načina | `_ModeSwitch` (`PlanPageViewModel`): `.switch-group` s `.switch-label` i `.segmented`; parametri `?scenarij=` i `?nacin=voznja`, svaka poveznica zadržava drugi izbor; opis primjera `.scenario-description` | Stranice Plan ruta i Karta |
+| Upozorenja o ulazu | `callout is-warning` s `.callout-list` | Upozorenja iz `Feasibility` (npr. duplikat kamiona) |
 | Status plana | `_PlanStatus` (prekidač + čipovi s činjenicama + `callout` uspjeh/upozorenje/greška) | Vrh stranica Plan ruta i Karta |
 | Plan kamiona | `_TruckPlan` (`TruckPlanViewModel`): zaglavlje s oznakom kamiona, `.kv-list` (vožnja/radnje/ukupno), `meter.workday-meter` (radni dan), `.route-table` s retcima polazak/povratak `.is-base-row` | Ruta po kamionu |
 | Rute na karti | `.map-route is-truck-a/is-truck-b` u `_LocationMap`; legenda dolazi iz `MapViewModel.Legend` | Karta ruta; `.map-compact` (u stranici) i `.map-large` (zasebna karta) |

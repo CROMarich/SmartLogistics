@@ -58,7 +58,7 @@
         <section class="panel section-gap">
             <div class="panel-header">
                 <h2 class="panel-title">Karta ruta</h2>
-                <a class="panel-action" asp-page="/Karta" asp-route-nacin="@vm.ActiveModeQuery">Uvećaj @Icons.Get("arrow-right")</a>
+                <a class="panel-action" asp-page="/Karta" asp-route-nacin="@vm.ActiveModeQuery" asp-route-scenarij="@vm.ActiveScenarioId">Uvećaj @Icons.Get("arrow-right")</a>
             </div>
             <div class="panel-body map-compact">
                 <partial name="_LocationMap" model="vm.Map" />

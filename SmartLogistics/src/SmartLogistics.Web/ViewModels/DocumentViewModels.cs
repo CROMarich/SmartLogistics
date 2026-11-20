@@ -34,6 +34,7 @@ public static class DocumentViewModelFactory
         ["spec"] = "list",
         ["odluke"] = "scale",
         ["rezultati"] = "route",
+        ["planer"] = "layers",
         ["vrijeme"] = "clock",
         ["ai-log"] = "robot",
         ["ui-dizajn"] = "palette",

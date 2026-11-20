@@ -21,6 +21,9 @@ Stupac "Kako sam uhvatio" navodi tko je grešku primijetio: **ja** (tehnički vo
 | 3 | Pri umetanju odluka T11–T15 red T10 završio je iza T15. | Claude – popis ID-ova. | Redovi presloženi. |
 | 4 | Claude (UI dio faze 4): u `_ModeSwitch.cshtml` varijabla `page` sudarila se s Razor direktivom `@page`, pa je build Web projekta pao. | Podagent solver-engineer – njegov `dotnet build` je pao na tuđoj datoteci; prijavio je grešku i nije je dirao. | Preimenovano u `currentPage`. |
 | 4 | Na stranici Plan ruta karta sa strane suzila je tablice ruta; stupci "Ukupno km" i "Vrijeme" nisu se vidjeli. | Claude – snimka zaslona. | Karta iznad, tablice kamiona preko cijele širine. |
+| 5 | Validator-engineer je jednim `grep`-om nad cijelim `src` slučajno ispisao 4 retka iz `Core/Planning/` (iz njih se vidi da planer poziva validator) – unatoč zabrani čitanja planera. | Podagent – sam je to prijavio u izvještaju. | Upisano kao T40; rizik iz T5 (zabrana je samo uputa) se ostvario. Prijedlog: hook koji blokira `Core/Planning/` za tog agenta ili `--exclude-dir=Planning` u uputi. |
+| 5 | Solver-engineer je prvo tumačio dupliciranu bazu tako da su svi nalozi K4. | Validator – odbio plan s R32/R33 (nalozi su se mogli isplanirati jer su obje baze na istim koordinatama). | Usklađeno: iste koordinate → baza se koristi, različite → svi K4 (T35). |
+| 5 | Claude je tvoju fazu 5 i svoju fazu "5 – Dokumentacija" numerirao istim brojem. | Claude – pri dodavanju faze 5 na vremensku liniju. | Dokumentacijska faza preimenovana u "D". |
 
 ## Osvrt na AI alate
 

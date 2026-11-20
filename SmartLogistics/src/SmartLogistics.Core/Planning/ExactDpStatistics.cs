@@ -16,4 +16,11 @@ public sealed record ExactDpStatistics(
     long DpStates);
 
 /// <summary>A plan together with the search effort that produced it.</summary>
-public sealed record ExactDpResult(Plan Plan, ExactDpStatistics Statistics);
+public sealed record ExactDpResult(Plan Plan, ExactDpStatistics Statistics)
+{
+    /// <summary>
+    /// The input checks the plan was built on (usable trucks, orders rejected before the search, scenario warnings
+    /// for the UI); set by <see cref="ExactDpPlanner.SolveWithStatistics"/>.
+    /// </summary>
+    public FeasibilityReport? Feasibility { get; init; }
+}

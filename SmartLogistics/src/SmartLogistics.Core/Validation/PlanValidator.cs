@@ -60,8 +60,9 @@ public static class PlanValidator
     private sealed record StopRef(int Route, int Step, StopAction Action);
 
     /// <summary>Recomputed facts about one route, used by the plan-level checks.</summary>
+    /// <param name="Slot">The scenario truck the route was matched to (null when it is not in the scenario).</param>
     private sealed record RouteOutcome(
-        Truck? ScenarioTruck,
+        TruckSlot? Slot,
         bool DistancesKnown,
         double TotalKm,
         double DrivingMinutes,
@@ -86,6 +87,12 @@ public static class PlanValidator
         private readonly HashSet<string> _invalidDataReported = new(StringComparer.Ordinal);
         private readonly List<RouteOutcome?> _outcomes = [];
 
+        /// <summary>Infeasible entry index -> 0-based occurrence of its order ID in the scenario (R23 matching, R33).</summary>
+        private readonly Dictionary<int, int> _entryOccurrence = [];
+
+        /// <summary>Scenario truck slots already matched to a route: (truck ID, occurrence).</summary>
+        private readonly HashSet<(string Id, int Occurrence)> _matchedSlots = [];
+
         public ValidationRun(Plan plan, Scenario scenario, PlanningOptions options)
         {
             _plan = plan;
@@ -93,8 +100,14 @@ public static class PlanValidator
             _options = options;
             _routes = plan.Routes ?? [];
             _infeasible = plan.InfeasibleOrders ?? [];
+            var routesPerTruck = _routes
+                .Where(route => route?.Truck?.Id is not null)
+                .GroupBy(route => route!.Truck.Id, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
             _labels = _routes
-                .Select((route, r) => route?.Truck?.Id is { } id ? $"truck {id}" : $"route {r + 1}")
+                .Select((route, r) => route?.Truck?.Id is { } id
+                    ? routesPerTruck[id] > 1 ? $"truck {id} (route {r + 1})" : $"truck {id}"
+                    : $"route {r + 1}")
                 .ToArray();
         }
 
@@ -104,7 +117,9 @@ public static class PlanValidator
 
         public IReadOnlyList<PlanViolation> Execute()
         {
-            CheckScenarioInput();
+            // Since phase 5 (amended R37, T31) invalid scenario data alone is no violation: the planner must
+            // still return a plan. R37 is reported only for what the plan does with invalid data (see
+            // CheckRouteMayHaveActions, CheckOrderData and the K4 expectations in ExpectCategory).
             IndexStops();
 
             var firstRouteByTruck = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -122,15 +137,6 @@ public static class PlanValidator
 
         private void Add(string ruleId, string? truckId, int? stepIndex, string message) =>
             _violations.Add(new PlanViolation(ruleId, truckId, stepIndex, message));
-
-        // R37: a plan must not exist for globally invalid input (planning must not have started).
-        private void CheckScenarioInput()
-        {
-            foreach (var problem in _index.GlobalProblems)
-            {
-                Add("R37", null, null, $"Invalid scenario input ({problem}); planning should have been refused.");
-            }
-        }
 
         private void IndexStops()
         {
@@ -167,17 +173,22 @@ public static class PlanValidator
 
             var truckId = route.Truck?.Id;
             var label = _labels[r];
-            var scenarioTruck = CheckTruck(r, route, firstRouteByTruck);
+            var slot = CheckTruck(r, route, firstRouteByTruck);
             var stops = route.Stops ?? [];
 
             if (stops.Count == 0)
             {
-                return ValidateUnusedRoute(route, truckId, label, scenarioTruck);
+                return ValidateUnusedRoute(route, truckId, label, slot);
             }
 
+            CheckRouteMayHaveActions(truckId, label, slot, stops.Count);
+
+            // R11-R13 use the scenario limits (T15), but only of a usable truck: an unusable truck must not
+            // have actions at all (R37 above), and its limits (e.g. 0 kg) would only repeat that violation.
+            var scenarioTruck = slot is { Usable: true } ? slot.Truck : null;
             var minutesPerAction = _options.MinutesPerAction;
             var previous = _index.Base;
-            var distancesKnown = previous is not null;
+            var distancesKnown = previous is not null && _index.BaseCoordinatesReliable;
             double km = 0;
             double drivingMinutes = 0;
             var loadKg = 0;
@@ -204,6 +215,12 @@ public static class PlanValidator
                 if (location is null)
                 {
                     Add("R8", truckId, k, $"Step {step} of {label} is at unknown location '{stop.LocationId}'.");
+                    distancesKnown = false;
+                }
+                else if (!_index.HasReliableCoordinates(stop.LocationId))
+                {
+                    // Non-numeric or ambiguous (duplicated ID) coordinates: the order using this location is
+                    // invalid (R37, reported with the order); km after this point cannot be recomputed.
                     distancesKnown = false;
                 }
 
@@ -350,7 +367,7 @@ public static class PlanValidator
             var endsEmpty = loadKg == 0 && machines == 0 && onBoard.Count == 0;
             if (!distancesKnown || previous is null || _index.Base is null)
             {
-                return new RouteOutcome(scenarioTruck, false, 0, 0, stops.Count, null, 0, endsEmpty);
+                return new RouteOutcome(slot, false, 0, 0, stops.Count, null, 0, endsEmpty);
             }
 
             var returnLeg = Distance.Leg(previous, _index.Base);
@@ -382,11 +399,13 @@ public static class PlanValidator
 
             CheckWorkday(truckId, label, totalDriving, actionMinutes);
 
-            return new RouteOutcome(scenarioTruck, true, totalKm, totalDriving, stops.Count, previous, returnLeg, endsEmpty);
+            return new RouteOutcome(slot, true, totalKm, totalDriving, stops.Count, previous, returnLeg, endsEmpty);
         }
 
         // R1: the truck of a route must exist in the scenario with the same limits, and have only one route.
-        private Truck? CheckTruck(int r, TruckRoute route, Dictionary<string, int> firstRouteByTruck)
+        // With duplicate truck IDs in the scenario (R37, T32) each scenario truck may have one route: routes with
+        // that ID are matched to the scenario trucks in order, preferring a truck with exactly the same limits.
+        private TruckSlot? CheckTruck(int r, TruckRoute route, Dictionary<string, int> firstRouteByTruck)
         {
             if (route.Truck is null)
             {
@@ -395,34 +414,65 @@ public static class PlanValidator
             }
 
             var planTruck = route.Truck;
-            var scenarioTruck = _index.FindTruck(planTruck.Id);
-            if (scenarioTruck is null)
+            var key = planTruck.Id ?? string.Empty;
+            var occurrences = _index.TruckOccurrences(planTruck.Id);
+            var first = firstRouteByTruck.TryGetValue(key, out var firstRoute) ? firstRoute : (int?)null;
+            firstRouteByTruck.TryAdd(key, r);
+
+            if (occurrences.Count == 0)
             {
                 Add("R1", planTruck.Id, null, $"Truck '{planTruck.Id}' of route {r + 1} does not exist in the scenario.");
+                if (first is not null)
+                {
+                    Add("R1", planTruck.Id, null, $"Truck {planTruck.Id} has more than one route (routes {first + 1} and {r + 1}).");
+                }
+
+                return null;
             }
-            else if (scenarioTruck.CapacityKg != planTruck.CapacityKg || scenarioTruck.MaxMachines != planTruck.MaxMachines)
+
+            var free = occurrences.Where(s => !_matchedSlots.Contains((key, s.Occurrence))).ToList();
+            var slot = free.FirstOrDefault(s => s.Truck == planTruck) ?? free.FirstOrDefault();
+            if (slot is null)
+            {
+                Add("R1", planTruck.Id, null, occurrences.Count == 1
+                    ? $"Truck {planTruck.Id} has more than one route (routes {first + 1} and {r + 1})."
+                    : $"Truck ID {planTruck.Id} has more routes than the {occurrences.Count} scenario trucks with that ID (route {r + 1}).");
+
+                // The extra route is still checked against the limits of the first truck with that ID.
+                slot = occurrences[0];
+            }
+
+            _matchedSlots.Add((key, slot.Occurrence));
+            var scenarioTruck = slot.Truck;
+            if (scenarioTruck.CapacityKg != planTruck.CapacityKg || scenarioTruck.MaxMachines != planTruck.MaxMachines)
             {
                 Add("R1", planTruck.Id, null,
                     $"Truck {planTruck.Id} limits in the plan ({planTruck.CapacityKg} kg, {planTruck.MaxMachines} machines) differ from the scenario ({scenarioTruck.CapacityKg} kg, {scenarioTruck.MaxMachines} machines).");
             }
 
-            if (planTruck.Id is not null)
+            return slot;
+        }
+
+        // R37 (amended, T31/T32): an unusable truck (capacity or max machines <= 0, or an ID that already
+        // appeared) must have no actions; without a base (or with a base whose coordinates are not numeric)
+        // no truck may have actions. Reported once per route.
+        private void CheckRouteMayHaveActions(string? truckId, string label, TruckSlot? slot, int actionCount)
+        {
+            if (slot is { Usable: false })
             {
-                if (firstRouteByTruck.TryGetValue(planTruck.Id, out var first))
-                {
-                    Add("R1", planTruck.Id, null, $"Truck {planTruck.Id} has more than one route (routes {first + 1} and {r + 1}).");
-                }
-                else
-                {
-                    firstRouteByTruck[planTruck.Id] = r;
-                }
+                Add("R37", truckId, null,
+                    $"{label} must not be used ({slot.UnusableReason}), but it has {actionCount} actions.");
             }
 
-            return scenarioTruck;
+            if (_index.BaseBlockingProblem is { } baseProblem)
+            {
+                Add("R37", truckId, null,
+                    $"Base location '{_index.BaseLocationId}' {baseProblem}, so no truck may have actions, but {label} has {actionCount}.");
+            }
         }
 
         // R3, R36: an unused truck has no stops, 0 km, 0 minutes and 0 orders.
-        private RouteOutcome ValidateUnusedRoute(TruckRoute route, string? truckId, string label, Truck? scenarioTruck)
+        private RouteOutcome ValidateUnusedRoute(TruckRoute route, string? truckId, string label, TruckSlot? slot)
         {
             if (Differs(route.TotalKm, 0))
             {
@@ -444,14 +494,17 @@ public static class PlanValidator
                 Add("R36", truckId, null, $"Unused {label} (no stops) reports {route.OrderCount} orders, expected 0.");
             }
 
-            return new RouteOutcome(scenarioTruck, _index.Base is not null, 0, 0, 0, _index.Base, 0, true);
+            return new RouteOutcome(slot, _index.BaseCoordinatesReliable, 0, 0, 0, _index.Base, 0, true);
         }
 
         // R37: an order with invalid data must be infeasible (K4), not planned. Reported once per order.
+        // Stops refer to the first scenario order with their ID, so a duplicate order ID alone is no problem here
+        // (the later orders with that ID are checked in CheckOrderCoverage / ExpectCategory); a missing base is
+        // reported once per route (CheckRouteMayHaveActions), not once per order.
         private void CheckOrderData(TransportOrder order, string? truckId, int k, string label)
         {
-            var problems = _index.OrderDataProblems(order);
-            if (problems.Count > 0 && _invalidDataReported.Add(order.Id))
+            var problems = _index.FindOrderGroup(order.Id)?.Problems ?? [];
+            if (problems.Count > 0 && _invalidDataReported.Add(order.Id ?? string.Empty))
             {
                 Add("R37", truckId, k,
                     $"Order {order.Id} is planned on {label} (step {k + 1}) but has invalid data ({string.Join("; ", problems)}); it must be infeasible with category K4.");
@@ -574,9 +627,13 @@ public static class PlanValidator
         }
 
         // R23: every input order is either planned or listed as infeasible - exactly one of the two, once.
+        // Orders that share an ID (R37 duplicate) are counted per occurrence: for an ID that occurs n times
+        // there must be exactly n records - the plan (stops refer to the first occurrence) plus infeasible
+        // entries. Each infeasible entry is matched to one occurrence (see MatchEntries), which fixes the
+        // category it must have (R33): the second and every later occurrence is K4.
         private void CheckOrderCoverage()
         {
-            var infeasibleCount = new Dictionary<string, int>(StringComparer.Ordinal);
+            var entriesById = new Dictionary<string, List<int>>(StringComparer.Ordinal);
             for (var i = 0; i < _infeasible.Count; i++)
             {
                 var entry = _infeasible[i];
@@ -587,44 +644,119 @@ public static class PlanValidator
                 }
 
                 var id = entry.Order.Id;
-                if (_index.FindOrder(id) is null)
+                var group = _index.FindOrderGroup(id);
+                if (group is null)
                 {
                     Add("R23", null, null, $"Infeasible order '{id}' is not in the scenario.");
                     continue;
                 }
 
-                infeasibleCount[id] = infeasibleCount.GetValueOrDefault(id) + 1;
+                if (!group.Occurrences.Contains(entry.Order))
+                {
+                    // R23: the entry must be an input order, not a different order that only shares the ID.
+                    Add("R23", null, null,
+                        $"Infeasible entry {i + 1} ({entry.Order}) does not match the data of any scenario order with ID '{id}'.");
+                }
+
+                if (!entriesById.TryGetValue(group.Id, out var list))
+                {
+                    list = [];
+                    entriesById[group.Id] = list;
+                }
+
+                list.Add(i);
             }
 
-            foreach (var order in _index.Orders)
+            foreach (var group in _index.OrderGroups)
             {
-                var planned = _occurrences.TryGetValue(order.Id, out var refs);
-                var count = infeasibleCount.GetValueOrDefault(order.Id);
-                if (!planned && count == 0)
+                var planned = _occurrences.TryGetValue(group.Id, out var refs);
+                var entries = entriesById.GetValueOrDefault(group.Id) ?? [];
+                MatchEntries(group, planned, entries);
+
+                var n = group.Occurrences.Count;
+                var count = entries.Count;
+                if (n == 1)
                 {
-                    Add("R23", null, null, $"Order {order.Id} is neither planned nor listed as infeasible.");
+                    if (!planned && count == 0)
+                    {
+                        Add("R23", null, null, $"Order {group.Id} is neither planned nor listed as infeasible.");
+                    }
+
+                    if (planned && count > 0)
+                    {
+                        var routes = string.Join(", ", refs!.Select(x => x.Route).Distinct().Select(x => _labels[x]));
+                        Add("R23", _routes[refs![0].Route]?.Truck?.Id, refs[0].Step,
+                            $"Order {group.Id} is planned ({routes}) and also listed as infeasible.");
+                    }
+
+                    if (count > 1)
+                    {
+                        Add("R23", null, null, $"Order {group.Id} is listed as infeasible {count} times.");
+                    }
+
+                    continue;
                 }
 
-                if (planned && count > 0)
+                var covered = (planned ? 1 : 0) + count;
+                if (covered != n)
                 {
-                    var routes = string.Join(", ", refs!.Select(x => x.Route).Distinct().Select(x => _labels[x]));
-                    Add("R23", _routes[refs![0].Route]?.Truck?.Id, refs[0].Step,
-                        $"Order {order.Id} is planned ({routes}) and also listed as infeasible.");
-                }
-
-                if (count > 1)
-                {
-                    Add("R23", null, null, $"Order {order.Id} is listed as infeasible {count} times.");
+                    var how = planned ? $"planned once and listed as infeasible {count} times" : $"listed as infeasible {count} times";
+                    var missing = covered < n
+                        ? $"{n - covered} of them are neither planned nor listed as infeasible"
+                        : $"{covered - n} record(s) too many";
+                    Add("R23", planned ? _routes[refs![0].Route]?.Truck?.Id : null, planned ? refs![0].Step : null,
+                        $"Order ID {group.Id} occurs {n} times in the scenario but is {how}: {missing} (each occurrence needs exactly one record; the second and later ones as K4).");
                 }
             }
         }
 
+        // Matches infeasible entries of one order ID to its scenario occurrences (R23, R33). A planned order is
+        // the first occurrence, so the entries then belong to the later ones. Each occurrence, in input order,
+        // first takes an entry with exactly its data; among several such entries (identical duplicates) the
+        // first occurrence prefers one whose category fits it and is not K4 (the later ones must be K4), so
+        // that "K4, K3" listed in any order is not misread. Entries whose data match no occurrence then fill
+        // the occurrences still open, in order. Surplus entries stay unmatched (already an R23 violation) and
+        // get no category check.
+        private void MatchEntries(OrderGroup group, bool planned, List<int> entries)
+        {
+            var free = new List<int>(entries);
+            var open = new List<int>();
+            for (var o = planned ? 1 : 0; o < group.Occurrences.Count; o++)
+            {
+                var occurrence = group.Occurrences[o];
+                var sameData = free.Where(e => _infeasible[e]!.Order == occurrence).ToList();
+                if (sameData.Count == 0)
+                {
+                    open.Add(o);
+                    continue;
+                }
+
+                var allowed = ExpectCategory(group, o).Allowed;
+                var pick = sameData
+                    .OrderBy(e => allowed.Contains(_infeasible[e]!.Reason) ? 0 : 1)
+                    .ThenBy(e => o == 0 && _infeasible[e]!.Reason == InfeasibilityReason.InvalidOrderData ? 1 : 0)
+                    .ThenBy(e => o > 0 && _infeasible[e]!.Reason != InfeasibilityReason.InvalidOrderData ? 1 : 0)
+                    .First();
+                _entryOccurrence[pick] = o;
+                free.Remove(pick);
+            }
+
+            var foreign = free.Where(e => !group.Occurrences.Contains(_infeasible[e]!.Order)).ToList();
+            for (var i = 0; i < Math.Min(open.Count, foreign.Count); i++)
+            {
+                _entryOccurrence[foreign[i]] = open[i];
+            }
+        }
+
         // R33: message and a category consistent with the data; R32: a feasible order must not be left out.
+        // R40 (Croatian messages with numbers) is not checked beyond "message is not empty": its wording is
+        // tested by the tests, not by the plan validator.
         private void CheckInfeasibleOrders()
         {
             var reportedR32 = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var entry in _infeasible)
+            for (var i = 0; i < _infeasible.Count; i++)
             {
+                var entry = _infeasible[i];
                 if (entry?.Order is null)
                 {
                     continue;
@@ -642,52 +774,84 @@ public static class PlanValidator
                     Add("R33", null, null, $"Infeasible order {id} has undefined reason category {(int)entry.Reason}.");
                 }
 
-                var order = _index.FindOrder(id);
-                if (order is null)
+                var group = _index.FindOrderGroup(id);
+                if (group is null || !_entryOccurrence.TryGetValue(i, out var occurrence))
                 {
                     continue;
                 }
 
-                var expected = ExpectCategory(order);
+                var expected = ExpectCategory(group, occurrence);
                 if (reasonDefined && !expected.Allowed.Contains(entry.Reason))
                 {
                     var allowed = string.Join(" or ", expected.Allowed.Select(Code));
+                    var which = group.Occurrences.Count > 1 ? $" (occurrence {occurrence + 1} of {group.Occurrences.Count})" : string.Empty;
                     Add("R33", null, null,
-                        $"Infeasible order {id} is reported as {Code(entry.Reason)} ({entry.Reason}), but the data give {allowed}: {expected.Detail}.");
+                        $"Infeasible order {id}{which} is reported as {Code(entry.Reason)} ({entry.Reason}), but the data give {allowed}: {expected.Detail}.");
                 }
 
-                if (expected.FeasibleAlone && !_occurrences.ContainsKey(id) && reportedR32.Add(id))
+                if (expected.FeasibleAlone && occurrence == 0 && !_occurrences.ContainsKey(group.Id) && reportedR32.Add(group.Id))
                 {
-                    CheckCouldBeAppended(order);
+                    CheckCouldBeAppended(group.Occurrences[0]);
                 }
             }
         }
 
-        private ExpectedCategory ExpectCategory(TransportOrder order)
+        // R33 with R37 (amended), R13: the category an infeasible order must have according to the data.
+        private ExpectedCategory ExpectCategory(OrderGroup group, int occurrence)
         {
-            var problems = _index.OrderDataProblems(order);
-            if (problems.Count > 0)
+            var k4 = new HashSet<InfeasibilityReason> { InfeasibilityReason.InvalidOrderData };
+
+            // R37: without a base every order is K4.
+            if (_index.Base is null)
             {
-                return new ExpectedCategory(new HashSet<InfeasibilityReason> { InfeasibilityReason.InvalidOrderData },
-                    string.Join("; ", problems), false);
+                return new ExpectedCategory(k4, $"base location '{_index.BaseLocationId}' does not exist, so every order is K4", false);
             }
 
+            // R37: the second and every later order with the same ID is K4.
+            if (occurrence > 0)
+            {
+                return new ExpectedCategory(k4,
+                    $"order ID '{group.Id}' is duplicated; occurrence {occurrence + 1} of {group.Occurrences.Count} must be K4", false);
+            }
+
+            // R37: unknown / duplicated / weightless machine, unknown / duplicated / non-numeric location,
+            // pickup == delivery, machine already used by an earlier order.
+            if (group.Problems.Count > 0)
+            {
+                return new ExpectedCategory(k4, string.Join("; ", group.Problems), false);
+            }
+
+            var order = group.Occurrences[0];
             var allowed = new HashSet<InfeasibilityReason>();
-            if (_index.SharesMachine(order))
+            if (!_index.BaseCoordinatesReliable)
+            {
+                // The base exists but its coordinates are not numeric or are ambiguous (duplicated base ID with
+                // different coordinates): the spec does not say what happens, no time can be verified - any category.
+                allowed.UnionWith(Enum.GetValues<InfeasibilityReason>());
+                return new ExpectedCategory(allowed,
+                    $"base location '{_index.BaseLocationId}' has non-numeric or ambiguous coordinates", false);
+            }
+
+            // T19, T28 and the ambiguous "machine already used" reading: K4 is allowed, not required.
+            if (_index.SharesMachine(order) || group.PossiblyReusesMachine)
             {
                 allowed.Add(InfeasibilityReason.InvalidOrderData);
             }
 
+            // R13, R33 K1 (amended R37): heavier than every USABLE truck; unusable trucks do not count.
             var machine = _index.FindMachine(order.MachineId)!;
-            var capable = _index.Trucks.Where(t => t.CanCarry(machine) && t.MaxMachines >= 1).ToList();
+            var capable = _index.UsableTrucks.Where(t => t.Truck.CanCarry(machine)).Select(t => t.Truck).ToList();
             if (capable.Count == 0)
             {
                 allowed.Add(InfeasibilityReason.ExceedsAllCapacities);
-                var maxCapacity = _index.Trucks.Count == 0 ? 0 : _index.Trucks.Max(t => t.CapacityKg);
+                var capacities = _index.UsableTrucks.Count == 0
+                    ? "there is no usable truck"
+                    : $"max usable capacity {_index.UsableTrucks.Max(t => t.Truck.CapacityKg)} kg";
                 return new ExpectedCategory(allowed,
-                    $"machine {machine.Id} {machine.WeightKg} kg > capacity of every truck (max {maxCapacity} kg)", false);
+                    $"machine {machine.Id} {machine.WeightKg} kg > capacity of every usable truck ({capacities})", false);
             }
 
+            // R33 K2: alone (base -> pickup -> delivery -> base) longer than the working day (R20 / R21).
             var needed = StandaloneMinutes(order);
             if (needed is null)
             {
@@ -704,10 +868,11 @@ public static class PlanValidator
                     $"alone (base -> pickup -> delivery -> base) the order needs {N(needed.Value)} min > {N(max)} min ({ModeName})", false);
             }
 
+            // R33 K3: feasible alone. R32 is checked only when no reading of the data makes the order K4.
             allowed.Add(InfeasibilityReason.DoesNotFitWithOtherOrders);
             return new ExpectedCategory(allowed,
                 $"machine {machine.Id} {machine.WeightKg} kg fits truck {capable[0].Id} ({capable[0].CapacityKg} kg) and alone the order needs {N(needed.Value)} min <= {N(max)} min ({ModeName})",
-                true);
+                !group.PossiblyReusesMachine);
         }
 
         /// <summary>Workday minutes of the route base -> pickup -> delivery -> base, counted per the workday mode.</summary>
@@ -729,25 +894,29 @@ public static class PlanValidator
 
         // R32: an order listed as infeasible that fits as an extra trip at the end of a route (before the
         // return to the base) proves that the plan does not have the maximum number of executed orders.
+        // Only usable trucks are considered (amended R37, T32).
         private void CheckCouldBeAppended(TransportOrder order)
         {
             var baseLocation = _index.Base;
             var machine = _index.FindMachine(order.MachineId);
             var pickup = _index.FindLocation(order.PickupLocationId);
             var delivery = _index.FindLocation(order.DeliveryLocationId);
-            if (baseLocation is null || machine is null || pickup is null || delivery is null)
+            if (baseLocation is null || !_index.BaseCoordinatesReliable || machine is null || pickup is null || delivery is null)
             {
                 return;
             }
 
-            foreach (var truck in _index.Trucks)
+            foreach (var slot in _index.UsableTrucks)
             {
-                if (!truck.CanCarry(machine) || truck.MaxMachines < 1)
+                var truck = slot.Truck;
+                if (!truck.CanCarry(machine))
                 {
                     continue;
                 }
 
-                var outcomes = _outcomes.Where(o => o?.ScenarioTruck?.Id == truck.Id).ToList();
+                var outcomes = _outcomes
+                    .Where(o => o?.Slot is { } s && string.Equals(s.Truck.Id, truck.Id, StringComparison.Ordinal) && s.Occurrence == slot.Occurrence)
+                    .ToList();
                 if (outcomes.Count > 1)
                 {
                     continue;
@@ -755,7 +924,7 @@ public static class PlanValidator
 
                 var outcome = outcomes.Count == 1
                     ? outcomes[0]!
-                    : new RouteOutcome(truck, true, 0, 0, 0, baseLocation, 0, true);
+                    : new RouteOutcome(slot, true, 0, 0, 0, baseLocation, 0, true);
                 if (!outcome.DistancesKnown || !outcome.EndsEmpty || outcome.LastLocation is null)
                 {
                     continue;

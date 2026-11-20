@@ -1,7 +1,7 @@
 # Utrošeno vrijeme
 
-**Ukupno do predaje dokumentacije: oko 2 h 08 min** zajedničkog rada (tehnički vođa + Claude Code),
-20.11.2026. od 22:07 do 21.11.2026. 00:15.
+**Ukupno: oko 2 h 35 min** zajedničkog rada (tehnički vođa + Claude Code),
+20.11.2026. od 22:07 do 21.11.2026. 00:42.
 
 Vrijeme je izmjereno iz vremenskih oznaka (git commitovi i datoteke u repozitoriju), ne procijenjeno
 napamet. Ne uključuje vrijeme izvan sesije – čitanje koda radi razumijevanja, pripremu prezentacije
@@ -18,8 +18,9 @@ i demo. To dopiši u posljednji redak tablice.
 | 2 – Domena i udaljenosti | 23:09 – 23:17 | 8 min | `Core/Domain`, `Distance`, `scenario.json`, loader, testovi udaljenosti, stranica Ulazni podaci | commit `11233d7` |
 | 3 – Validator i testovi | 23:17 – 23:33 | 16 min | validator-engineer i test-engineer paralelno; stranica Pravila i provjere | commit `f04f0da` |
 | 4 – Egzaktni planer | 23:33 – 23:51 | 18 min | solver-engineer: `ExactDpPlanner`; stranice Plan ruta i Karta | commit `c858034` |
-| 5 – Dokumentacija predaje | 23:51 – 00:15 | ~24 min | README, rezultati, AI log, utrošeno vrijeme, pregled otvorenih odluka | ova datoteka |
-| **Ukupno u sesiji** | | **~2 h 08 min** | | |
+| D – Dokumentacija predaje | 23:51 – 00:15 | ~24 min | README, rezultati, AI log, utrošeno vrijeme, pregled otvorenih odluka | ova datoteka |
+| 5 – Neizvedivi nalozi | 00:15 – 00:42 | ~27 min | `Feasibility.cs`, planer uvijek vraća plan (R37, R40); validator prilagođen; 50 novih testova s neovisnim oracleom; primjeri scenarija u aplikaciji; objašnjenje planera (`planer.md`) | ova datoteka |
+| **Ukupno u sesiji** | | **~2 h 35 min** | | |
 | Izvan sesije (dopisati) | | … | čitanje i razumijevanje koda, priprema prezentacije, demo | – |
 
 ## Napomene

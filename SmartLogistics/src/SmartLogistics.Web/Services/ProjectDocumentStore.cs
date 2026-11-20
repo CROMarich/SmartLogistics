@@ -22,6 +22,7 @@ public sealed partial class ProjectDocumentStore
         new("spec", "Specifikacija", "spec.md", "Pravila R1..Rn, dvosmislenosti, izvedene činjenice i rubni slučajevi.", DefinesRuleIds: true),
         new("odluke", "Odluke", "odluke.md", "Zapis potvrđenih pretpostavki i tehničkih odluka sa statusom i datumom."),
         new("rezultati", "Rezultati", "rezultati.md", "Rute, km i vremena za oba načina radnog dana te rezultat testova."),
+        new("planer", "Planer", "planer.md", "Kako radi ExactDpPlanner: tok, stanje DP-a, optimalnost, složenost, izmjerene granice i rizična mjesta u kodu."),
         new("ai-log", "AI log", "ai-log.md", "Što je AI napravio krivo, kako je uhvaćeno i kako je popravljeno."),
         new("vrijeme", "Utrošeno vrijeme", "vrijeme.md", "Trajanje po fazama, izmjereno iz git commitova i datoteka."),
         new("ui-dizajn", "UI dizajn", "ui-dizajn.md", "Dizajn sustav: tokeni, komponente i pravila za sve stranice."),

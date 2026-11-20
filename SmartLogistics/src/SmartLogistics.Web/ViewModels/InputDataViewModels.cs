@@ -62,8 +62,8 @@ public static class InputDataViewModelFactory
         }
 
         var scenario = result.Scenario;
-        var matrix = new DistanceMatrix(scenario.Locations);
-        var machinesById = scenario.Machines.ToDictionary(m => m.Id);
+        var matrix = new DistanceMatrix(scenario.Locations.DistinctBy(l => l.Id).ToList());
+        var machinesById = scenario.Machines.DistinctBy(m => m.Id).ToDictionary(m => m.Id);
         var locationIds = scenario.Locations.Select(l => l.Id).ToHashSet();
 
         var source = $"data/{ScenarioProvider.FileName} · zadnja izmjena {result.LastModifiedLocal:dd.MM.yyyy. HH:mm}";
@@ -203,7 +203,7 @@ public static class InputDataViewModelFactory
     // Every order as an arrow from pickup to delivery, coloured by which trucks can carry it.
     private static MapViewModel? CreateMap(Scenario scenario, Dictionary<string, Machine> machinesById)
     {
-        var locationsById = scenario.Locations.ToDictionary(l => l.Id);
+        var locationsById = scenario.Locations.DistinctBy(l => l.Id).ToDictionary(l => l.Id);
         var arrows = new List<MapArrowViewModel>();
         foreach (var order in scenario.Orders)
         {

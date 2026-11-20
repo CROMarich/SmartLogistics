@@ -1,6 +1,8 @@
 @model PlanPageViewModel
 
-<partial name="_ModeSwitch" model="Model.Modes" />
+<partial name="_ModeSwitch" model="Model" />
+
+<p class="scenario-description">@Model.ScenarioDescription</p>
 
 @if (Model.Error is not null)
 {
@@ -22,4 +24,20 @@ else
         <span class="callout-icon">@Icons.Get(Model.StatusIcon)</span>
         <div>@Model.StatusText</div>
     </div>
+
+    @if (Model.ScenarioWarnings is { Count: > 0 } warnings)
+    {
+        <div class="callout is-warning" role="status">
+            <span class="callout-icon">@Icons.Get("alert")</span>
+            <div>
+                <strong>Upozorenja o ulaznim podacima</strong>
+                <ul class="callout-list">
+                    @foreach (var warning in warnings)
+                    {
+                        <li>@warning</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
 }

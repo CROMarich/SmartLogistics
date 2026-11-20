@@ -23,7 +23,7 @@ README are in English.
 
 ```bash
 dotnet build              # whole solution
-dotnet test               # 89 tests
+dotnet test               # 144 tests
 dotnet run --project src/SmartLogistics.Web
 ```
 
@@ -80,7 +80,9 @@ Every assumption, deviation and proposal is recorded with its reason and status 
    shortest route is found; an assignment that breaks it on any truck is infeasible.
 4. The feasible assignment with the smallest total km wins. If no assignment of all orders is feasible, the
    search is extended with an "unassigned" option and the planner maximises the number of planned orders first.
+0. **Input checks** (`Core/Feasibility.cs`). Invalid data never stops planning – the planner always returns a plan. Invalid orders (unknown machine or location, pickup == delivery, weight ≤ 0, duplicate order, …) are reported as K4, a machine heavier than every usable truck as K1, an order that alone exceeds the working day as K2; unusable trucks (repeated ID, capacity ≤ 0) are not used. Only invalid `PlanningOptions` throw.
 5. **Self-check.** Before returning, the plan goes through `PlanValidator`; any violation throws (it would be a bug).
+6. **Working day too short for all orders.** The planner leaves out the smallest possible number of orders (1, then 2, …) and, among those plans, picks the one with the fewest km; omitted orders are K3 "Ne stane u radni dan". Example: a 300-minute day leaves out N08 and N09 (8 orders, 203.8 km), confirmed by an independent exhaustive test oracle.
 
 Distances are kept in **whole tenths of a km** (`int`) inside the planner, so sums and tie-breaking are exact
 and the result is deterministic. For the task data the search tries 32 assignments, solves 63 distinct DPs
@@ -102,7 +104,7 @@ are properties of the input, the options or the UI.
 
 ## Tests
 
-`dotnet test` – **89 tests, all green.**
+`dotnet test` – **144 tests, all green.**
 
 | Test class | Tests | Purpose |
 |------------|------:|---------|
@@ -112,6 +114,8 @@ are properties of the input, the options or the UI.
 | `PlanValidatorValidPlanTests` | 15 | Valid plans and boundary cases pass (exactly 10000 kg, exactly 540 min, actions at the depot, unused truck) |
 | `PlanValidatorViolationTests` | 38 | Hand-built invalid plans are rejected with the right rule: overload (R11), too many machines (R12), delivery before pickup (R6), picked up by A / delivered by B (R5), no return to depot (R2), machine left on the truck (R28), wrong km (R16), workday exceeded (R20/R21), and more |
 | `ReferenceSolutionTests` | 9 | Planner returns 200.1 km (`Total`) and 182.2 km (`DrivingOnly`), its plans pass the validator, one route per truck, deterministic, `DrivingOnly` ≤ `Total` |
+| `InvalidInputPlanningTests` | 36 | Invalid input never crashes: 11000 kg machine (K1, rest at 200.1 km), unknown location, pickup == delivery, weight ≤ 0, duplicate order, unknown or reused machine, missing base, unusable trucks – all K4/K1 with a valid plan |
+| `WorkdayOverflowPlanningTests` | 19 | Short working day (300 / 200 / 80 min): plan passes the validator, omitted orders are K3 "Ne stane u radni dan", minimal omission and km confirmed by an independent exhaustive oracle, deterministic |
 
 Floating-point comparisons use a tolerance. Tests are tagged with the rule they cover (`[Trait("Rule", "R11")]`).
 
@@ -155,7 +159,7 @@ What went wrong with the AI, how it was caught and fixed, and a reflection on th
 
 ## Time spent
 
-About **2 h 08 min** of joint work in the development session, measured from git commits and file
+About **2 h 35 min** of joint work in the development session, measured from git commits and file
 timestamps; the per-phase breakdown is in [docs/vrijeme.md](docs/vrijeme.md).
 
 ## Documents
@@ -166,6 +170,7 @@ timestamps; the per-phase breakdown is in [docs/vrijeme.md](docs/vrijeme.md).
 | [docs/spec.md](docs/spec.md) | Rules R1–R39, ambiguities D1–D16, derived facts, edge cases |
 | [docs/odluke.md](docs/odluke.md) | Decision log T1–T30 with status; pending decisions at the top |
 | [docs/rezultati.md](docs/rezultati.md) | Full results for both workday modes |
+| [docs/planer.md](docs/planer.md) | Planner explained for the presentation: execution flow, DP state, optimality proof, complexity, measured scaling limits, riskiest code lines |
 | [docs/ai-log.md](docs/ai-log.md) | AI mistakes and reflection on AI tools |
 | [docs/vrijeme.md](docs/vrijeme.md) | Time spent per phase |
 | [docs/ui-dizajn.md](docs/ui-dizajn.md) | Design system of the web UI |

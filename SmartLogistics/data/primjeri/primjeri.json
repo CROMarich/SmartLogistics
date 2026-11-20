@@ -1,0 +1,33 @@
+[
+  {
+    "id": "zadatak",
+    "title": "Zadatak",
+    "description": "Podaci iz zadatka (data/scenario.json): 2 kamiona, 10 strojeva, 10 lokacija, 10 naloga.",
+    "file": "scenario.json"
+  },
+  {
+    "id": "tezak-stroj",
+    "title": "Pretežak stroj",
+    "description": "Zadatak + nalog N11 sa strojem M11 od 11.000 kg (L1 → L2). Nijedan kamion ga ne može nositi (K1); ostali nalozi se planiraju kao u zadatku.",
+    "file": "primjeri/tezak-stroj.json"
+  },
+  {
+    "id": "kratak-dan",
+    "title": "Radni dan 300 min",
+    "description": "Podaci iz zadatka, ali radni dan traje 300 min umjesto 540. Svih 10 naloga ne stane (samo radnje traju 400 min), pa planer izostavlja najmanji mogući broj naloga.",
+    "file": "scenario.json",
+    "maxMinutes": 300
+  },
+  {
+    "id": "nepostojeca-lokacija",
+    "title": "Nepostojeća lokacija",
+    "description": "Zadatak + nalog N11 (M11, 1.000 kg) s preuzimanjem na lokaciji L99 koja ne postoji (K4).",
+    "file": "primjeri/nepostojeca-lokacija.json"
+  },
+  {
+    "id": "neispravni-podaci",
+    "title": "Neispravni podaci",
+    "description": "Zadatak + četiri neispravna naloga: N11 sa strojem mase 0 kg, N12 s preuzimanjem i isporukom na istoj lokaciji, drugi nalog s ID-om N05 i N13 s nepostojećim strojem M99. Svi su K4, ostali se planiraju.",
+    "file": "primjeri/neispravni-podaci.json"
+  }
+]
