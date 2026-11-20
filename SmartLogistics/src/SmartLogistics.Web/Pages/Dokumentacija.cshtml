@@ -5,30 +5,34 @@
     ViewData["Title"] = vm.Current.Title;
 }
 
-<nav aria-label="Dokumenti">
-    <ul class="nav nav-pills doc-nav">
-        @foreach (var document in vm.Documents)
-        {
-            <li class="nav-item">
-                <a class="nav-link @(document.Slug == vm.Current.Slug ? "active" : null)"
-                   asp-page="/Dokumentacija" asp-route-slug="@document.Slug">@document.Title</a>
-            </li>
-        }
-    </ul>
+<partial name="_PageHeader" model="vm.Header" />
+
+<nav class="segmented" aria-label="Dokumenti">
+    @foreach (var document in vm.Documents)
+    {
+        <a class="segmented-item @(document.Slug == vm.Current.Slug ? "is-active" : null)"
+           asp-page="/Dokumentacija" asp-route-slug="@document.Slug"
+           aria-current="@(document.Slug == vm.Current.Slug ? "page" : null)">
+            @Icons.Get(document.Icon)
+            <span>@document.Title</span>
+        </a>
+    }
 </nav>
 
-<p class="doc-meta">
-    <code>@vm.Current.FileName</code> · zadnja izmjena: @vm.Current.LastModifiedText
+<div class="chip-row doc-meta-row">
+    <span class="chip">@vm.Current.FileName</span>
+    <span class="chip">zadnja izmjena: @vm.Current.LastModifiedText</span>
     @foreach (var stat in vm.Current.Stats)
     {
-        <span class="doc-stat-inline">· @stat</span>
+        <span class="chip">@stat</span>
     }
-</p>
+</div>
 
 @if (vm.Body is null)
 {
-    <div class="alert alert-warning" role="status">
-        Dokument <code>@vm.Current.FileName</code> još ne postoji.
+    <div class="callout is-warning" role="status">
+        <span class="callout-icon">@Icons.Get("alert")</span>
+        <div>Dokument <code>@vm.Current.FileName</code> još ne postoji.</div>
     </div>
 }
 else
@@ -40,8 +44,12 @@ else
                 <partial name="_DocumentOutline" model="vm.Outline" />
             </aside>
         }
-        <article class="col-lg-9 order-lg-1 markdown-body">
-            @vm.Body
+        <article class="col-lg-9 order-lg-1">
+            <div class="panel">
+                <div class="panel-body markdown-body">
+                    @vm.Body
+                </div>
+            </div>
         </article>
     </div>
 }

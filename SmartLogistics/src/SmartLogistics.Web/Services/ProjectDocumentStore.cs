@@ -22,6 +22,7 @@ public sealed partial class ProjectDocumentStore
         new("spec", "Specifikacija", "spec.md", "Pravila R1..Rn, dvosmislenosti, izvedene činjenice i rubni slučajevi.", DefinesRuleIds: true),
         new("odluke", "Odluke", "odluke.md", "Zapis potvrđenih pretpostavki i tehničkih odluka sa statusom i datumom."),
         new("ai-log", "AI log", "ai-log.md", "Što je AI napravio krivo, kako je uhvaćeno i kako je popravljeno."),
+        new("ui-dizajn", "UI dizajn", "ui-dizajn.md", "Dizajn sustav: tokeni, komponente i pravila za sve stranice."),
     ];
 
     private readonly string? _docsDirectory;
@@ -65,6 +66,10 @@ public sealed partial class ProjectDocumentStore
             .Select(m => m.Value)
             .Distinct()
             .Count();
+
+    /// <summary>Counts table cells whose whole content is the given status, e.g. "| Potvrđeno |" in docs/odluke.md.</summary>
+    public static int CountTableStatus(string markdown, string status) =>
+        Regex.Matches(markdown, $@"\|\s*{Regex.Escape(status)}\s*\|").Count;
 
     [GeneratedRegex(@"\b(?<prefix>[RD])\d+\b")]
     private static partial Regex IdPattern();

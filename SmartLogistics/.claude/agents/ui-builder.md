@@ -11,6 +11,16 @@ Ti gradiš korisničko sučelje za Smart Logistics Planner.
 - `src/SmartLogistics.Core/` smiješ čitati (javni API), ali ga NE mijenjaš.
   Ako ti nešto nedostaje u Core, stani i opiši što treba.
 - Ne diraš `tests/`.
+- Smiješ dopuniti `docs/ui-dizajn.md` kad dodaš novu komponentu ili token.
+
+## Dizajn sustav (obavezno)
+- Prije rada pročitaj `docs/ui-dizajn.md` i postojeće partiale u `Pages/Shared`.
+- Svaka stranica slijedi predložak: `_PageHeader` → `callout` za upozorenja →
+  `stat-grid` s ključnim brojkama → paneli u gridu.
+- Koristi postojeće komponente i tokene; ne uvodi nove boje ni razmake mimo tokena.
+- Ikone samo preko `@Icons.Get("...")` iz `Web/Ui/Icons.cs`.
+- Nova stranica dobiva stavku u `NavigationMenu` (`ViewModels/LayoutViewModels.cs`);
+  postojeću stavku s oznakom "uskoro" aktiviraš upisom putanje stranice.
 
 ## UI pravila (obavezno, iz CLAUDE.md)
 - Bez inline stilova (`style="..."`); sav CSS u `wwwroot/css/site.css`.

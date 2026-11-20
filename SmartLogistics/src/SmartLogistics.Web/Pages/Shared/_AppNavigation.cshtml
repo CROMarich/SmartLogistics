@@ -1,0 +1,35 @@
+@model IReadOnlyList<NavSectionViewModel>
+
+<nav class="app-nav">
+    @foreach (var navSection in Model)
+    {
+        <div class="app-nav-section">
+            <div class="app-nav-section-title">@navSection.Title</div>
+            <ul class="app-nav-list">
+                @foreach (var item in navSection.Items)
+                {
+                    <li>
+                        @if (item.IsAvailable)
+                        {
+                            <a class="@item.CssClass" asp-page="@item.Page" aria-current="@(item.IsActive ? "page" : null)">
+                                @Icons.Get(item.Icon)
+                                <span>@item.Title</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="@item.CssClass" aria-disabled="true">
+                                @Icons.Get(item.Icon)
+                                <span>@item.Title</span>
+                                @if (item.Badge is not null)
+                                {
+                                    <span class="app-nav-badge">@item.Badge</span>
+                                }
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</nav>

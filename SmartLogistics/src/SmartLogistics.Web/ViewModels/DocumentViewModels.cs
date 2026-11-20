@@ -9,6 +9,7 @@ public sealed record DocumentCardViewModel(
     string Title,
     string Description,
     string FileName,
+    string Icon,
     bool Exists,
     string LastModifiedText,
     IReadOnlyList<string> Stats);
@@ -16,8 +17,9 @@ public sealed record DocumentCardViewModel(
 /// <summary>Entry in the document outline (table of contents).</summary>
 public sealed record OutlineItemViewModel(string Text, string Anchor, bool IsSubsection);
 
-/// <summary>The documentation page: navigation plus the selected document.</summary>
+/// <summary>The documentation page: header, navigation and the selected document.</summary>
 public sealed record DocumentPageViewModel(
+    PageHeaderViewModel Header,
     IReadOnlyList<DocumentCardViewModel> Documents,
     DocumentCardViewModel Current,
     IHtmlContent? Body,
@@ -26,17 +28,28 @@ public sealed record DocumentPageViewModel(
 /// <summary>Maps project documents to view models; all formatting happens here, not in .cshtml.</summary>
 public static class DocumentViewModelFactory
 {
+    private static readonly Dictionary<string, string> IconBySlug = new()
+    {
+        ["zadatak"] = "file",
+        ["spec"] = "list",
+        ["odluke"] = "scale",
+        ["ai-log"] = "robot",
+        ["ui-dizajn"] = "palette",
+    };
+
     public static DocumentCardViewModel CreateCard(ProjectDocument document, ProjectDocumentContent? content)
     {
+        var icon = IconBySlug.GetValueOrDefault(document.Slug, "file");
+
         if (content is null)
         {
             return new DocumentCardViewModel(
-                document.Slug, document.Title, document.Description, $"docs/{document.FileName}",
+                document.Slug, document.Title, document.Description, $"docs/{document.FileName}", icon,
                 Exists: false, LastModifiedText: "još ne postoji", Stats: []);
         }
 
         return new DocumentCardViewModel(
-            document.Slug, document.Title, document.Description, $"docs/{document.FileName}",
+            document.Slug, document.Title, document.Description, $"docs/{document.FileName}", icon,
             Exists: true,
             LastModifiedText: content.LastModifiedLocal.ToString("dd.MM.yyyy. HH:mm"),
             Stats: CreateStats(content.Markdown, document.DefinesRuleIds));
@@ -46,11 +59,12 @@ public static class DocumentViewModelFactory
     {
         var cards = ProjectDocumentStore.All.Select(d => CreateCard(d, store.Read(d))).ToList();
         var currentCard = cards.Single(c => c.Slug == current.Slug);
+        var header = new PageHeaderViewModel("Dokumentacija", current.Title, current.Description);
         var content = store.Read(current);
 
         if (content is null)
         {
-            return new DocumentPageViewModel(cards, currentCard, Body: null, Outline: []);
+            return new DocumentPageViewModel(header, cards, currentCard, Body: null, Outline: []);
         }
 
         var rendered = MarkdownRenderer.Render(content.Markdown);
@@ -59,7 +73,7 @@ public static class DocumentViewModelFactory
             .Select(h => new OutlineItemViewModel(h.Text, "#" + h.Id, IsSubsection: h.Level == 3))
             .ToList();
 
-        return new DocumentPageViewModel(cards, currentCard, new HtmlString(rendered.Html), outline);
+        return new DocumentPageViewModel(header, cards, currentCard, new HtmlString(rendered.Html), outline);
     }
 
     private static IReadOnlyList<string> CreateStats(string markdown, bool definesRuleIds)
@@ -71,8 +85,7 @@ public static class DocumentViewModelFactory
             stats.Add($"{ProjectDocumentStore.CountDistinctIds(markdown, 'D')} dvosmislenosti");
         }
 
-        var lineCount = markdown.Split('\n').Length;
-        stats.Add($"{lineCount} redaka");
+        stats.Add($"{markdown.Split('\n').Length} redaka");
         return stats;
     }
 }

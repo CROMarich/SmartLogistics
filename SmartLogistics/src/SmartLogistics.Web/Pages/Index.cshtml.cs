@@ -15,6 +15,9 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
         new("1", "Specifikacija domene",
             "Podagent domain-analyst napisao je docs/spec.md; tehnički vođa potvrdio je pretpostavke (pravila R29–R39, zapis u docs/odluke.md).",
             PhaseStatus.Done),
+        new("UI", "Dizajn sustav",
+            "Moderni izgled aplikacije: bočni izbornik, kartice, ikone i tokeni boja; pravila u docs/ui-dizajn.md.",
+            PhaseStatus.Done),
         new("…", "Sljedeće faze",
             "Domenski model i ulazni podaci, validator, testovi poslovnih ograničenja, planer ruta, prikaz plana i karta.",
             PhaseStatus.Planned),
@@ -22,12 +25,5 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
 
     public HomeViewModel ViewModel { get; private set; } = null!;
 
-    public void OnGet()
-    {
-        var cards = ProjectDocumentStore.All
-            .Select(d => DocumentViewModelFactory.CreateCard(d, documents.Read(d)))
-            .ToList();
-
-        ViewModel = new HomeViewModel(Phases, cards);
-    }
+    public void OnGet() => ViewModel = HomeViewModelFactory.Create(documents, Phases);
 }

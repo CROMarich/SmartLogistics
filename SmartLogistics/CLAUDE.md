@@ -28,6 +28,10 @@
   objekte izravno; formatiranje (km, kg, hh:mm) u ViewModelu.
 - Ponovljivi dijelovi su partial viewovi u `Pages/Shared`.
 - Bez JavaScript frameworka; JS samo ako je nužno, u `wwwroot/js`.
+- Dizajn sustav je u `docs/ui-dizajn.md` i obavezan je za sve stranice: postojeće
+  komponente (app shell, `_PageHeader`, panel, stat-tile, badge, callout, timeline),
+  samo tokeni iz `:root`, ikone samo preko `Web/Ui/Icons.cs`. Nova komponenta ili
+  token upisuje se i u `docs/ui-dizajn.md`. Nova stranica dobiva stavku u `NavigationMenu`.
 
 ## Pravila rada
 - Radi samo fazu koju zadam i STANI na kraju s kratkim izvještajem.

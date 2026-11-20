@@ -1,11 +1,11 @@
-@model IReadOnlyList<SmartLogistics.Web.ViewModels.OutlineItemViewModel>
+@model IReadOnlyList<OutlineItemViewModel>
 
 <nav class="doc-outline" aria-label="Sadržaj dokumenta">
-    <h2 class="doc-outline-title">Sadržaj</h2>
-    <ul>
+    <div class="doc-outline-title">Sadržaj</div>
+    <ul class="doc-outline-list">
         @foreach (var item in Model)
         {
-            <li class="@(item.IsSubsection ? "doc-outline-sub" : null)">
+            <li class="@(item.IsSubsection ? "is-sub" : null)">
                 <a href="@item.Anchor">@item.Text</a>
             </li>
         }

@@ -1,36 +1,64 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Početna";
     var vm = Model.ViewModel;
+    ViewData["Title"] = "Pregled";
 }
 
-<section class="page-intro">
-    <h1>Smart Logistics Planner</h1>
-    <p class="lead">
-        Planiranje prijevoza radnih strojeva: dodjela naloga kamionima, redoslijed preuzimanja i isporuka
-        te minimalna ukupna kilometraža uz obavezan povrat u bazu L0.
-    </p>
-</section>
+<partial name="_PageHeader" model="vm.Header" />
 
-<div class="alert alert-info" role="status">
-    Aplikacija je u izradi. Ulazni podaci, plan ruta po kamionima i karta pojavit će se ovdje
-    kad budu implementirani u <code>SmartLogistics.Core</code>. Do tada je dostupna dokumentacija projekta.
+@if (vm.PendingDecisionsText is not null)
+{
+    <div class="callout is-warning" role="status">
+        <span class="callout-icon">@Icons.Get("alert")</span>
+        <div>
+            <strong>@vm.PendingDecisionsText</strong>
+            Pregledaj prijedloge u <a asp-page="/Dokumentacija" asp-route-slug="odluke">zapisu odluka</a>.
+        </div>
+    </div>
+}
+
+<div class="callout is-info" role="status">
+    <span class="callout-icon">@Icons.Get("info")</span>
+    <div>
+        Ulazni podaci, plan ruta po kamionima i karta pojavit će se u izborniku <strong>Planiranje</strong>
+        kad budu implementirani u <code>SmartLogistics.Core</code>.
+    </div>
 </div>
 
-<section class="page-section">
-    <h2>Napredak projekta</h2>
-    <partial name="_PhaseTable" model="vm.Phases" />
+<section class="stat-grid" aria-label="Ključni pokazatelji">
+    @foreach (var stat in vm.Stats)
+    {
+        <partial name="_StatTile" model="stat" />
+    }
 </section>
 
-<section class="page-section">
-    <h2>Dokumentacija</h2>
-    <div class="row g-3">
-        @foreach (var document in vm.Documents)
-        {
-            <div class="col-md-6 col-xl-3">
-                <partial name="_DocumentCard" model="document" />
+<div class="row g-4">
+    <section class="col-xl-5">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">Napredak projekta</h2>
             </div>
-        }
-    </div>
-</section>
+            <div class="panel-body">
+                <partial name="_PhaseTimeline" model="vm.Phases" />
+            </div>
+        </div>
+    </section>
+
+    <section class="col-xl-7">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">Dokumentacija</h2>
+                <a class="panel-action" asp-page="/Dokumentacija">Sve @Icons.Get("arrow-right")</a>
+            </div>
+            <div class="panel-body">
+                <div class="doc-grid">
+                    @foreach (var document in vm.Documents)
+                    {
+                        <partial name="_DocumentCard" model="document" />
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

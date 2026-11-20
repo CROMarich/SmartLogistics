@@ -4,12 +4,12 @@
     ViewData["Title"] = "Greška";
 }
 
-<h1 class="text-danger">Greška</h1>
-<p>Došlo je do pogreške pri obradi zahtjeva.</p>
+<partial name="_PageHeader" model="@(new PageHeaderViewModel("Greška", "Nešto je pošlo po zlu", "Došlo je do pogreške pri obradi zahtjeva."))" />
 
 @if (Model.ShowRequestId)
 {
-    <p>
-        <strong>ID zahtjeva:</strong> <code>@Model.RequestId</code>
-    </p>
+    <div class="callout is-danger" role="alert">
+        <span class="callout-icon">@Icons.Get("alert")</span>
+        <div><strong>ID zahtjeva:</strong> <code>@Model.RequestId</code></div>
+    </div>
 }

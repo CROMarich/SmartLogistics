@@ -1,30 +1,31 @@
-@model SmartLogistics.Web.ViewModels.DocumentCardViewModel
+@model DocumentCardViewModel
 
-<article class="card doc-card h-100">
-    <div class="card-body">
-        <h3 class="card-title h5">@Model.Title</h3>
-        <p class="card-text">@Model.Description</p>
-        <p class="doc-meta">
-            <code>@Model.FileName</code> · @Model.LastModifiedText
-        </p>
-        @if (Model.Stats.Count > 0)
+<article class="doc-card @(Model.Exists ? null : "is-missing")">
+    <div class="doc-card-head">
+        <span class="doc-card-icon">@Icons.Get(Model.Icon)</span>
+        <div>
+            <h3 class="doc-card-title">@Model.Title</h3>
+            <div class="doc-card-file">@Model.FileName</div>
+        </div>
+    </div>
+    <p class="doc-card-text">@Model.Description</p>
+    <div class="chip-row">
+        @foreach (var stat in Model.Stats)
         {
-            <ul class="doc-stats">
-                @foreach (var stat in Model.Stats)
-                {
-                    <li>@stat</li>
-                }
-            </ul>
+            <span class="chip">@stat</span>
         }
     </div>
-    <div class="card-footer">
+    <div class="doc-card-foot">
+        <span class="doc-card-date">@Model.LastModifiedText</span>
         @if (Model.Exists)
         {
-            <a class="btn btn-primary btn-sm" asp-page="/Dokumentacija" asp-route-slug="@Model.Slug">Otvori</a>
+            <a class="doc-card-link stretched-link" asp-page="/Dokumentacija" asp-route-slug="@Model.Slug">
+                Otvori @Icons.Get("arrow-right")
+            </a>
         }
         else
         {
-            <span class="status-badge status-planned">Još nije napisano</span>
+            <span class="badge-soft is-neutral">Još nije napisano</span>
         }
     </div>
 </article>
