@@ -6,6 +6,52 @@ odluka (moguća tumačenja, utjecaj na rezultat) nalazi se u `docs/spec.md`, odj
 Statusi: **Potvrđeno** (odlučio tehnički vođa) · **CLAUDE.md** (zadano pravilima projekta) ·
 **Prijedlog** (čeka odluku).
 
+## Čeka tvoju odluku (stanje 21.11.2026.)
+
+Sažetak svih prijedloga iz tablica niže. Kad odlučiš, promijeni status u tablici
+("Potvrđeno" ili "Odbijeno") i makni stavku s ovog popisa. Stavke su poredane po važnosti
+za rezultat i prezentaciju.
+
+**Utječu na rezultat ili ponašanje planera**
+- **T23** – Kad nije moguće isplanirati sve naloge: planer bira najviše isplaniranih naloga, zatim najmanje km (inače bi vratio ništa).
+- **T24** – Km se u planeru računaju u cijelim desetinkama (`int`), pa su zbrojevi i izjednačenja točni.
+- **T28** – Stroj u više naloga: prvi nalog se planira, kasniji su K4 (neispravni podaci).
+- **T25 / T27** – Neispravan ulaz: pojedini neispravni nalozi su K4, a globalne greške (duplikati, nema baze, masa ≤ 0, neispravne opcije) bacaju `ArgumentException`.
+- **T29** – Optimizacije pretrage koje ne mijenjaju rezultat (izdvajanje K1/K2/K4, pamćenje DP rezultata).
+- **T30** – Granice egzaktnog planera: najviše 39 naloga po kamionu i 63 ukupno, iznad toga `NotSupportedException`.
+
+**Ugovor i ponašanje validatora**
+- **T11** – Potpis `PlanValidator` i `PlanViolation` (stub napisan prije paralelnog rada agenata).
+- **T12** – Tablica "provjera → oznaka pravila" koju dijele validator i testovi.
+- **T13** – "Ruta ne završava u L0" (R2) prepoznaje se preko km, jer model nema stop za povratak.
+- **T15** – Validator uzima limite kamiona iz scenarija, ne iz plana.
+- **T18** – Dodatne oznake izvan tablice T12 (R13 uz R11, R36, nepoznati podaci → R1/R8/R23).
+- **T19** – Validator provjerava je li kategorija neizvedivosti (K1–K4) ispravna i djelomično R32 (nalog označen neizvedivim, a dao bi se dodati na kraj rute).
+- **T20** – Tolerancije: ±0,05 za prijavljene km/minute, 1e-6 za granicu radnog dana.
+- **T21** – Jedna greška ne daje dvostruke prekršaje (R2 umjesto R16 na razini plana).
+- **T22** – Ograničenja validatora; kamion bez ijedne rute u planu nije prekršaj (prijedlog: uvesti ga kao pravilo).
+
+**Model i testovi**
+- **T6** – `Scenario.BaseLocationId` (baza nije tvrdo "L0").
+- **T7** – `Truck.CanCarry(Machine)`.
+- **T8** – `InfeasibleOrder` s kategorijom K1–K4.
+- **T9** – Značenje polja `Stop` i `TruckRoute` (povratak nije stop, ali je u km).
+- **T10** – `ScenarioLoader` provjerava samo strukturu JSON-a.
+- **T14** – Referentni testovi nalaze planer refleksijom (planer mora imati konstruktor bez parametara).
+- **T16** – Raspodjela A/B (37,2 / 162,9) se ne testira, samo ukupni km.
+- **T17** – Ako postoji više planera, testovi uzimaju prvi po imenu tipa.
+- **T26** – Dodatni javni API `SolveWithStatistics` (statistika pretrage za UI).
+
+**Alati i proces**
+- **T3** – Vlastiti Markdown renderer umjesto paketa Markdig (dodavanje paketa je odbijeno u alatu).
+- **T5** – Zabrana čitanja `Core/Planning/` za validator-engineer je samo uputa, ne tehnička zabrana.
+
+## Otvorena pitanja izvan odluka
+
+- **Korijen git repozitorija** je mapa iznad projekta (`source/repos/SmartLogistics`), pa su u repozitoriju i Aspire predlošci (`SmartLogistics.ApiService`, `.AppHost`, `.ServiceDefaults`, Blazor `SmartLogistics.Web`), `aspire.config.json` i `_vs_template_backup/`. Prijedlog: prije predaje ih maknuti ili repozitorij premjestiti u `SmartLogistics/SmartLogistics`.
+- **Utrošeno vrijeme** u `docs/vrijeme.md` procijenjeno je iz vremenskih oznaka; tvoje vrijeme izvan sesije (čitanje, odluke, priprema prezentacije) treba dopisati.
+- **Faze 3 i 4** su u aplikaciji označene "Čeka potvrdu" dok ne odlučiš o T11–T30.
+
 ## Domenske odluke
 
 | ID | Pitanje | Odluka | Pravilo | Status | Datum |

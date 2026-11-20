@@ -33,6 +33,8 @@ public static class DocumentViewModelFactory
         ["zadatak"] = "file",
         ["spec"] = "list",
         ["odluke"] = "scale",
+        ["rezultati"] = "route",
+        ["vrijeme"] = "clock",
         ["ai-log"] = "robot",
         ["ui-dizajn"] = "palette",
     };

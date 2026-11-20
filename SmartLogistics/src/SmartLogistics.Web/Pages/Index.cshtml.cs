@@ -27,8 +27,11 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
         new("4", "Egzaktni planer",
             "solver-engineer: ExactDpPlanner – sve raspodjele naloga (2^k) i DP po kamionu (lokacija + status naloga u bazi 3); Total 200,1 km, DrivingOnly 182,2 km.",
             PhaseStatus.AwaitingApproval),
-        new("…", "Sljedeće faze",
-            "README i upute, opis logike, demo, osvrt na AI alate i utrošeno vrijeme.",
+        new("5", "Dokumentacija predaje",
+            "README (upute, opis logike, testovi), rezultati, AI log s osvrtom, utrošeno vrijeme i popis odluka koje čekaju potvrdu.",
+            PhaseStatus.Done),
+        new("…", "Sljedeće",
+            "Odluke o prijedlozima T3, T5–T30, čišćenje git repozitorija, demo i prezentacija.",
             PhaseStatus.Planned),
     ];
 
