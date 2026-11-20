@@ -1,0 +1,75 @@
+@page
+@model PlanRutaModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+<partial name="_PlanStatus" model="vm" />
+
+@if (vm.Error is null)
+{
+    <section class="stat-grid" aria-label="Sažetak plana">
+        @foreach (var stat in vm.Stats)
+        {
+            <partial name="_StatTile" model="stat" />
+        }
+    </section>
+
+    @if (vm.Violations.Count > 0)
+    {
+        <section class="panel section-gap">
+            <div class="panel-header"><h2 class="panel-title">Prekršaji</h2></div>
+            <partial name="_ViolationTable" model="vm.Violations" />
+        </section>
+    }
+
+    @if (vm.InfeasibleOrders.Count > 0)
+    {
+        <section class="panel section-gap">
+            <div class="panel-header"><h2 class="panel-title">Neizvedivi nalozi</h2></div>
+            <div class="table-responsive">
+                <table class="table data-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Nalog</th>
+                            <th scope="col">Razlog</th>
+                            <th scope="col">Detalj</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in vm.InfeasibleOrders)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@item.Order</td>
+                                <td><span class="badge-soft is-warning">@item.Category</span> @item.CategoryText</td>
+                                <td class="cell-muted">@item.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    @if (vm.Map is not null)
+    {
+        <section class="panel section-gap">
+            <div class="panel-header">
+                <h2 class="panel-title">Karta ruta</h2>
+                <a class="panel-action" asp-page="/Karta" asp-route-nacin="@vm.ActiveModeQuery">Uvećaj @Icons.Get("arrow-right")</a>
+            </div>
+            <div class="panel-body map-compact">
+                <partial name="_LocationMap" model="vm.Map" />
+            </div>
+        </section>
+    }
+
+    <div class="stack">
+        @foreach (var truck in vm.Trucks)
+        {
+            <partial name="_TruckPlan" model="truck" />
+        }
+    </div>
+}

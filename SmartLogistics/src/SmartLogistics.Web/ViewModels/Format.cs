@@ -21,10 +21,26 @@ public static class Format
     public static string Kg(int kg) => $"{Integer(kg)} kg";
 
     /// <summary>13500 → "13.500".</summary>
-    public static string Integer(int value) => value.ToString("N0", Croatian);
+    public static string Integer(long value) => value.ToString("N0", Croatian);
 
     /// <summary>Coordinates without unnecessary decimals: -8 → "-8", 2.5 → "2,5".</summary>
     public static string Coordinate(double value) => value.ToString("0.##", Croatian);
+
+    /// <summary>Minutes as a clock duration, rounded to whole minutes: 503.4 → "08:23".</summary>
+    public static string Clock(double minutes)
+    {
+        var total = (int)Math.Round(minutes, MidpointRounding.AwayFromZero);
+        return $"{total / 60:00}:{total % 60:00}";
+    }
+
+    /// <summary>0.7 → "70 %".</summary>
+    public static string Percent(double fraction) => $"{Math.Round(fraction * 100, MidpointRounding.AwayFromZero):0} %";
+
+    /// <summary>Elapsed computation time: "12 ms" or "1,4 s".</summary>
+    public static string Elapsed(TimeSpan elapsed) =>
+        elapsed.TotalMilliseconds < 1000
+            ? $"{Math.Max(1, Math.Round(elapsed.TotalMilliseconds)):0} ms"
+            : $"{elapsed.TotalSeconds.ToString("0.0", Croatian)} s";
 
     /// <summary>Number for SVG attributes (always a decimal point).</summary>
     public static string Svg(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);

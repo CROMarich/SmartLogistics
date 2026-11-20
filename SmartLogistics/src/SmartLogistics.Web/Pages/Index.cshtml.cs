@@ -24,8 +24,11 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
         new("3", "Validator i testovi",
             "Paralelno: validator-engineer piše PlanValidator iz spec.md, test-engineer pozitivne, negativne i referentne testove.",
             PhaseStatus.AwaitingApproval),
+        new("4", "Egzaktni planer",
+            "solver-engineer: ExactDpPlanner – sve raspodjele naloga (2^k) i DP po kamionu (lokacija + status naloga u bazi 3); Total 200,1 km, DrivingOnly 182,2 km.",
+            PhaseStatus.AwaitingApproval),
         new("…", "Sljedeće faze",
-            "Planer ruta, prikaz plana po kamionima i karta ruta.",
+            "README i upute, opis logike, demo, osvrt na AI alate i utrošeno vrijeme.",
             PhaseStatus.Planned),
     ];
 

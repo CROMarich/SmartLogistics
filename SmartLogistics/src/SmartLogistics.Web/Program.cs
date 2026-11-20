@@ -1,3 +1,4 @@
+using SmartLogistics.Core.Planning;
 using SmartLogistics.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton<ProjectDocumentStore>();
 builder.Services.AddSingleton<ScenarioProvider>();
+builder.Services.AddSingleton<IRoutePlanner, ExactDpPlanner>();
+builder.Services.AddSingleton<PlanService>();
 
 var app = builder.Build();
 

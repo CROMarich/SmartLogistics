@@ -29,13 +29,6 @@ public sealed record DistanceMatrixRowViewModel(string LocationId, IReadOnlyList
 
 public sealed record DistanceMatrixViewModel(IReadOnlyList<string> Headers, IReadOnlyList<DistanceMatrixRowViewModel> Rows);
 
-/// <summary>A location on the SVG map; coordinates are already in SVG space (y flipped) and formatted.</summary>
-public sealed record MapPointViewModel(string Id, string Cx, string Cy, string LabelX, string LabelY, bool IsBase);
-
-/// <summary>An order drawn as an arrow from pickup to delivery.</summary>
-public sealed record MapArrowViewModel(string OrderId, string X1, string Y1, string X2, string Y2, string CssClass, string Title);
-
-public sealed record MapViewModel(string ViewBox, string PointRadius, IReadOnlyList<MapPointViewModel> Points, IReadOnlyList<MapArrowViewModel> Arrows);
 
 /// <summary>The "Ulazni podaci" page.</summary>
 public sealed record InputDataPageViewModel(
@@ -199,33 +192,17 @@ public static class InputDataViewModelFactory
         return new DistanceMatrixViewModel(headers, rows);
     }
 
-    // Map geometry (in km): SVG y grows downwards, so y is flipped. Arrows are shortened so that
-    // the arrowhead stops at the edge of the location marker instead of under it.
-    private const double Padding = 3.0;
-    private const double PointRadius = 0.8;
-    private const double ArrowGap = PointRadius + 0.5;
+    private static readonly IReadOnlyList<MapLegendItemViewModel> OrderLegend =
+    [
+        new("baza", "map-swatch is-base"),
+        new("nalog – oba kamiona", "map-swatch is-any"),
+        new("nalog – samo kamion B", "map-swatch is-truck-b"),
+        new("nalog – samo kamion A", "map-swatch is-truck-a"),
+    ];
 
+    // Every order as an arrow from pickup to delivery, coloured by which trucks can carry it.
     private static MapViewModel? CreateMap(Scenario scenario, Dictionary<string, Machine> machinesById)
     {
-        if (scenario.Locations.Count == 0)
-        {
-            return null;
-        }
-
-        var minX = scenario.Locations.Min(l => l.X) - Padding;
-        var maxX = scenario.Locations.Max(l => l.X) + Padding;
-        var minY = scenario.Locations.Min(l => l.Y) - Padding;
-        var maxY = scenario.Locations.Max(l => l.Y) + Padding;
-        var viewBox = $"{Format.Svg(minX)} {Format.Svg(-maxY)} {Format.Svg(maxX - minX)} {Format.Svg(maxY - minY)}";
-
-        var points = scenario.Locations
-            .Select(l => new MapPointViewModel(
-                l.Id,
-                Format.Svg(l.X), Format.Svg(-l.Y),
-                Format.Svg(l.X + 1.1), Format.Svg(-l.Y - 1.1),
-                IsBase: l.Id == scenario.BaseLocationId))
-            .ToList();
-
         var locationsById = scenario.Locations.ToDictionary(l => l.Id);
         var arrows = new List<MapArrowViewModel>();
         foreach (var order in scenario.Orders)
@@ -236,25 +213,19 @@ public static class InputDataViewModelFactory
                 continue;
             }
 
-            var length = Math.Sqrt(Math.Pow(to.X - from.X, 2) + Math.Pow(to.Y - from.Y, 2));
-            if (length <= 2 * ArrowGap)
-            {
-                continue; // pickup == delivery or too short to draw
-            }
-
-            var ux = (to.X - from.X) / length;
-            var uy = (to.Y - from.Y) / length;
             var machine = machinesById.GetValueOrDefault(order.MachineId);
-
-            arrows.Add(new MapArrowViewModel(
-                order.Id,
-                Format.Svg(from.X + ux * ArrowGap), Format.Svg(-(from.Y + uy * ArrowGap)),
-                Format.Svg(to.X - ux * ArrowGap), Format.Svg(-(to.Y - uy * ArrowGap)),
+            var arrow = MapBuilder.Arrow(
+                order.Id, from, to,
                 ArrowCssClass(machine, scenario.Trucks),
-                $"{order.Id}: {order.MachineId} {order.PickupLocationId} → {order.DeliveryLocationId}"));
+                $"{order.Id}: {order.MachineId} {order.PickupLocationId} → {order.DeliveryLocationId}");
+
+            if (arrow is not null)
+            {
+                arrows.Add(arrow);
+            }
         }
 
-        return new MapViewModel(viewBox, Format.Svg(PointRadius), points, arrows);
+        return MapBuilder.Create(scenario, arrows, OrderLegend);
     }
 
     private static string ArrowCssClass(Machine? machine, IReadOnlyList<Truck> trucks)

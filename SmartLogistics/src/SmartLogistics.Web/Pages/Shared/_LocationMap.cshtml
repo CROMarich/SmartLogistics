@@ -1,7 +1,7 @@
 @model MapViewModel
 
 <figure class="map">
-    <svg class="map-canvas" viewBox="@Model.ViewBox" role="img" aria-label="Karta lokacija; strelice prikazuju naloge od preuzimanja do isporuke">
+    <svg class="map-canvas" viewBox="@Model.ViewBox" role="img" aria-label="Karta lokacija sa strelicama">
         <defs>
             @* One arrowhead per colour; the colour comes from site.css *@
             <marker id="arrow-any" class="map-arrowhead is-any" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
@@ -27,9 +27,9 @@
     </svg>
 
     <figcaption class="map-legend">
-        <span class="map-legend-item"><span class="map-swatch is-base"></span>baza</span>
-        <span class="map-legend-item"><span class="map-swatch is-any"></span>nalog – oba kamiona</span>
-        <span class="map-legend-item"><span class="map-swatch is-truck-b"></span>nalog – samo kamion B</span>
-        <span class="map-legend-item"><span class="map-swatch is-truck-a"></span>nalog – samo kamion A</span>
+        @foreach (var item in Model.Legend)
+        {
+            <span class="map-legend-item"><span class="@item.SwatchCssClass"></span>@item.Text</span>
+        }
     </figcaption>
 </figure>

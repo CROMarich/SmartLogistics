@@ -1,0 +1,16 @@
+@model IReadOnlyList<ModeOptionViewModel>
+@{
+    var currentPage = ViewContext.RouteData.Values["page"] as string;
+}
+
+<nav class="segmented" aria-label="Način računanja radnog dana">
+    @foreach (var mode in Model)
+    {
+        <a class="segmented-item @(mode.IsActive ? "is-active" : null)"
+           asp-page="@currentPage" asp-route-nacin="@mode.QueryValue"
+           aria-current="@(mode.IsActive ? "page" : null)">
+            @Icons.Get("clock")
+            <span>@mode.Text</span>
+        </a>
+    }
+</nav>

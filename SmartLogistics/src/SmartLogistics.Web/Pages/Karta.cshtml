@@ -1,0 +1,29 @@
+@page
+@model KartaModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+<partial name="_PlanStatus" model="vm" />
+
+@if (vm.Error is null && vm.Map is not null)
+{
+    <section class="stat-grid" aria-label="Sažetak plana">
+        @foreach (var stat in vm.Stats)
+        {
+            <partial name="_StatTile" model="stat" />
+        }
+    </section>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Rute kamiona</h2>
+            <a class="panel-action" asp-page="/PlanRuta" asp-route-nacin="@vm.ActiveModeQuery">Detalji plana @Icons.Get("arrow-right")</a>
+        </div>
+        <div class="panel-body map-large">
+            <partial name="_LocationMap" model="vm.Map" />
+        </div>
+    </div>
+}
