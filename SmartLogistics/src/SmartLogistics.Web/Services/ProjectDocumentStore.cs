@@ -3,7 +3,8 @@ using System.Text.RegularExpressions;
 namespace SmartLogistics.Web.Services;
 
 /// <summary>A project document from the docs/ folder that the app can display.</summary>
-public sealed record ProjectDocument(string Slug, string Title, string FileName, string Description);
+/// <param name="DefinesRuleIds">True when the document defines rules (R1..Rn) and ambiguities (D1..Dn), so their counts are meaningful.</param>
+public sealed record ProjectDocument(string Slug, string Title, string FileName, string Description, bool DefinesRuleIds = false);
 
 /// <summary>Raw content of a document read from disk.</summary>
 public sealed record ProjectDocumentContent(ProjectDocument Document, string Markdown, DateTime LastModifiedLocal);
@@ -18,7 +19,8 @@ public sealed partial class ProjectDocumentStore
     public static readonly IReadOnlyList<ProjectDocument> All =
     [
         new("zadatak", "Zadatak", "zadatak.md", "Izvorni tekst tehničkog zadatka s ulaznim podacima."),
-        new("spec", "Specifikacija", "spec.md", "Pravila R1..Rn, dvosmislenosti, izvedene činjenice i rubni slučajevi."),
+        new("spec", "Specifikacija", "spec.md", "Pravila R1..Rn, dvosmislenosti, izvedene činjenice i rubni slučajevi.", DefinesRuleIds: true),
+        new("odluke", "Odluke", "odluke.md", "Zapis potvrđenih pretpostavki i tehničkih odluka sa statusom i datumom."),
         new("ai-log", "AI log", "ai-log.md", "Što je AI napravio krivo, kako je uhvaćeno i kako je popravljeno."),
     ];
 

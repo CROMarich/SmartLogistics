@@ -39,7 +39,7 @@ public static class DocumentViewModelFactory
             document.Slug, document.Title, document.Description, $"docs/{document.FileName}",
             Exists: true,
             LastModifiedText: content.LastModifiedLocal.ToString("dd.MM.yyyy. HH:mm"),
-            Stats: CreateStats(content.Markdown));
+            Stats: CreateStats(content.Markdown, document.DefinesRuleIds));
     }
 
     public static DocumentPageViewModel CreatePage(ProjectDocumentStore store, ProjectDocument current)
@@ -62,20 +62,13 @@ public static class DocumentViewModelFactory
         return new DocumentPageViewModel(cards, currentCard, new HtmlString(rendered.Html), outline);
     }
 
-    private static IReadOnlyList<string> CreateStats(string markdown)
+    private static IReadOnlyList<string> CreateStats(string markdown, bool definesRuleIds)
     {
         var stats = new List<string>();
-        var rules = ProjectDocumentStore.CountDistinctIds(markdown, 'R');
-        var ambiguities = ProjectDocumentStore.CountDistinctIds(markdown, 'D');
-
-        if (rules > 0)
+        if (definesRuleIds)
         {
-            stats.Add($"{rules} pravila");
-        }
-
-        if (ambiguities > 0)
-        {
-            stats.Add($"{ambiguities} dvosmislenosti");
+            stats.Add($"{ProjectDocumentStore.CountDistinctIds(markdown, 'R')} pravila");
+            stats.Add($"{ProjectDocumentStore.CountDistinctIds(markdown, 'D')} dvosmislenosti");
         }
 
         var lineCount = markdown.Split('\n').Length;
