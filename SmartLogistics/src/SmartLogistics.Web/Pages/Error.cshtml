@@ -1,0 +1,15 @@
+﻿@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Greška";
+}
+
+<h1 class="text-danger">Greška</h1>
+<p>Došlo je do pogreške pri obradi zahtjeva.</p>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>ID zahtjeva:</strong> <code>@Model.RequestId</code>
+    </p>
+}

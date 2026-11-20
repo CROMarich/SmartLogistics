@@ -1,0 +1,47 @@
+@page "{slug?}"
+@model DokumentacijaModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Current.Title;
+}
+
+<nav aria-label="Dokumenti">
+    <ul class="nav nav-pills doc-nav">
+        @foreach (var document in vm.Documents)
+        {
+            <li class="nav-item">
+                <a class="nav-link @(document.Slug == vm.Current.Slug ? "active" : null)"
+                   asp-page="/Dokumentacija" asp-route-slug="@document.Slug">@document.Title</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+<p class="doc-meta">
+    <code>@vm.Current.FileName</code> · zadnja izmjena: @vm.Current.LastModifiedText
+    @foreach (var stat in vm.Current.Stats)
+    {
+        <span class="doc-stat-inline">· @stat</span>
+    }
+</p>
+
+@if (vm.Body is null)
+{
+    <div class="alert alert-warning" role="status">
+        Dokument <code>@vm.Current.FileName</code> još ne postoji.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @if (vm.Outline.Count > 0)
+        {
+            <aside class="col-lg-3 order-lg-2">
+                <partial name="_DocumentOutline" model="vm.Outline" />
+            </aside>
+        }
+        <article class="col-lg-9 order-lg-1 markdown-body">
+            @vm.Body
+        </article>
+    </div>
+}

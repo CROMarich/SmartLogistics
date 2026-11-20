@@ -1,0 +1,36 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Početna";
+    var vm = Model.ViewModel;
+}
+
+<section class="page-intro">
+    <h1>Smart Logistics Planner</h1>
+    <p class="lead">
+        Planiranje prijevoza radnih strojeva: dodjela naloga kamionima, redoslijed preuzimanja i isporuka
+        te minimalna ukupna kilometraža uz obavezan povrat u bazu L0.
+    </p>
+</section>
+
+<div class="alert alert-info" role="status">
+    Aplikacija je u izradi. Ulazni podaci, plan ruta po kamionima i karta pojavit će se ovdje
+    kad budu implementirani u <code>SmartLogistics.Core</code>. Do tada je dostupna dokumentacija projekta.
+</div>
+
+<section class="page-section">
+    <h2>Napredak projekta</h2>
+    <partial name="_PhaseTable" model="vm.Phases" />
+</section>
+
+<section class="page-section">
+    <h2>Dokumentacija</h2>
+    <div class="row g-3">
+        @foreach (var document in vm.Documents)
+        {
+            <div class="col-md-4">
+                <partial name="_DocumentCard" model="document" />
+            </div>
+        }
+    </div>
+</section>

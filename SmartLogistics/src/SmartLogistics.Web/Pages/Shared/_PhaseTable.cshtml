@@ -1,0 +1,25 @@
+@model IReadOnlyList<SmartLogistics.Web.ViewModels.PhaseViewModel>
+
+<div class="table-responsive">
+    <table class="table table-sm align-middle phase-table">
+        <thead>
+            <tr>
+                <th scope="col">Faza</th>
+                <th scope="col">Naziv</th>
+                <th scope="col">Opis</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var phase in Model)
+            {
+                <tr>
+                    <td class="phase-number">@phase.Number</td>
+                    <td class="fw-semibold">@phase.Title</td>
+                    <td>@phase.Description</td>
+                    <td><span class="@phase.StatusCssClass">@phase.StatusText</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

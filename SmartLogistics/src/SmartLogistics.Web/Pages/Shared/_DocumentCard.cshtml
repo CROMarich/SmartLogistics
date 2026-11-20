@@ -1,0 +1,30 @@
+@model SmartLogistics.Web.ViewModels.DocumentCardViewModel
+
+<article class="card doc-card h-100">
+    <div class="card-body">
+        <h3 class="card-title h5">@Model.Title</h3>
+        <p class="card-text">@Model.Description</p>
+        <p class="doc-meta">
+            <code>@Model.FileName</code> · @Model.LastModifiedText
+        </p>
+        @if (Model.Stats.Count > 0)
+        {
+            <ul class="doc-stats">
+                @foreach (var stat in Model.Stats)
+                {
+                    <li>@stat</li>
+                }
+            </ul>
+        }
+    </div>
+    <div class="card-footer">
+        @if (Model.Exists)
+        {
+            <a class="btn btn-primary btn-sm" asp-page="/Dokumentacija" asp-route-slug="@Model.Slug">Otvori</a>
+        }
+        else
+        {
+            <span class="status-badge status-planned">Još nije napisano</span>
+        }
+    </div>
+</article>
