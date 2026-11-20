@@ -280,6 +280,9 @@ public static partial class MarkdownRenderer
     // Inline formatting. Code spans are swapped for placeholders first, so their content is never
     // formatted and **bold** may still wrap them (e.g. **`Total` mode**); then the text is encoded,
     // bold is applied and the code spans are put back.
+    /// <summary>Renders one line of inline Markdown (`code`, **bold**) to encoded HTML.</summary>
+    public static string RenderInline(string text) => Inline(text);
+
     private static string Inline(string text)
     {
         var codeSpans = new List<string>();

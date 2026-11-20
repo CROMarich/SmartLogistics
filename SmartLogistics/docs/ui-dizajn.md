@@ -56,6 +56,8 @@ opisanih ovdje; ako komponenta ne postoji, dodaje se u `site.css` i u ovaj dokum
 | Segmentirana navigacija | `.segmented`, `.segmented-item` | Prebacivanje između srodnih prikaza (dokumenti, kamioni, način radnog dana) |
 | Markdown | `.markdown-body` | Prikaz `docs/*.md` |
 | Tablica podataka | `.table.data-table` u panelu (bez `panel-body`), brojke `.num.text-end`, sporedni tekst `.cell-muted` | Kamioni, strojevi, nalozi, lokacije, stopovi |
+| Tablica prekršaja | `_ViolationTable` (`ViolationRowViewModel`): pravilo kao `badge-soft is-danger`, kamion, korak (1-based), poruka | Rezultat validatora; kasnije uz svaki plan |
+| Uvodni tekst panela | `.panel-lead` | Jedna-dvije rečenice objašnjenja na vrhu panela |
 | Oznake kamiona | `_TruckBadges` (`TruckBadgeViewModel`), `badge-soft is-truck-a/b` | Gdje god se spominje kamion |
 | Par lokacija | `.route-pair` (A → B s ikonom) | Preuzimanje → isporuka, dionica |
 | Matrica udaljenosti | `_DistanceMatrix` (`.matrix-table`, dijagonala `.is-diagonal`) | Udaljenosti između lokacija |

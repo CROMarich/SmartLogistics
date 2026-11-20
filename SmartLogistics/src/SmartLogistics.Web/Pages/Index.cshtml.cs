@@ -21,8 +21,11 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
         new("2", "Domenski model i ulazni podaci",
             "Record tipovi u Core/Domain, Distance (dionice i matrica), data/scenario.json, ScenarioLoader, IRoutePlanner i testovi udaljenosti.",
             PhaseStatus.Done),
+        new("3", "Validator i testovi",
+            "Paralelno: validator-engineer piše PlanValidator iz spec.md, test-engineer pozitivne, negativne i referentne testove.",
+            PhaseStatus.AwaitingApproval),
         new("…", "Sljedeće faze",
-            "Validator plana, testovi poslovnih ograničenja, planer ruta, prikaz plana po kamionima i karta ruta.",
+            "Planer ruta, prikaz plana po kamionima i karta ruta.",
             PhaseStatus.Planned),
     ];
 

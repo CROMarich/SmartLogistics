@@ -34,6 +34,7 @@ public static class NavigationMenu
         [
             new("Pregled", "/Index", "home"),
             new("Dokumentacija", "/Dokumentacija", "book"),
+            new("Pravila i provjere", "/Pravila", "check"),
         ]),
         ("Planiranje",
         [
