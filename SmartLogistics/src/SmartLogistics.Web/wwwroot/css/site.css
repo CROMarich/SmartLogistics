@@ -91,6 +91,7 @@
   /* Layout */
   --content-max: 1320px;
   --transition: 150ms ease;
+  --map-grid-size: 32px;
 
   /* Bootstrap integration: keep Bootstrap components on the same palette */
   --bs-body-font-family: var(--font-sans);
@@ -895,3 +896,178 @@ a.app-nav-link:hover {
   border-color: var(--color-border);
   opacity: 1;
 }
+
+/* ---------- 14. Data tables ---------- */
+
+.data-table {
+  margin: 0;
+  font-size: var(--text-sm);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--color-border);
+}
+
+.data-table th {
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: var(--space-3) var(--space-5);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child > * {
+  border-bottom-width: 0;
+}
+
+.data-table tbody tr:hover > * {
+  background-color: var(--color-accent-soft);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cell-muted {
+  color: var(--color-text-muted);
+}
+
+.badge-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.route-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: var(--space-2);
+  font-weight: 600;
+}
+
+.route-pair .icon {
+  color: var(--color-text-subtle);
+}
+
+/* ---------- 15. Distance matrix ---------- */
+
+.matrix-table {
+  margin: 0;
+  font-size: var(--text-sm);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--color-border);
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: var(--space-2) var(--space-3);
+}
+
+.matrix-table thead th,
+.matrix-table tbody th {
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.matrix-table .matrix-corner {
+  color: var(--color-text-subtle);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.matrix-table td.is-diagonal {
+  color: var(--color-text-subtle);
+  background-color: var(--color-surface-muted);
+}
+
+.matrix-table tbody tr:hover > * {
+  background-color: var(--color-accent-soft);
+}
+
+/* ---------- 16. Map (SVG) ---------- */
+
+.map {
+  margin: 0;
+}
+
+.map-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  background-color: var(--color-surface-muted);
+  background-image:
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: var(--map-grid-size) var(--map-grid-size);
+}
+
+.map-location circle {
+  fill: var(--color-surface);
+  stroke: var(--color-text);
+  stroke-width: .25;
+}
+
+.map-location.is-base circle {
+  fill: var(--color-accent);
+  stroke: var(--color-accent-strong);
+}
+
+.map-location text {
+  fill: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 1.4px;
+  font-weight: 700;
+}
+
+.map-order {
+  stroke-width: .3;
+  stroke-linecap: round;
+}
+
+.map-order.is-any { stroke: var(--color-accent); marker-end: url(#arrow-any); }
+.map-order.is-truck-a { stroke: var(--truck-a); marker-end: url(#arrow-truck-a); }
+.map-order.is-truck-b { stroke: var(--truck-b); marker-end: url(#arrow-truck-b); }
+.map-order.is-none { stroke: var(--danger); stroke-dasharray: .6 .4; marker-end: url(#arrow-none); }
+
+.map-arrowhead.is-any path { fill: var(--color-accent); }
+.map-arrowhead.is-truck-a path { fill: var(--truck-a); }
+.map-arrowhead.is-truck-b path { fill: var(--truck-b); }
+.map-arrowhead.is-none path { fill: var(--danger); }
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.map-swatch {
+  display: inline-block;
+  width: 1.25rem;
+  height: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.map-swatch.is-base { width: .75rem; height: .75rem; background-color: var(--color-accent); }
+.map-swatch.is-any { background-color: var(--color-accent); }
+.map-swatch.is-truck-a { background-color: var(--truck-a); }
+.map-swatch.is-truck-b { background-color: var(--truck-b); }

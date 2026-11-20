@@ -44,4 +44,7 @@
   što više korisnih informacija o dosad napravljenom (npr. ulazni podaci,
   izvedene činjenice, pravila, rezultati, prekršaji, upozorenja). Podaci dolaze
   iz Core preko ViewModela, nikad tvrdo upisani u Web; vrijede UI pravila.
+- Svako odstupanje od zadanog (dodatno polje, tip, metoda, drugačije tumačenje,
+  izostavljen dio) i svaki prijedlog odmah upiši u `docs/odluke.md` (sljedeći
+  slobodni ID, status "Prijedlog", razlog i alternativa), ne samo u izvještaj.
 - Na kraju svake faze predloži commit poruku (conventional commits).

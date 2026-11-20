@@ -1,0 +1,8 @@
+@model IReadOnlyList<TruckBadgeViewModel>
+
+<span class="badge-row">
+    @foreach (var badge in Model)
+    {
+        <span class="@badge.CssClass">@badge.Text</span>
+    }
+</span>

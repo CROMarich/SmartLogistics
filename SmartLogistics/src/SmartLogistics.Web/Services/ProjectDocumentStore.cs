@@ -29,14 +29,7 @@ public sealed partial class ProjectDocumentStore
 
     public ProjectDocumentStore(IWebHostEnvironment environment)
     {
-        // During development read the live repo folder (src/SmartLogistics.Web -> ../../docs),
-        // so edits are visible without a rebuild; after publish use the copy next to the binaries.
-        string[] candidates =
-        [
-            Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "docs")),
-            Path.Combine(AppContext.BaseDirectory, "docs"),
-        ];
-        _docsDirectory = candidates.FirstOrDefault(Directory.Exists);
+        _docsDirectory = ProjectPaths.FindDirectory(environment, "docs");
     }
 
     public ProjectDocument? Find(string? slug) =>

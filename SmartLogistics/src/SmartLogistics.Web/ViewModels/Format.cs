@@ -1,11 +1,34 @@
+using System.Globalization;
+
 namespace SmartLogistics.Web.ViewModels;
 
 /// <summary>
-/// Display formatting shared by all view models (Croatian UI). Pages never format values themselves;
-/// later phases add km, kg and hh:mm formatting here.
+/// Display formatting shared by all view models. The UI is Croatian (decimal comma, dot as thousands
+/// separator) regardless of the server culture; SVG attributes always use the invariant culture.
+/// Pages never format values themselves.
 /// </summary>
 public static class Format
 {
+    private static readonly CultureInfo Croatian = CultureInfo.GetCultureInfo("hr-HR");
+
+    /// <summary>8.5 → "8,5 km" (one decimal, as legs are rounded to one decimal).</summary>
+    public static string Km(double km) => $"{Number(km)} km";
+
+    /// <summary>8.5 → "8,5" (for tables whose header already says km).</summary>
+    public static string Number(double value) => value.ToString("0.0", Croatian);
+
+    /// <summary>3500 → "3.500 kg".</summary>
+    public static string Kg(int kg) => $"{Integer(kg)} kg";
+
+    /// <summary>13500 → "13.500".</summary>
+    public static string Integer(int value) => value.ToString("N0", Croatian);
+
+    /// <summary>Coordinates without unnecessary decimals: -8 → "-8", 2.5 → "2,5".</summary>
+    public static string Coordinate(double value) => value.ToString("0.##", Croatian);
+
+    /// <summary>Number for SVG attributes (always a decimal point).</summary>
+    public static string Svg(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
     /// <summary>
     /// Croatian plural form: 1, 21, 31… → <paramref name="one"/>; 2–4, 22–24… → <paramref name="few"/>;
     /// everything else (0, 5–20, 25…) → <paramref name="many"/>.

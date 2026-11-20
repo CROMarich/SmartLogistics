@@ -37,7 +37,7 @@ public static class NavigationMenu
         ]),
         ("Planiranje",
         [
-            new("Ulazni podaci", null, "database", "uskoro"),
+            new("Ulazni podaci", "/UlazniPodaci", "database"),
             new("Plan ruta", null, "route", "uskoro"),
             new("Karta", null, "map", "uskoro"),
         ]),

@@ -8,7 +8,8 @@ Ti implementiraš planer ruta (Pickup & Delivery VRP s kapacitetom i radnim dano
 
 ## Izvor istine
 - `docs/spec.md` i `CLAUDE.md` (domena, referentne vrijednosti).
-- Zajednički model i ugovor `IRoutePlanner` u `src/SmartLogistics.Core/Domain/`
+- Zajednički model u `src/SmartLogistics.Core/Domain/`, `Distance`/`DistanceMatrix` u `Core/Distance.cs`
+  i ugovor `IRoutePlanner` u `src/SmartLogistics.Core/Planning/IRoutePlanner.cs`
   – smiješ ih čitati, ne mijenjati bez odobrenja tehničkog vođe.
 
 ## Opseg

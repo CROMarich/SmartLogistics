@@ -1,0 +1,197 @@
+@page
+@model UlazniPodaciModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+
+@if (vm.Error is not null)
+{
+    <div class="callout is-danger" role="alert">
+        <span class="callout-icon">@Icons.Get("alert")</span>
+        <div><strong>Scenarij nije učitan.</strong> @vm.Error</div>
+    </div>
+}
+else
+{
+    <div class="chip-row doc-meta-row">
+        <span class="chip">@vm.SourceText</span>
+        <span class="chip">dionica = euklidska udaljenost zaokružena na 0,1 km (R14)</span>
+        <span class="chip">60 km/h · 1 km = 1 min</span>
+    </div>
+
+    <section class="stat-grid" aria-label="Sažetak ulaznih podataka">
+        @foreach (var stat in vm.Stats)
+        {
+            <partial name="_StatTile" model="stat" />
+        }
+    </section>
+
+    <div class="row g-4">
+        <section class="col-xl-5">
+            <div class="panel h-100">
+                <div class="panel-header"><h2 class="panel-title">Kamioni</h2></div>
+                <div class="table-responsive">
+                    <table class="table data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Kamion</th>
+                                <th scope="col" class="text-end">Nosivost</th>
+                                <th scope="col" class="text-end">Max. strojeva</th>
+                                <th scope="col">Može nositi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var truck in vm.Trucks)
+                            {
+                                <tr>
+                                    <td><span class="@truck.Badge.CssClass">@truck.Badge.Text</span></td>
+                                    <td class="text-end num">@truck.Capacity</td>
+                                    <td class="text-end num">@truck.MaxMachines</td>
+                                    <td class="cell-muted">@truck.CarriableMachines</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="col-xl-7">
+            <div class="panel h-100">
+                <div class="panel-header"><h2 class="panel-title">Strojevi</h2></div>
+                <div class="table-responsive">
+                    <table class="table data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Stroj</th>
+                                <th scope="col" class="text-end">Masa</th>
+                                <th scope="col">Stane na kamion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var machine in vm.Machines)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@machine.Id</td>
+                                    <td class="text-end num">@machine.Weight</td>
+                                    <td>
+                                        @if (machine.FitsNowhere)
+                                        {
+                                            <span class="badge-soft is-danger">ne stane ni na jedan</span>
+                                        }
+                                        else
+                                        {
+                                            <partial name="_TruckBadges" model="machine.FitsOn" />
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="col-12">
+            <div class="panel">
+                <div class="panel-header"><h2 class="panel-title">Nalozi</h2></div>
+                <div class="table-responsive">
+                    <table class="table data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Nalog</th>
+                                <th scope="col">Stroj</th>
+                                <th scope="col" class="text-end">Masa</th>
+                                <th scope="col">Preuzimanje → isporuka</th>
+                                <th scope="col" class="text-end">Izravna dionica</th>
+                                <th scope="col">Mogući kamioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in vm.Orders)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@order.Id</td>
+                                    <td>@order.Machine</td>
+                                    <td class="text-end num">@order.Weight</td>
+                                    <td>
+                                        <span class="route-pair">@order.Pickup @Icons.Get("arrow-right") @order.Delivery</span>
+                                        @if (order.DataWarning is not null)
+                                        {
+                                            <span class="badge-soft is-danger">@order.DataWarning</span>
+                                        }
+                                    </td>
+                                    <td class="text-end num">@order.DirectLeg</td>
+                                    <td><partial name="_TruckBadges" model="order.Trucks" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="col-xl-5">
+            <div class="panel h-100">
+                <div class="panel-header"><h2 class="panel-title">Lokacije</h2></div>
+                <div class="table-responsive">
+                    <table class="table data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Lokacija</th>
+                                <th scope="col" class="text-end">X (km)</th>
+                                <th scope="col" class="text-end">Y (km)</th>
+                                <th scope="col" class="text-end">Od baze</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var location in vm.Locations)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">
+                                        @location.Id
+                                        @if (location.IsBase)
+                                        {
+                                            <span class="badge-soft is-accent">@location.Note</span>
+                                        }
+                                    </td>
+                                    <td class="text-end num">@location.X</td>
+                                    <td class="text-end num">@location.Y</td>
+                                    <td class="text-end num">@location.DistanceFromBase</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="col-xl-7">
+            <div class="panel h-100">
+                <div class="panel-header"><h2 class="panel-title">Karta lokacija i naloga</h2></div>
+                <div class="panel-body">
+                    @if (vm.Map is not null)
+                    {
+                        <partial name="_LocationMap" model="vm.Map" />
+                    }
+                </div>
+            </div>
+        </section>
+
+        @if (vm.Matrix is not null)
+        {
+            <section class="col-12">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Matrica udaljenosti (km)</h2>
+                        <span class="chip">simetrična · dijagonala 0</span>
+                    </div>
+                    <partial name="_DistanceMatrix" model="vm.Matrix" />
+                </div>
+            </section>
+        }
+    </div>
+}

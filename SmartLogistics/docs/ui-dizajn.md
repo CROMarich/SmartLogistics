@@ -55,6 +55,11 @@ opisanih ovdje; ako komponenta ne postoji, dodaje se u `site.css` i u ovaj dokum
 | Kartica dokumenta | `_DocumentCard` (`.doc-grid`) | Popis dokumenata |
 | Segmentirana navigacija | `.segmented`, `.segmented-item` | Prebacivanje između srodnih prikaza (dokumenti, kamioni, način radnog dana) |
 | Markdown | `.markdown-body` | Prikaz `docs/*.md` |
+| Tablica podataka | `.table.data-table` u panelu (bez `panel-body`), brojke `.num.text-end`, sporedni tekst `.cell-muted` | Kamioni, strojevi, nalozi, lokacije, stopovi |
+| Oznake kamiona | `_TruckBadges` (`TruckBadgeViewModel`), `badge-soft is-truck-a/b` | Gdje god se spominje kamion |
+| Par lokacija | `.route-pair` (A → B s ikonom) | Preuzimanje → isporuka, dionica |
+| Matrica udaljenosti | `_DistanceMatrix` (`.matrix-table`, dijagonala `.is-diagonal`) | Udaljenosti između lokacija |
+| Karta | `_LocationMap` (`MapViewModel`), `.map-canvas`, `.map-location`, `.map-order is-any/is-truck-a/is-truck-b/is-none`, legenda `.map-legend` | Lokacije i nalozi; kasnije rute kamiona. Koordinate računa ViewModel (y je okrenut), boje dolaze iz tokena. Veličine unutar SVG-a (debljina linije, font) su u km jedinicama karte, ne u tokenima razmaka. |
 
 ## Predložak stranice
 

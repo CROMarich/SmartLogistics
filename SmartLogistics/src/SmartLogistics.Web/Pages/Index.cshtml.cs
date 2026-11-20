@@ -18,8 +18,11 @@ public class IndexModel(ProjectDocumentStore documents) : PageModel
         new("UI", "Dizajn sustav",
             "Moderni izgled aplikacije: bočni izbornik, kartice, ikone i tokeni boja; pravila u docs/ui-dizajn.md.",
             PhaseStatus.Done),
+        new("2", "Domenski model i ulazni podaci",
+            "Record tipovi u Core/Domain, Distance (dionice i matrica), data/scenario.json, ScenarioLoader, IRoutePlanner i testovi udaljenosti.",
+            PhaseStatus.Done),
         new("…", "Sljedeće faze",
-            "Domenski model i ulazni podaci, validator, testovi poslovnih ograničenja, planer ruta, prikaz plana i karta.",
+            "Validator plana, testovi poslovnih ograničenja, planer ruta, prikaz plana po kamionima i karta ruta.",
             PhaseStatus.Planned),
     ];
 

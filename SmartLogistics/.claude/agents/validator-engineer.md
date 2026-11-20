@@ -10,7 +10,7 @@ neovisnosti od solvera: ako solver pogriješi, validator to mora uhvatiti.
 ## Izvor istine
 - `docs/spec.md` (pravila R1..Rn) i `CLAUDE.md`.
 - Zajednički model (ulazni podaci, tip plana, rezultati) iz
-  `src/SmartLogistics.Core/Domain/` – smiješ ga čitati, ne smiješ ga mijenjati.
+  `src/SmartLogistics.Core/Domain/` te `Core/Distance.cs` – smiješ ih čitati i koristiti, ne smiješ ih mijenjati.
   Ako ti u modelu nešto nedostaje, stani i opiši što treba.
 
 ## Zabrane

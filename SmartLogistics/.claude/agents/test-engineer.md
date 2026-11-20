@@ -8,7 +8,7 @@ Ti pišeš testove koji dokazuju da rješenje poštuje poslovna pravila.
 
 ## Izvor istine
 - `docs/spec.md` (pravila R1..Rn) i `CLAUDE.md` (domena, referentne vrijednosti).
-- Javni API iz `src/SmartLogistics.Core/` (`Domain/`, `IRoutePlanner`,
+- Javni API iz `src/SmartLogistics.Core/` (`Domain/`, `Distance`, `ScenarioLoader`, `Planning/IRoutePlanner`,
   `Validation/PlanValidator`). Testiraš preko javnog API-ja; ne oslanjaš se na
   unutarnje detalje implementacije solvera.
 
