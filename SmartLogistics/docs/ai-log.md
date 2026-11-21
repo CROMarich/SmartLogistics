@@ -33,6 +33,12 @@ Stupac "Kako sam uhvatio" navodi tko je grešku primijetio: **ja** (tehnički vo
 | P | README je bio u mapi `SmartLogistics/`, a korijen gita je mapa iznad – GitHub ga zato nije prikazivao. Korijen gita bio je poznat od faze 0 (otvoreno pitanje u `odluke.md`), ali AI nije upozorio na posljedicu za README. | Ja – na GitHubu nisam vidio README. | README premješten u korijen repozitorija, linkovi dobili prefiks `SmartLogistics/` (commit `6d40f9f`). |
 | P | Gotovo prazna grana `main` na GitHubu potječe iz ugniježđenog git repozitorija u `src/SmartLogistics.Web/.git` (commit "First clear commit"). Reviewer ga je prijavio u fazi 8, ali je ostao neriješen. | Ja – na GitHubu su bile dvije grane; Claude – usporedbom commita. | `main` spojen u `master` (`dd90cd8`); ugniježđeni repozitorij čeka brisanje – T64. |
 | P | Claude je pushao `master` na `main` ne provjerivši stanje na GitHubu: tehnički vođa je `main` u međuvremenu već obrisao, pa je push granu ponovno stvorio. | Claude – izlaz `git push` ("[new branch]"). | Grana je identična `master`u; alat je odbio brisanje udaljene grane, pa je brisanje prepušteno tehničkom vođi. |
+| 11 | Ui-builder (tema) napravio je popis dopuštenih putanja za `/uprent`, ali ga je moguće zaobići kodiranom obrnutom kosom crtom (`/uprent/assets%5C..%5Cbuild.js` bi u developmentu poslužio `web/build.js`). | Podagent reviewer (druga recenzija faze 11). | Provjera odbija `\`, `:`, `%` i `.`/`..` segmente; provjereno uživo (404) i testovima (T74 a). |
+| 11 | Ui-builder (Testni scenariji) spremao je rezultate u `Lazy` bez obrade iznimki – jedna iznimka planera srušila bi stranicu (500) sve do ponovnog pokretanja. | Podagent reviewer. | Iznimka postaje rezultat "Neočekivano ✗" (T74 b). |
+| 11 | Validator-engineer je za hrvatske brojeve uveo `CultureInfo("hr-HR")` u Core – uz `InvariantGlobalization` (npr. minimalni Linux kontejner) pala bi svaka validacija, a s njom i oba planera. | Podagent reviewer. | Vlastiti `NumberFormatInfo` bez ICU-a (T74 c). |
+| 11 | Nova tema (uži stupci, veći font) odrezala je stupce "Vrijeme" u tablici rute i "Prikaz" u usporedbi algoritama te "Može nositi" u tablici kamiona; build i testovi to ne vide. | Claude – snimke zaslona cijele stranice. | Modifikator `sl-table-dense`, prelamanje stupca (T74 h). |
+| 11 | Dva agenta su paralelno birala nazive: zaglavlje Testnih scenarija bilo je "Projekt", a stavka izbornika u skupini "Planiranje". | Ui-builder (tema) i reviewer. | Zaglavlje "Planiranje". |
+| 11 | Claude je PDF dvaput "ponovno renderirao" s krivim oblikom putanje (`/c/...` u `file:///` adresi); Chrome nije javio grešku, pa je ostala stara verzija s 396 testova. | Claude – provjera teksta PDF-a (`pypdfium2`), datum datoteke. | Ispravna putanja, provjera da PDF sadrži 424 i ne sadrži 396. |
 
 ## Osvrt na AI alate
 
@@ -51,7 +57,7 @@ ui-builder, reviewer).
   pravila koje je tehnički vođa odredio prije pokretanja.
 - Referentne vrijednosti (200,1 / 182,2 km) izračunate su neovisno i upisane u CLAUDE.md prije
   pisanja planera, s pravilom "rezultat ispod ovih brojeva = greška u kodu".
-- Svako odstupanje i prijedlog upisuje se u `docs/odluke.md` (T1–T65).
+- Svako odstupanje i prijedlog upisuje se u `docs/odluke.md` (T1–T75).
 - Od faze 6 više podagenata radi paralelno na odvojenim dijelovima (Web, Core/Planning, testovi), a
   na kraju podagent reviewer samo čita cijeli repozitorij i piše izvještaj (faza 8).
 

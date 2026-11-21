@@ -1,9 +1,9 @@
 # Utrošeno vrijeme
 
-**Ukupno: oko 2 h** efektivnog zajedničkog rada (tehnički vođa + Claude Code) u dvije sesije:
+**Ukupno: oko 2 h 15 min** efektivnog zajedničkog rada (tehnički vođa + Claude Code) u dvije sesije:
 
 - razvoj (20.–21.11.2026.): ~1 h 20 min;
-- priprema predaje (21.11.2026.): ~40 min.
+- priprema predaje i faza 11 (21.11.2026.): ~55 min.
 
 Trajanja su procjena efektivnog rada: oko trećine vremena proteklog između vremenskih oznaka (git
 commitovi, datoteke u repozitoriju, zapis sesije Claude Codea). Ostatak su čekanje na podagente i
@@ -33,7 +33,8 @@ deploy na Azure i demo. To dopiši u posljednji redak tablice.
 | 10 – Završna provjera | 1 min | čisti klon, build, test, popis stavki predaje; commit svih faza od 6a | commit `3d3b74a` |
 | **Ukupno u sesiji razvoja** | **~1 h 20 min** | | |
 | P – Priprema predaje | ~40 min | README premješten u korijen repozitorija (vidljiv na GitHubu); snimke zaslona za README; spajanje grana `main` i `master`; popunjeni odjeljci README-a o AI alatima i vremenu; dopuna ove datoteke i AI loga | commitovi `6d40f9f`, `d8b1153`, `dd90cd8`, `72e4804` |
-| **Ukupno sa Claude Codeom** | **~2 h** | | |
+| 11 – Usklađivanje, testni scenariji, UpRent tema | ~15 min | čišćenje repozitorija (T64), izračunati optimum na Pregledu (T61), testovi K2/R37/R33 (T62), usklađivanje (T63), stranica Testni scenariji, UpRent tema i poveznica na web, GIF za README, PDF za prijavu prema EU, recenzija i popravci nalaza; pet podagenata paralelno | zapis sesije, commitovi faze 11 |
+| **Ukupno sa Claude Codeom** | **~2 h 15 min** | | |
 | Izvan sesije (dopisati) | … | čitanje i razumijevanje koda, priprema prezentacije, deploy na Azure, demo | – |
 
 ## Napomene

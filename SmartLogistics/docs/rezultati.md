@@ -5,7 +5,8 @@ Svaki plan je provjeren s `PlanValidator` – **0 prekršaja u oba načina**. Re
 referentnim vrijednostima iz `CLAUDE.md`.
 
 Brojke ispod generirane su pokretanjem planera nad trenutnim kodom (Release build, 21.11.2026.),
-a ne prepisane iz izvještaja. Ista se slika vidi u aplikaciji: **Planiranje → Plan ruta** i **Karta**.
+a ne prepisane iz izvještaja. Ista se slika vidi u aplikaciji: **Planiranje → Plan prijevoza**
+(`/Plan` – rute, karta i provjere na istoj stranici).
 
 ## Sažetak
 
@@ -122,7 +123,7 @@ plan računa jednom po načinu i verziji `scenario.json`, zatim se čuva u memor
 
 ## Rubni slučajevi (faza 5)
 
-Slučajevi su izračunati u fazi 5 (tada kao primjeri scenarija; od faze 6b isti se slučajevi u aplikaciji rade uređivanjem naloga na stranici Nalozi i poljem "max minuta" na stranici Plan). Validator: 0 prekršaja u svim slučajevima.
+Slučajevi su izračunati u fazi 5 (tada kao primjeri scenarija; primjeri su uklonjeni u fazi 6b, T43 c, T50). U aplikaciji se isti slučajevi rade uređivanjem naloga na stranici **Nalozi** (`/Orders`) i poljem "Najdulje trajanje radnog dana (min)" na stranici **Plan prijevoza** (`/Plan`); rubne slučajeve prikazuje i stranica **Testni scenariji** (`/Scenariji`). Validator: 0 prekršaja u svim slučajevima.
 
 | Primjer | Ukupno | Isplanirano | Neizvedivi nalozi |
 |---------|-------:|------------:|-------------------|

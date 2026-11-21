@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<title>Smart Logistics Planner – opis provedenog razvoja i rješenja</title>
+<style>
+  @font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-ext-400.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-ext-500.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-latin-ext-600.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-condensed-latin-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-condensed-latin-ext-600.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-condensed-latin-700.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../src/SmartLogistics.Web/wwwroot/fonts/barlow-condensed-latin-ext-700.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+  :root {
+    --yellow: #ffec00;
+    --yellow-deep: #e6d200;
+    --ink: #111111;
+    --ink-2: #1b1b1b;
+    --paper: #f4f3ee;
+    --line: #dddbd2;
+    --muted: #5d5c57;
+    --ok: #1f7a3f;
+    --display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+    --body: "Barlow", "Segoe UI", Arial, sans-serif;
+  }
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 18mm;
+    @bottom-left { content: "Smart Logistics Planner · opis rješenja · NACRT"; font: 8pt var(--body); color: #5d5c57; }
+    @bottom-right { content: "Stranica " counter(page) " / " counter(pages); font: 8pt var(--body); color: #5d5c57; }
+  }
+  @page :first { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.5pt/1.45 var(--body); color: var(--ink); background: #fff; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.1; margin: 0; }
+  h2 { font-size: 20pt; text-transform: uppercase; letter-spacing: .02em; margin: 0 0 4mm; padding-top: 2mm; break-after: avoid; }
+  h2 .num { display: inline-block; background: var(--yellow); padding: 0 2.2mm; margin-right: 2.5mm; }
+  h3 { font-size: 13pt; margin: 5mm 0 2mm; break-after: avoid; }
+  p { margin: 0 0 3mm; }
+  ul { margin: 0 0 3mm; padding-left: 5mm; }
+  li { margin-bottom: 1.2mm; }
+  section { margin-bottom: 5mm; }
+  .page-break { break-before: page; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.5pt; break-inside: avoid; }
+  th { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; text-align: left;
+       background: var(--ink); color: #fff; padding: 2mm 2.5mm; }
+  td { padding: 1.8mm 2.5mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  tr.total td { font-weight: 600; background: var(--paper); }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 9pt; background: var(--paper); padding: 0 1mm; }
+  .placeholder { background: #fff7a6; border-bottom: 1px dashed var(--ink); padding: 0 1mm; }
+
+  /* Cover */
+  .cover { height: 297mm; display: flex; flex-direction: column; background: var(--ink); color: #fff; padding: 22mm 20mm 18mm; }
+  .cover .tag { font-family: var(--display); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--yellow); font-size: 11pt; }
+  .cover h1 { font-size: 46pt; text-transform: uppercase; margin: 8mm 0 4mm; }
+  .cover h1 span { color: var(--yellow); }
+  .cover .sub { font-size: 15pt; color: #d8d7d1; max-width: 150mm; }
+  .cover .bar { height: 3mm; width: 40mm; background: var(--yellow); margin: 12mm 0; }
+  .cover .kpis { display: flex; gap: 6mm; margin-top: auto; }
+  .cover .kpi { flex: 1; border-top: 2px solid var(--yellow); padding-top: 3mm; }
+  .cover .kpi b { display: block; font-family: var(--display); font-size: 26pt; color: var(--yellow); }
+  .cover .kpi span { font-size: 9pt; color: #d8d7d1; }
+  .cover .meta { margin-top: 12mm; font-size: 9.5pt; color: #d8d7d1; display: grid; grid-template-columns: 45mm 1fr; gap: 1.5mm 4mm; }
+  .cover .meta .placeholder { color: var(--ink); }
+
+  .cover-note { margin-top: 6mm; font-size: 8.5pt; color: #b9b8b2; max-width: 150mm; }
+  .callout { border-left: 3mm solid var(--yellow); background: var(--paper); padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .callout b { font-family: var(--display); text-transform: uppercase; letter-spacing: .03em; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; }
+  .card h3 { margin-top: 0; }
+  .shot { margin: 3mm 0 5mm; break-inside: avoid; }
+  .shot img { display: block; margin: 0 auto; max-width: 100%; max-height: 118mm; border: 1px solid var(--line); border-radius: 2mm; }
+  .shot figcaption { text-align: center; font-size: 8.5pt; color: var(--muted); margin-top: 1.5mm; }
+  .note { font-size: 8.5pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="tag">Digitalizacija procesa prijevoza radnih strojeva</div>
+  <h1>Smart Logistics <span>Planner</span></h1>
+  <div class="sub">Opis provedenog razvoja i rješenja: web aplikacija za automatsko planiranje prijevoza strojeva između lokacija uz najmanju kilometražu</div>
+  <div class="bar"></div>
+  <div class="meta">
+    <div>Prijavitelj</div><div><span class="placeholder">[naziv i OIB prijavitelja]</span></div>
+    <div>Program / poziv</div><div><span class="placeholder">[naziv programa EU i referentna oznaka poziva]</span></div>
+    <div>Vrsta dokumenta</div><div>Tehnički opis rješenja – nacrt priloga prijavi</div>
+    <div>Datum</div><div>21. 11. 2026.</div>
+  </div>
+  <p class="cover-note">Dokument je nacrt. Polja označena <span class="placeholder">[ ]</span> popunjava prijavitelj prema uvjetima konkretnog poziva. Brojke u dokumentu izračunate su iz aplikacije i podataka zadatka (21. 11. 2026.).</p>
+  <div class="kpis">
+    <div class="kpi"><b>−58,1 %</b><span>kilometara u odnosu na pojedinačne vožnje (podaci zadatka)</span></div>
+    <div class="kpi"><b>200,1 km</b><span>dokazani optimum za 10 naloga i 2 kamiona</span></div>
+    <div class="kpi"><b>424</b><span>automatizirana testa poslovnih pravila i prikaza</span></div>
+  </div>
+</div>
+
+<section>
+  <h2><span class="num">1</span>Sažetak</h2>
+  <p>Razvijena je funkcionalna web aplikacija koja za zadani skup transportnih naloga automatski odlučuje <b>kojim kamionom</b> prevesti pojedini radni stroj, <b>kojim redoslijedom</b> obaviti preuzimanja i isporuke te kako pritom <b>smanjiti ukupnu prijeđenu udaljenost</b>, uz obavezan povratak u bazu. Aplikacija poštuje nosivost i najveći broj strojeva svakog kamiona nakon svake radnje, pravilo da isti kamion preuzima i isporučuje stroj (preuzimanje prije isporuke) te ograničenje radnog dana vozača (9 sati, 20 minuta po utovaru/istovaru, 60 km/h).</p>
+  <p>Na podacima zadatka (2 kamiona, 10 strojeva, 10 lokacija) aplikacija pronalazi <b>dokazano najkraći plan od 200,1 km</b>. Isti posao obavljen kao zasebna vožnja za svaki nalog iznosio bi 477,2 km – optimizirani plan je <b>277,1 km (58,1 %) kraći</b>. Rezultat svakog izračuna neovisno provjerava zaseban validator, a ispravnost potvrđuje 424 automatizirana testa.</p>
+  <div class="callout"><b>Status:</b> funkcionalni prototip, izvorni kod i dokumentacija dostupni u git repozitoriju; demonstracija kao web aplikacija u oblaku <span class="placeholder">[URL demonstracije]</span>.</div>
+</section>
+
+<section>
+  <h2><span class="num">2</span>Polazno stanje i problem</h2>
+  <p>Tvrtke koje iznajmljuju i prodaju radne strojeve svakodnevno prevoze strojeve između baze, gradilišta i klijenata. Planiranje se tipično radi ručno: dispečer procjenjuje koji kamion može nositi koji stroj, slaže redoslijed adresa i pazi na radno vrijeme vozača. Takvo planiranje:</p>
+  <ul>
+    <li>ne jamči najkraću rutu – svaki suvišni kilometar znači gorivo, trošenje vozila, vrijeme vozača i emisije;</li>
+    <li>teško istodobno poštuje sva ograničenja (nosivost, broj strojeva na kamionu, redoslijed preuzimanja i isporuke, radni dan);</li>
+    <li>nije provjerljivo – nema dokaza da je plan ispravan niti zašto pojedini nalog nije izvršen.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">3</span>Ciljevi</h2>
+  <div class="grid2">
+    <div class="card"><h3>Digitalizacija procesa</h3><p>Zamjena ručnog planiranja web aplikacijom koja plan izračuna u djeliću sekunde i prikaže ga razumljivo dispečeru i vozaču.</p></div>
+    <div class="card"><h3>Manje kilometara</h3><p>Najmanja ukupna kilometraža uz sva poslovna ograničenja – izravno manje goriva, troškova i emisija.</p></div>
+    <div class="card"><h3>Provjerljivost</h3><p>Svaki plan prolazi neovisnu provjeru pravila; neizvedivi nalozi prikazuju se s jasnim razlogom.</p></div>
+    <div class="card"><h3>Proširivost</h3><p>Arhitektura spremna za stvarne cestovne udaljenosti, više vozila i integraciju s postojećim sustavima.</p></div>
+  </div>
+</section>
+
+<section class="page-break">
+  <h2><span class="num">4</span>Što je razvijeno</h2>
+  <p>Web aplikacija (ASP.NET Core, .NET 10 LTS) s hrvatskim korisničkim sučeljem u vizualnom identitetu tvrtke. Stranice:</p>
+  <table>
+    <tr><th>Stranica</th><th>Namjena</th></tr>
+    <tr><td><b>Ulazni podaci</b></td><td>Pregled kamiona, strojeva, lokacija i naloga, matrica udaljenosti i karta naloga; upozorenja na neispravne podatke.</td></tr>
+    <tr><td><b>Nalozi</b></td><td>Dodavanje, izmjena i brisanje naloga (i novog stroja s upisanom masom); plan se odmah ponovno izračunava.</td></tr>
+    <tr><td><b>Plan prijevoza</b></td><td>Za svaki kamion: redoslijed lokacija, radnja (preuzimanje/isporuka), teret i broj strojeva nakon svake radnje, dionice i ukupni km, broj naloga, vrijeme radnog dana; ukupna kilometraža; upozorenja na neizvedive naloge; karta ruta; izbor algoritma i načina obračuna radnog dana.</td></tr>
+    <tr><td><b>Testni scenariji</b></td><td>Interaktivni rubni slučajevi (pretežak stroj, predaleka lokacija, prekratak radni dan, neispravan nalog, namjerno pokvaren plan) s prikazom očekivanog i stvarnog ishoda.</td></tr>
+    <tr><td><b>Pravila i provjere</b></td><td>Popis svih poslovnih pravila i koja od njih validator provjerava.</td></tr>
+    <tr><td><b>Dokumentacija i Pregled</b></td><td>Specifikacija, zapis odluka, opis algoritma, rezultati i tijek razvoja – unutar aplikacije.</td></tr>
+  </table>
+  <figure class="shot"><img src="img/plan.png" alt="Plan prijevoza"><figcaption>Slika 1 – Plan prijevoza: ukupna i pojedinačna kilometraža, potvrda validatora i usporedba algoritama.</figcaption></figure>
+</section>
+
+<section class="page-break">
+  <h2><span class="num">5</span>Kako rješenje radi</h2>
+  <h3>Poslovna pravila</h3>
+  <table>
+    <tr><th>Pravilo</th><th>Kako je ostvareno</th></tr>
+    <tr><td>Kamion A: 3.500 kg / 2 stroja; kamion B: 10.000 kg / 3 stroja</td><td>Provjerava se nakon <b>svake</b> radnje, ne samo na početku rute.</td></tr>
+    <tr><td>Isti kamion preuzima i isporučuje; preuzimanje prije isporuke</td><td>Nalog je nedjeljiv i pripada jednom kamionu; stanje naloga (čeka → na kamionu → isporučen) ne može ići unatrag.</td></tr>
+    <tr><td>Ruta počinje i završava u bazi; kamion smije ostati neiskorišten</td><td>Povratak u bazu uračunat je u kilometražu i radni dan.</td></tr>
+    <tr><td>Udaljenost</td><td>Euklidska udaljenost po dionici, zaokružena na jednu decimalu, tek zatim zbrojena.</td></tr>
+    <tr><td>Radni dan</td><td>60 km/h (1 km = 1 min), 20 min po radnji; zadano vožnja + radnje ≤ 540 min, alternativno samo vožnja ≤ 540 min.</td></tr>
+    <tr><td>Neizvedivi nalozi</td><td>Plan se uvijek vraća; nalog koji se ne može izvršiti prikazuje se s razlogom: K1 pretežak za sve kamione, K2 ni sam ne stane u radni dan, K3 ne stane uz ostale naloge, K4 neispravni podaci.</td></tr>
+  </table>
+  <h3>Optimizacijska logika</h3>
+  <ul>
+    <li><b>Egzaktni planer (zadani).</b> Isprobava svaku raspodjelu naloga između dva kamiona; za svaki kamion dinamičkim programiranjem nad stanjima <i>(trenutna lokacija, stanje svakog naloga)</i> nalazi najkraći redoslijed koji poštuje nosivost, broj strojeva i radni dan. Rezultat je <b>dokazani optimum</b>; ako ne stanu svi nalozi, bira se plan s najviše izvršenih naloga, a zatim s najmanje km. Za podatke zadatka izračun traje oko 150 ms.</li>
+    <li><b>Heuristički planer (Google OR-Tools).</b> Druga, neovisna metoda za veće probleme (model preuzimanja i isporuke s dimenzijama mase, broja strojeva i vremena). Na podacima zadatka daje isti rezultat; u aplikaciji je jasno označeno da optimum nije zajamčen.</li>
+  </ul>
+  <figure class="shot"><img src="img/karta.png" alt="Karta ruta"><figcaption>Slika 2 – Karta ruta: kamion A i kamion B, brojevi označavaju redoslijed radnji.</figcaption></figure>
+</section>
+
+<section>
+  <h2><span class="num">6</span>Osiguranje kvalitete i provjera rezultata</h2>
+  <p>Ispravnost se ne oslanja na povjerenje u jedan algoritam, nego na više neovisnih provjera:</p>
+  <ul>
+    <li><b>Neovisni validator</b> – zasebno napisana komponenta koja iz plana ponovno računa sve kilometre, terete i minute i vraća popis svih prekršaja s oznakom pravila. Planer svoj rezultat mora provući kroz validator.</li>
+    <li><b>Referentne vrijednosti izračunate unaprijed</b> – optimum (200,1 km, odnosno 182,2 km kad se radni dan odnosi samo na vožnju) izračunat je neovisno, prije pisanja planera.</li>
+    <li><b>Druga egzaktna implementacija</b> – namjerno jednostavan algoritam (Dijkstra) mora dati isti rezultat kao planer na podacima zadatka i na 20 nasumičnih scenarija u oba načina radnog dana.</li>
+    <li><b>424 automatizirana testa</b> – za svako poslovno pravilo pozitivni i negativni slučajevi (npr. preopterećenje, previše strojeva, isporuka prije preuzimanja, različiti kamioni, izostanak povratka u bazu, prekoračen radni dan), neispravni ulazni podaci i formatiranje prikaza.</li>
+    <li><b>Testni scenariji u aplikaciji</b> – rubni slučajevi koje korisnik može sam pokrenuti i vidjeti očekivani i stvarni ishod.</li>
+    <li><b>Pregled koda</b> – zaseban pregled cijelog repozitorija; nalazi su zapisani i riješeni.</li>
+  </ul>
+  <figure class="shot"><img src="img/scenariji.png" alt="Testni scenariji"><figcaption>Slika 3 – Testni scenariji: svaki rubni slučaj i namjerno pokvaren plan uspoređuje očekivani i stvarni ishod.</figcaption></figure>
+</section>
+
+<section>
+  <h2><span class="num">7</span>Rezultati</h2>
+  <table>
+    <tr><th>Pokazatelj (podaci zadatka)</th><th class="n">Pojedinačne vožnje</th><th class="n">Optimizirani plan</th><th class="n">Razlika</th></tr>
+    <tr><td>Ukupno km</td><td class="n">477,2 km</td><td class="n">200,1 km</td><td class="n">−277,1 km (−58,1 %)</td></tr>
+    <tr><td>Vrijeme vožnje (60 km/h)</td><td class="n">7 h 57 min</td><td class="n">3 h 20 min</td><td class="n">−4 h 37 min</td></tr>
+    <tr><td>Broj polazaka iz baze</td><td class="n">10</td><td class="n">2</td><td class="n">−8</td></tr>
+  </table>
+  <table>
+    <tr><th>Kamion</th><th class="n">Nalozi</th><th class="n">Km</th><th class="n">Radni dan (vožnja + radnje)</th></tr>
+    <tr><td>Kamion A (3.500 kg, 2 stroja)</td><td class="n">1</td><td class="n">37,2 km</td><td class="n">01:17 od 09:00 (14 %)</td></tr><tr><td>Kamion B (10.000 kg, 3 stroja)</td><td class="n">9</td><td class="n">162,9 km</td><td class="n">08:43 od 09:00 (97 %)</td></tr>
+    <tr class="total"><td>Ukupno</td><td class="n">10 / 10</td><td class="n">200,1 km</td><td class="n"></td></tr>
+  </table>
+  <p class="note">„Pojedinačne vožnje” = svaki nalog kao zasebna vožnja baza → preuzimanje → isporuka → baza, s istim pravilom izračuna udaljenosti; služi kao usporedba s planiranjem bez optimizacije. Potrošnja goriva i emisije CO<sub>2</sub> proporcionalne su prijeđenim kilometrima; konkretan iznos ovisi o vozilu i treba ga izračunati faktorima prijavitelja <span class="placeholder">[l/100 km, kg CO<sub>2</sub>/l]</span>.</p>
+</section>
+
+<section>
+  <h2><span class="num">8</span>Doprinos ciljevima EU</h2>
+  <ul>
+    <li><b>Digitalna tranzicija MSP-ova</b> – ručni, iskustveni proces zamijenjen je provjerljivim digitalnim alatom dostupnim u web pregledniku, bez instalacije.</li>
+    <li><b>Zelena tranzicija</b> – manje prijeđenih kilometara znači proporcionalno manje goriva i emisija; na podacima zadatka 58,1 % manje km.</li>
+    <li><b>Učinkovitost i konkurentnost</b> – manje sati vožnje i manje polazaka iz baze uz isti opseg posla.</li>
+    <li><b>Transparentnost i sigurnost</b> – ograničenja nosivosti i radnog vremena vozača provjeravaju se za svaki plan.</li>
+    <li><b>Zaštita podataka</b> – aplikacija ne obrađuje osobne podatke; radi s nalozima, strojevima i koordinatama lokacija, bez vanjskih servisa.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9</span>Tehnologija i arhitektura</h2>
+  <table>
+    <tr><th>Sloj</th><th>Rješenje</th></tr>
+    <tr><td>Domenska logika</td><td>C# (.NET 10 LTS), neovisna o web sloju: model, izračun udaljenosti, planeri, validator.</td></tr>
+    <tr><td>Web</td><td>ASP.NET Core Razor Pages, Bootstrap 5, SVG karta bez JavaScript okvira.</td></tr>
+    <tr><td>Optimizacija</td><td>Vlastiti egzaktni algoritam (dinamičko programiranje) i Google OR-Tools (licenca Apache 2.0).</td></tr>
+    <tr><td>Testiranje</td><td>xUnit, 424 testa; referentni (oracle) algoritam za usporedbu.</td></tr>
+    <tr><td>Isporuka</td><td>Web aplikacija u oblaku (Microsoft Azure App Service) <span class="placeholder">[URL]</span>; izvorni kod u git repozitoriju.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">10</span>Korištenje alata umjetne inteligencije</h2>
+  <p>Sam planer <b>nije sustav umjetne inteligencije</b>: koristi determinističke, objašnjive algoritme (isti ulaz uvijek daje isti plan). Alati umjetne inteligencije (Claude Code) korišteni su <b>u razvoju</b> – za pisanje koda, testova i dokumentacije – uz sljedeća pravila:</p>
+  <ul>
+    <li>čovjek (tehnički vođa) donosi sve odluke o tumačenju zadatka i arhitekturi; svaka odluka i odstupanje zapisani su u dnevnik odluka;</li>
+    <li>rad u fazama, s pregledom i potvrdom nakon svake faze;</li>
+    <li>rezultati AI alata provjeravaju se neovisno (validator, unaprijed izračunate referentne vrijednosti, drugi algoritam, testovi, pregled koda); greške AI alata i način na koji su otkrivene zapisani su u zasebnom dnevniku.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">11</span>Ograničenja i sljedeći koraci</h2>
+  <ul>
+    <li>Stvarne cestovne udaljenosti i vremena vožnje umjesto ravnih linija.</li>
+    <li>Vremenski prozori za preuzimanje i isporuku te planiranje kroz više dana.</li>
+    <li>Više vozila i veći broj naloga (heuristički planer je za to već pripremljen).</li>
+    <li>Trajna baza podataka, korisnički računi i povezivanje sa sustavom najma i voznim parkom.</li>
+  </ul>
+</section>
+
+
+</body>
+</html>

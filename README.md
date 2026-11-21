@@ -3,6 +3,11 @@
 A web application that plans the transport of construction machines with two trucks – assigning orders to
 trucks, ordering pickups and deliveries, and minimising the total distance with a mandatory return to the depot.
 
+![Demo: input data, transport plan, route map, edge cases and the validator](SmartLogistics/docs/demo.gif)
+
+**Result on the task data:** a proven optimum of **200.1 km** (truck A 37.2 km, truck B 162.9 km, all 10 orders),
+checked by an independent validator – 58 % fewer kilometres than serving every order as a separate trip (477.2 km).
+
 ---
 
 ## 1. Prerequisites and running
@@ -28,13 +33,20 @@ file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, 
 | Ulazni podaci (input data) | `/` | Trucks, machines, locations and orders; map of orders; 10 × 10 distance matrix |
 | Nalozi (orders) | `/Orders` | Add, edit and delete orders, including a new machine with a typed-in weight |
 | Plan prijevoza (transport plan) | `/Plan` | Plan per truck, warnings, validator result, SVG route map; query parameters `algoritam=exact|ortools`, `nacin=ukupno|voznja`, `maxMinuta=1..1440` (e.g. `/Plan?algoritam=ortools&nacin=voznja&maxMinuta=300`) |
-| Pregled, Dokumentacija, Pravila i provjere | `/Pregled`, `/Dokumentacija`, `/Pravila` | Project progress, project documents, rules and validator coverage |
+| Testni scenariji (test scenarios) | `/Scenariji` | Interactive edge cases on the original task data: K1 heavy machine, K2 location too far, K3 short working day, K4 invalid order, and a valid plan with one deliberate defect (overload, too many machines, delivery before pickup, different trucks, no return, wrong km, missing order, working day exceeded) – each shows the expected and the actual planner/validator result; the user's data is never changed (`/Scenariji?slucaj=k2`, `/Scenariji?slucaj=kvar&kvar=preopterecenje`) |
+| Pregled, Dokumentacija, Pravila i provjere | `/Pregled`, `/Dokumentacija`, `/Pravila` | Project progress (optimum computed at runtime), project documents, rules and validator coverage |
+| UpRent web | `/uprent/` | Static copy of the UpRent website (folder `web/`), opened from the navigation in a new tab |
+
+The UI uses the UpRent visual identity (ink, signal yellow, Barlow / Barlow Condensed, self-hosted fonts); the design
+system is documented in [docs/ui-dizajn.md](SmartLogistics/docs/ui-dizajn.md).
 
 ## 2. Screenshots
 
 ![Transport plan](SmartLogistics/docs/screenshot-plan.png)
 
 ![Route map](SmartLogistics/docs/screenshot-map.png)
+
+![Test scenarios](SmartLogistics/docs/screenshot-scenarios.png)
 
 ## 3. The problem
 
@@ -100,7 +112,9 @@ evaluates 32 assignments, solves 63 DPs with 284,366 states and takes about 0.1�
 **Scaling.** Measured on synthetic data where every order fits both trucks, each extra order roughly multiplies the
 time by four: 10 orders 0.7 s, 12 orders 11 s, 14 orders 175 s (see [docs/planer.md](SmartLogistics/docs/planer.md)). For larger
 problems the application also offers a heuristic planner, `Core/Planning/OrToolsPlanner.cs` (Google OR-Tools:
-pickup-and-delivery pairs, weight, count and time dimensions, `PATH_CHEAPEST_ARC` + `GUIDED_LOCAL_SEARCH`, 5 s limit).
+pickup-and-delivery pairs, weight, count and time dimensions; two deterministic `PATH_CHEAPEST_ARC` +
+`GUIDED_LOCAL_SEARCH` runs with GLS lambda 0.1 and 1.0, each stopped after 1,000 solutions, with a 5 s cap for both
+runs together; decision T55).
 Its result goes through the same validator, and the UI marks it as "optimum not guaranteed". See *Results* for the
 comparison on the task data.
 
@@ -174,7 +188,7 @@ Full routes (location, action, order, load after every action): [docs/rezultati.
 
 ## 8. Tests
 
-`dotnet test` – **323 tests, all green** (about 25 s; the OR-Tools tests run on their own, without parallelism, because
+`dotnet test` – **424 tests, all green** (about 25 s; the OR-Tools tests run on their own, without parallelism, because
 each OR-Tools call takes 2–3 s).
 
 | Test class | Tests | What it proves |
@@ -183,15 +197,20 @@ each OR-Tools call takes 2–3 s).
 | `ScenarioDataTests` | 7 | `data/scenario.json` matches the task; default options 540 min / 20 min / 60 km/h |
 | `PlanBuilderTests` | 4 | The helper that builds plans by hand for validator tests computes the same numbers as a manual calculation |
 | `PlanValidatorValidPlanTests` | 15 | Valid plans and boundary cases pass: exactly 10,000 kg, exactly 2 machines, working day exactly at the limit, actions at the depot, unused truck |
+| `PlanValidatorCategoryViolationTests` | 25 | Invalid orders or unusable trucks that still appear in a plan are rejected (R37); an infeasible order listed with the wrong category K1–K4 is rejected (R33), the right category passes |
 | `PlanValidatorViolationTests` | 38 | Hand-built invalid plans are rejected with the right rule: overload (R11), too many machines (R12), delivery before pickup (R6), picked up by A and delivered by B (R5), no return to the depot (R2), machine left on the truck (R28), wrong km (R16), working day exceeded (R20/R21), order on two trucks, missing order, and more |
 | `ReferenceSolutionTests` | 9 | The planner returns 200.1 km (`Total`) and 182.2 km (`DrivingOnly`), its plans pass the validator, one route per truck, deterministic, `DrivingOnly` ≤ `Total` |
 | `ReferenceOracleTests` | 83 | A second, deliberately simple exact implementation (Dijkstra over states, no shared code) gives the same total km and number of planned orders as the planner on the task data and on 20 seeded random scenarios in both modes |
 | `InvalidInputPlanningTests` | 36 | Invalid input never crashes the planner: 11,000 kg machine (K1, rest at 200.1 km), unknown location, pickup = delivery, weight ≤ 0, duplicate order, unknown or reused machine, missing depot, unusable trucks |
 | `WorkdayOverflowPlanningTests` | 19 | Working day too short (300 / 200 / 80 min): the plan passes the validator, omitted orders are K3 "Ne stane u radni dan", the number of omitted orders is minimal and the km are confirmed by an independent exhaustive oracle |
+| `StandaloneWorkdayPlanningTests` | 11 | K2 – an order that alone does not fit the working day: reported as K2 with minutes and limit while the other orders are still planned; K2 in `Total` but planned in `DrivingOnly`; exactly at the limit is not K2, 0.2 min over is (hand arithmetic in the test) |
 | `OrToolsPlannerTests` | 17 | The OR-Tools plan passes the validator, is never better than the exact plan (more orders, or fewer km for the same number of orders), is deterministic, and is marked as not guaranteeing the optimum |
 | `WebMapping.FormatTests` | 44 | Formatting in view models: km with one decimal ("162,9 km"), kg with a thousands dot ("10.000 kg"), hh:mm with rounding to whole minutes ("08:43"), percentages of capacity and of the working day |
 | `WebMapping.PlanMapperTests` | 22 | The plan mapper: departure and return rows, load and % of capacity after every action, working-day percentage per mode (B in `Total` = 97 %), unused truck |
 | `WebMapping.MapViewModelTests` | 13 | The SVG map: y = −Y (L4, south of the depot, is drawn below it), view box with margin, invariant-culture numbers, route segments and legend |
+| `WebMapping.ScenarioLabTests` | 30 | Test scenarios page: every edge case produces its expected category, every deliberate defect of a valid plan is reported with its rule (full rule sets pinned), the baseline equals the planner's result, the user's data is never changed, results are cached |
+| `WebMapping.InputDataViewModelTests` | 8 | Input data page: four tables with one row per entry (R27); invalid orders are exactly the K4 orders of the planner's own check (duplicate machine/location/order, pickup = delivery) |
+| `WebMapping.WebsiteAndNavigationTests` | 27 | `/uprent/` serves only top-level pages and `assets/**` and refuses path tricks (`..`, `\`, `%`, `:`); navigation entries for the UpRent web and the test scenarios; the optimum on the overview page is computed, not typed in |
 
 ## 9. AI tools
 
@@ -207,7 +226,7 @@ decided every assumption and reviewed every phase; the AI wrote the code, tests 
   all km and minutes; the reference values (200.1 / 182.2 km) were computed independently before the planner existed;
   a second exact implementation (Dijkstra oracle) and the OR-Tools planner cross-check the exact planner.
 - After each phase the AI stops with a report and a proposed commit message; every deviation from the task is
-  recorded in `docs/odluke.md` (T1–T65) with its reason and alternative.
+  recorded in `docs/odluke.md` (T1–T75) with its reason and alternative.
 
 **What worked well**
 - Two independent implementations caught each other's mistakes: the validator rejected a wrong "valid" test plan
@@ -232,7 +251,8 @@ All AI mistakes, who caught them and how they were fixed: [docs/ai-log.md](Smart
 |---------|------|---------:|--------|
 | Development | 20.–21.11.2026 | ~1 h 20 min | 0–10: specification, domain, validator and tests, exact planner, infeasible orders, web UI, OR-Tools, reference oracle, review, README |
 | Submission preparation | 21.11.2026 | ~40 min | README in the repository root, screenshots, GitHub branches, these sections, updated time and AI log |
-| **Total with Claude Code** | | **~2 h** | |
+| Phase 11 | 21.11.2026 | ~15 min | Review findings (T61–T64), test scenarios page, UpRent theme, demo GIF, EU description PDF, second review and fixes |
+| **Total with Claude Code** | | **~2 h 15 min** | |
 
 Durations are the author's estimate of effective work: about a third of the time elapsed between git commits, file
 timestamps and session log entries; the rest was waiting for sub-agents and breaks. From phase 6 on several
@@ -266,4 +286,5 @@ deployment) is added by the author. Per-phase breakdown:
 | [docs/rezultati.md](SmartLogistics/docs/rezultati.md) | Full results for both working-day modes and edge cases |
 | [docs/ai-log.md](SmartLogistics/docs/ai-log.md) | AI mistakes and how they were caught |
 | [docs/vrijeme.md](SmartLogistics/docs/vrijeme.md) | Time per phase |
-| [docs/ui-dizajn.md](SmartLogistics/docs/ui-dizajn.md) | Design system of the web UI |
+| [docs/ui-dizajn.md](SmartLogistics/docs/ui-dizajn.md) | Design system of the web UI (UpRent theme) |
+| [docs/eu/Smart-Logistics-opis-rjesenja-EU.pdf](SmartLogistics/docs/eu/Smart-Logistics-opis-rjesenja-EU.pdf) | Draft technical description for an EU funding application (Croatian; source `opis-rjesenja.html`) |
