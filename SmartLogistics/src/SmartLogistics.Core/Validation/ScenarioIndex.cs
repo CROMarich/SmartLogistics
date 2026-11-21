@@ -1,3 +1,4 @@
+using System.Globalization;
 using SmartLogistics.Core.Domain;
 
 namespace SmartLogistics.Core.Validation;
@@ -50,8 +51,8 @@ internal sealed class ScenarioIndex
         Base = FindLocation(BaseLocationId);
         BaseCoordinatesReliable = HasReliableCoordinates(BaseLocationId);
         BaseBlockingProblem = Base is null
-            ? "does not exist"
-            : !double.IsFinite(Base.X) || !double.IsFinite(Base.Y) ? "has non-numeric coordinates" : null;
+            ? "ne postoji"
+            : !double.IsFinite(Base.X) || !double.IsFinite(Base.Y) ? "nema numeričke koordinate" : null;
 
         IndexOrders((scenario.Orders ?? []).Where(o => o is not null).ToList());
     }
@@ -114,6 +115,13 @@ internal sealed class ScenarioIndex
 
     private static string Key(string? id) => id ?? string.Empty;
 
+    /// <summary>Problem texts reach the Croatian UI through plan violations: thousands dot, never the thread culture.</summary>
+    private static readonly NumberFormatInfo Croatian =
+        new() { NumberDecimalSeparator = ",", NumberGroupSeparator = "." }; // no ICU needed (InvariantGlobalization-safe)
+
+    /// <summary>Whole number with thousands separator: 10000 -> "10.000".</summary>
+    private static string I(long value) => value.ToString("N0", Croatian);
+
     private static List<T> Occurrences<T>(Dictionary<string, List<T>> map, string? id)
     {
         if (!map.TryGetValue(Key(id), out var list))
@@ -131,17 +139,17 @@ internal sealed class ScenarioIndex
         var reasons = new List<string>();
         if (occurrence > 0)
         {
-            reasons.Add($"truck ID '{truck.Id}' already appeared before (occurrence {occurrence + 1})");
+            reasons.Add($"ID kamiona '{truck.Id}' već se pojavio ranije (pojavljivanje {occurrence + 1})");
         }
 
         if (truck.CapacityKg <= 0)
         {
-            reasons.Add($"capacity {truck.CapacityKg} kg <= 0");
+            reasons.Add($"nosivost {I(truck.CapacityKg)} kg <= 0");
         }
 
         if (truck.MaxMachines <= 0)
         {
-            reasons.Add($"max machines {truck.MaxMachines} <= 0");
+            reasons.Add($"najveći broj strojeva {I(truck.MaxMachines)} <= 0");
         }
 
         return reasons.Count == 0 ? null : string.Join("; ", reasons);
@@ -189,7 +197,7 @@ internal sealed class ScenarioIndex
             var possiblyReused = false;
             if (cleanUsersByMachine.TryGetValue(machineKey, out var earlierOrderId))
             {
-                problems.Add($"machine '{order.MachineId}' is already used by earlier order '{earlierOrderId}'");
+                problems.Add($"stroj '{order.MachineId}' već je korišten u ranijem nalogu '{earlierOrderId}'");
             }
             else
             {
@@ -212,18 +220,18 @@ internal sealed class ScenarioIndex
         var problems = new List<string>();
         if (!_machines.TryGetValue(Key(order.MachineId), out var machines))
         {
-            problems.Add($"unknown machine '{order.MachineId}'");
+            problems.Add($"nepoznat stroj '{order.MachineId}'");
             return problems;
         }
 
         if (machines.Count > 1)
         {
-            problems.Add($"machine ID '{order.MachineId}' is duplicated ({machines.Count} machines)");
+            problems.Add($"ID stroja '{order.MachineId}' je dupliciran (broj strojeva: {machines.Count})");
         }
 
         if (machines[0].WeightKg <= 0)
         {
-            problems.Add($"machine '{order.MachineId}' has weight {machines[0].WeightKg} kg <= 0");
+            problems.Add($"stroj '{order.MachineId}' ima masu {I(machines[0].WeightKg)} kg <= 0");
         }
 
         return problems;
@@ -233,32 +241,33 @@ internal sealed class ScenarioIndex
     private List<string> LocationProblems(TransportOrder order)
     {
         var problems = new List<string>();
-        AddLocationProblems(problems, "pickup", order.PickupLocationId);
-        AddLocationProblems(problems, "delivery", order.DeliveryLocationId);
+        AddLocationProblems(problems, "preuzimanja", order.PickupLocationId);
+        AddLocationProblems(problems, "isporuke", order.DeliveryLocationId);
         if (string.Equals(order.PickupLocationId, order.DeliveryLocationId, StringComparison.Ordinal))
         {
-            problems.Add($"pickup location equals delivery location '{order.PickupLocationId}'");
+            problems.Add($"lokacija preuzimanja jednaka je lokaciji isporuke '{order.PickupLocationId}'");
         }
 
         return problems;
     }
 
+    /// <param name="role">Croatian genitive of the location role ("preuzimanja" / "isporuke"), used in the problem text.</param>
     private void AddLocationProblems(List<string> problems, string role, string? id)
     {
         if (!_locations.TryGetValue(Key(id), out var locations))
         {
-            problems.Add($"unknown {role} location '{id}'");
+            problems.Add($"nepoznata lokacija {role} '{id}'");
             return;
         }
 
         if (locations.Count > 1)
         {
-            problems.Add($"{role} location ID '{id}' is duplicated ({locations.Count} locations)");
+            problems.Add($"ID lokacije {role} '{id}' je dupliciran (broj lokacija: {locations.Count})");
         }
 
         if (locations.Any(l => !double.IsFinite(l.X) || !double.IsFinite(l.Y)))
         {
-            problems.Add($"{role} location '{id}' has non-numeric coordinates");
+            problems.Add($"lokacija {role} '{id}' ima nenumeričke koordinate");
         }
     }
 }

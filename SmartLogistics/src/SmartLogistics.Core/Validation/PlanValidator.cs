@@ -45,7 +45,21 @@ public static class PlanValidator
 
     private static bool Exceeds(double value, double limit) => !(value <= limit + LimitEpsilon);
 
-    private static string N(double value) => value.ToString("0.0##", CultureInfo.InvariantCulture);
+    /// <summary>Messages are shown in the Croatian UI: decimal comma, dot as thousands separator, never the thread culture.</summary>
+    private static readonly NumberFormatInfo Croatian =
+        new() { NumberDecimalSeparator = ",", NumberGroupSeparator = "." }; // no ICU needed (InvariantGlobalization-safe)
+
+    /// <summary>km / minutes with at most three decimals: 8.5 -> "8,5".</summary>
+    private static string N(double value) => value.ToString("0.0##", Croatian);
+
+    /// <summary>Whole number with thousands separator: 10000 -> "10.000".</summary>
+    private static string I(long value) => value.ToString("N0", Croatian);
+
+    /// <summary>10000 -> "10.000 kg".</summary>
+    private static string Kg(long value) => $"{I(value)} kg";
+
+    /// <summary>Capitalises a label used at the start of a sentence: "kamion A" -> "Kamion A".</summary>
+    private static string Cap(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
     private static string Code(InfeasibilityReason reason) => reason switch
     {
@@ -53,7 +67,7 @@ public static class PlanValidator
         InfeasibilityReason.ExceedsWorkday => "K2",
         InfeasibilityReason.DoesNotFitWithOtherOrders => "K3",
         InfeasibilityReason.InvalidOrderData => "K4",
-        _ => $"undefined ({(int)reason})",
+        _ => $"nedefinirano ({I((int)reason)})",
     };
 
     /// <summary>One action of an order somewhere in the plan.</summary>
@@ -106,14 +120,16 @@ public static class PlanValidator
                 .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
             _labels = _routes
                 .Select((route, r) => route?.Truck?.Id is { } id
-                    ? routesPerTruck[id] > 1 ? $"truck {id} (route {r + 1})" : $"truck {id}"
-                    : $"route {r + 1}")
+                    ? routesPerTruck[id] > 1 ? $"kamion {id} (ruta {r + 1})" : $"kamion {id}"
+                    : $"ruta {r + 1}")
                 .ToArray();
         }
 
         private bool DrivingOnly => _options.WorkdayMode == WorkdayMode.DrivingOnly;
 
-        private string ModeName => DrivingOnly ? nameof(WorkdayMode.DrivingOnly) : nameof(WorkdayMode.Total);
+        private string ModeName => DrivingOnly
+            ? $"{nameof(WorkdayMode.DrivingOnly)}: samo vožnja"
+            : $"{nameof(WorkdayMode.Total)}: vožnja + radnje";
 
         public IReadOnlyList<PlanViolation> Execute()
         {
@@ -167,7 +183,7 @@ public static class PlanValidator
             var route = _routes[r];
             if (route is null)
             {
-                Add("R1", null, null, $"Route {r + 1} is missing (null).");
+                Add("R1", null, null, $"Ruta {r + 1} nedostaje (null).");
                 return null;
             }
 
@@ -205,7 +221,7 @@ public static class PlanValidator
                 if (stop is null)
                 {
                     // R8: a missing stop has no location; distances after it cannot be recomputed.
-                    Add("R8", truckId, k, $"Step {step} of {label} is missing (null).");
+                    Add("R8", truckId, k, $"Korak {step} ({label}) nedostaje (null).");
                     distancesKnown = false;
                     continue;
                 }
@@ -214,7 +230,7 @@ public static class PlanValidator
                 var location = _index.FindLocation(stop.LocationId);
                 if (location is null)
                 {
-                    Add("R8", truckId, k, $"Step {step} of {label} is at unknown location '{stop.LocationId}'.");
+                    Add("R8", truckId, k, $"{Cap(label)}, korak {step}: nepoznata lokacija '{stop.LocationId}'.");
                     distancesKnown = false;
                 }
                 else if (!_index.HasReliableCoordinates(stop.LocationId))
@@ -244,7 +260,7 @@ public static class PlanValidator
                 if (order is null)
                 {
                     // R23: only orders from the input may appear in the plan.
-                    Add("R23", truckId, k, $"Step {step} of {label} refers to order '{stop.OrderId}', which is not in the scenario.");
+                    Add("R23", truckId, k, $"{Cap(label)}, korak {step}: nalog '{stop.OrderId}' ne postoji u scenariju.");
                 }
                 else
                 {
@@ -255,7 +271,7 @@ public static class PlanValidator
                 if (!Enum.IsDefined(stop.Action))
                 {
                     // R8: an action other than pickup / delivery cannot match any order location.
-                    Add("R8", truckId, k, $"Step {step} of {label} has undefined action {(int)stop.Action}.");
+                    Add("R8", truckId, k, $"{Cap(label)}, korak {step}: nedefinirana radnja {I((int)stop.Action)}.");
                 }
                 else if (order is not null)
                 {
@@ -263,9 +279,9 @@ public static class PlanValidator
                     var expectedLocation = stop.Action == StopAction.Pickup ? order.PickupLocationId : order.DeliveryLocationId;
                     if (!string.Equals(stop.LocationId, expectedLocation, StringComparison.Ordinal))
                     {
-                        var what = stop.Action == StopAction.Pickup ? "pickup" : "delivery";
+                        var (what, whose) = stop.Action == StopAction.Pickup ? ("preuzimanje", "preuzimanja") : ("isporuka", "isporuke");
                         Add("R8", truckId, k,
-                            $"Step {step} of {label}: {what} of order {order.Id} is at {stop.LocationId}, expected {what} location {expectedLocation}.");
+                            $"{Cap(label)}, korak {step}: {what} naloga {order.Id} je na lokaciji {stop.LocationId}, a očekivana lokacija {whose} je {expectedLocation}.");
                     }
 
                     if (stop.Action == StopAction.Pickup)
@@ -282,13 +298,13 @@ public static class PlanValidator
                 if (stop.LoadKgAfter != loadKg)
                 {
                     Add("R10", truckId, k,
-                        $"Reported load {stop.LoadKgAfter} kg after step {step} of {label} differs from computed {loadKg} kg.");
+                        $"{Cap(label)}, nakon koraka {step}: prijavljeni teret {Kg(stop.LoadKgAfter)} razlikuje se od izračunatog {Kg(loadKg)}.");
                 }
 
                 if (stop.MachinesAfter != machines)
                 {
                     Add("R10", truckId, k,
-                        $"Reported {stop.MachinesAfter} machines after step {step} of {label} differs from computed {machines}.");
+                        $"{Cap(label)}, nakon koraka {step}: prijavljeni broj strojeva {I(stop.MachinesAfter)} razlikuje se od izračunatog {I(machines)}.");
                 }
 
                 if (scenarioTruck is not null)
@@ -297,14 +313,14 @@ public static class PlanValidator
                     if (loadKg > scenarioTruck.CapacityKg)
                     {
                         Add("R11", truckId, k,
-                            $"Load {loadKg} kg > capacity {scenarioTruck.CapacityKg} kg after step {step} of {label}.");
+                            $"{Cap(label)}, nakon koraka {step}: teret {Kg(loadKg)} > nosivost {Kg(scenarioTruck.CapacityKg)}.");
                     }
 
                     // R12: machines after every action <= max machines.
                     if (machines > scenarioTruck.MaxMachines)
                     {
                         Add("R12", truckId, k,
-                            $"{machines} machines > max {scenarioTruck.MaxMachines} after step {step} of {label}.");
+                            $"{Cap(label)}, nakon koraka {step}: broj strojeva {I(machines)} > dopušteno {I(scenarioTruck.MaxMachines)}.");
                     }
                 }
 
@@ -314,13 +330,13 @@ public static class PlanValidator
                     if (Differs(stop.LegKm, legKm))
                     {
                         Add("R16", truckId, k,
-                            $"Reported leg {N(stop.LegKm)} km to step {step} of {label} differs from computed {N(legKm)} km.");
+                            $"{Cap(label)}, korak {step}: prijavljena dionica {N(stop.LegKm)} km razlikuje se od izračunate {N(legKm)} km.");
                     }
 
                     if (Differs(stop.CumulativeKm, km))
                     {
                         Add("R16", truckId, k,
-                            $"Reported cumulative {N(stop.CumulativeKm)} km at step {step} of {label} differs from computed {N(km)} km.");
+                            $"{Cap(label)}, korak {step}: prijavljena udaljenost do tog koraka {N(stop.CumulativeKm)} km razlikuje se od izračunate {N(km)} km.");
                     }
 
                     // R17 + R18: elapsed time when the action is finished = driving so far + actions so far.
@@ -328,7 +344,7 @@ public static class PlanValidator
                     if (Differs(stop.CumulativeMinutes, cumulativeMinutes))
                     {
                         Add("R17", truckId, k,
-                            $"Reported cumulative {N(stop.CumulativeMinutes)} min at step {step} of {label} differs from computed {N(cumulativeMinutes)} min (driving {N(drivingMinutes)} + {step} actions x {N(minutesPerAction)}).");
+                            $"{Cap(label)}, korak {step}: prijavljeno vrijeme do kraja radnje {N(stop.CumulativeMinutes)} min razlikuje se od izračunatog {N(cumulativeMinutes)} min (vožnja {N(drivingMinutes)} min + {step} × {N(minutesPerAction)} min radnji).");
                     }
                 }
             }
@@ -339,14 +355,14 @@ public static class PlanValidator
             foreach (var (orderId, (_, pickupStep)) in onBoard)
             {
                 Add("R4", truckId, pickupStep,
-                    $"Order {orderId} is picked up at step {pickupStep + 1} of {label} but never delivered.");
+                    $"Nalog {orderId} preuzet je u koraku {pickupStep + 1} ({label}), ali nikad nije isporučen.");
             }
 
             // R28: after the last action the truck is empty.
             if (loadKg != 0 || machines != 0)
             {
                 Add("R28", truckId, lastIndex,
-                    $"{label} is not empty after its last step {lastIndex + 1}: {loadKg} kg, {machines} machines.");
+                    $"{Cap(label)}: kamion nije prazan nakon zadnjeg koraka {lastIndex + 1} ({Kg(loadKg)}, broj strojeva {I(machines)}).");
             }
 
             // R18, R19: every stop is one action of MinutesPerAction; the return to the base is not an action.
@@ -354,14 +370,14 @@ public static class PlanValidator
             if (Differs(route.ActionMinutes, actionMinutes))
             {
                 Add("R18", truckId, null,
-                    $"Reported action time {N(route.ActionMinutes)} min of {label} differs from computed {N(actionMinutes)} min ({stops.Count} actions x {N(minutesPerAction)}).");
+                    $"{Cap(label)}: prijavljeno vrijeme radnji {N(route.ActionMinutes)} min razlikuje se od izračunatog {N(actionMinutes)} min ({stops.Count} × {N(minutesPerAction)} min).");
             }
 
             // R26: order count = number of distinct orders handled by the truck.
             if (route.OrderCount != ordersOnTruck.Count)
             {
                 Add("R26", truckId, null,
-                    $"Reported order count {route.OrderCount} of {label} differs from {ordersOnTruck.Count} orders in its stops.");
+                    $"{Cap(label)}: prijavljeni broj naloga {I(route.OrderCount)} razlikuje se od broja naloga u koracima ({ordersOnTruck.Count}).");
             }
 
             var endsEmpty = loadKg == 0 && machines == 0 && onBoard.Count == 0;
@@ -380,13 +396,13 @@ public static class PlanValidator
                 {
                     // R2: the reported km stop at the last action - the return leg to the base is missing.
                     Add("R2", truckId, null,
-                        $"Route of {label} does not return to base {_index.BaseLocationId}: reported {N(route.TotalKm)} km equals the km up to the last step ({N(km)} km); the return leg {previous.Id} -> {_index.BaseLocationId} ({N(returnLeg)} km) is missing, expected {N(totalKm)} km.");
+                        $"{Cap(label)}: ruta se ne vraća u bazu {_index.BaseLocationId}: prijavljena udaljenost {N(route.TotalKm)} km jednaka je udaljenosti do zadnjeg koraka ({N(km)} km); nedostaje povratna dionica {previous.Id} -> {_index.BaseLocationId} ({N(returnLeg)} km), očekivano {N(totalKm)} km.");
                 }
                 else
                 {
                     // R16: route km = all legs including the return leg.
                     Add("R16", truckId, null,
-                        $"Reported total {N(route.TotalKm)} km of {label} differs from computed {N(totalKm)} km (including return leg {N(returnLeg)} km).");
+                        $"{Cap(label)}: prijavljena ukupna udaljenost {N(route.TotalKm)} km razlikuje se od izračunate {N(totalKm)} km (uključujući povratnu dionicu {N(returnLeg)} km).");
                 }
             }
 
@@ -394,7 +410,7 @@ public static class PlanValidator
             if (Differs(route.DrivingMinutes, totalDriving))
             {
                 Add("R17", truckId, null,
-                    $"Reported driving time {N(route.DrivingMinutes)} min of {label} differs from computed {N(totalDriving)} min.");
+                    $"{Cap(label)}: prijavljeno vrijeme vožnje {N(route.DrivingMinutes)} min razlikuje se od izračunatog {N(totalDriving)} min.");
             }
 
             CheckWorkday(truckId, label, totalDriving, actionMinutes);
@@ -409,7 +425,7 @@ public static class PlanValidator
         {
             if (route.Truck is null)
             {
-                Add("R1", null, null, $"Route {r + 1} has no truck.");
+                Add("R1", null, null, $"Ruta {r + 1} nema kamion.");
                 return null;
             }
 
@@ -421,10 +437,10 @@ public static class PlanValidator
 
             if (occurrences.Count == 0)
             {
-                Add("R1", planTruck.Id, null, $"Truck '{planTruck.Id}' of route {r + 1} does not exist in the scenario.");
+                Add("R1", planTruck.Id, null, $"Kamion '{planTruck.Id}' (ruta {r + 1}) ne postoji u scenariju.");
                 if (first is not null)
                 {
-                    Add("R1", planTruck.Id, null, $"Truck {planTruck.Id} has more than one route (routes {first + 1} and {r + 1}).");
+                    Add("R1", planTruck.Id, null, $"Kamion {planTruck.Id} ima više od jedne rute (rute {first + 1} i {r + 1}).");
                 }
 
                 return null;
@@ -435,8 +451,8 @@ public static class PlanValidator
             if (slot is null)
             {
                 Add("R1", planTruck.Id, null, occurrences.Count == 1
-                    ? $"Truck {planTruck.Id} has more than one route (routes {first + 1} and {r + 1})."
-                    : $"Truck ID {planTruck.Id} has more routes than the {occurrences.Count} scenario trucks with that ID (route {r + 1}).");
+                    ? $"Kamion {planTruck.Id} ima više od jedne rute (rute {first + 1} i {r + 1})."
+                    : $"ID kamiona {planTruck.Id} ima više ruta nego kamiona s tim ID-om u scenariju ({occurrences.Count}); višak: ruta {r + 1}.");
 
                 // The extra route is still checked against the limits of the first truck with that ID.
                 slot = occurrences[0];
@@ -447,7 +463,7 @@ public static class PlanValidator
             if (scenarioTruck.CapacityKg != planTruck.CapacityKg || scenarioTruck.MaxMachines != planTruck.MaxMachines)
             {
                 Add("R1", planTruck.Id, null,
-                    $"Truck {planTruck.Id} limits in the plan ({planTruck.CapacityKg} kg, {planTruck.MaxMachines} machines) differ from the scenario ({scenarioTruck.CapacityKg} kg, {scenarioTruck.MaxMachines} machines).");
+                    $"Ograničenja kamiona {planTruck.Id} u planu ({Kg(planTruck.CapacityKg)}, najviše strojeva {I(planTruck.MaxMachines)}) razlikuju se od scenarija ({Kg(scenarioTruck.CapacityKg)}, najviše strojeva {I(scenarioTruck.MaxMachines)}).");
             }
 
             return slot;
@@ -461,13 +477,13 @@ public static class PlanValidator
             if (slot is { Usable: false })
             {
                 Add("R37", truckId, null,
-                    $"{label} must not be used ({slot.UnusableReason}), but it has {actionCount} actions.");
+                    $"{Cap(label)} ne smije se koristiti ({slot.UnusableReason}), a broj radnji je {actionCount}.");
             }
 
             if (_index.BaseBlockingProblem is { } baseProblem)
             {
                 Add("R37", truckId, null,
-                    $"Base location '{_index.BaseLocationId}' {baseProblem}, so no truck may have actions, but {label} has {actionCount}.");
+                    $"Lokacija baze '{_index.BaseLocationId}' {baseProblem}, pa nijedan kamion ne smije imati radnje, a {label} ima broj radnji {actionCount}.");
             }
         }
 
@@ -476,22 +492,22 @@ public static class PlanValidator
         {
             if (Differs(route.TotalKm, 0))
             {
-                Add("R36", truckId, null, $"Unused {label} (no stops) reports {N(route.TotalKm)} km, expected 0 km.");
+                Add("R36", truckId, null, $"{Cap(label)} nema koraka, a prijavljuje {N(route.TotalKm)} km; očekivano 0 km.");
             }
 
             if (Differs(route.DrivingMinutes, 0))
             {
-                Add("R36", truckId, null, $"Unused {label} (no stops) reports {N(route.DrivingMinutes)} driving minutes, expected 0.");
+                Add("R36", truckId, null, $"{Cap(label)} nema koraka, a prijavljuje {N(route.DrivingMinutes)} min vožnje; očekivano 0.");
             }
 
             if (Differs(route.ActionMinutes, 0))
             {
-                Add("R36", truckId, null, $"Unused {label} (no stops) reports {N(route.ActionMinutes)} action minutes, expected 0.");
+                Add("R36", truckId, null, $"{Cap(label)} nema koraka, a prijavljuje {N(route.ActionMinutes)} min radnji; očekivano 0.");
             }
 
             if (route.OrderCount != 0)
             {
-                Add("R36", truckId, null, $"Unused {label} (no stops) reports {route.OrderCount} orders, expected 0.");
+                Add("R36", truckId, null, $"{Cap(label)} nema koraka, a prijavljuje broj naloga {I(route.OrderCount)}; očekivano 0.");
             }
 
             return new RouteOutcome(slot, _index.BaseCoordinatesReliable, 0, 0, 0, _index.Base, 0, true);
@@ -507,7 +523,7 @@ public static class PlanValidator
             if (problems.Count > 0 && _invalidDataReported.Add(order.Id ?? string.Empty))
             {
                 Add("R37", truckId, k,
-                    $"Order {order.Id} is planned on {label} (step {k + 1}) but has invalid data ({string.Join("; ", problems)}); it must be infeasible with category K4.");
+                    $"Nalog {order.Id} planiran je ({label}, korak {k + 1}), ali ima neispravne podatke ({string.Join("; ", problems)}); mora biti neizvediv s kategorijom K4.");
             }
         }
 
@@ -522,7 +538,7 @@ public static class PlanValidator
             if (pickedUp.TryGetValue(order.Id, out var firstPickup))
             {
                 Add("R4", truckId, k,
-                    $"Order {order.Id} is picked up again at step {step} of {label} (already picked up at step {firstPickup + 1}).");
+                    $"{Cap(label)}, korak {step}: nalog {order.Id} ponovno je preuzet (već preuzet u koraku {firstPickup + 1}).");
                 return;
             }
 
@@ -536,7 +552,7 @@ public static class PlanValidator
             if (machine is not null && scenarioTruck is not null && !scenarioTruck.CanCarry(machine))
             {
                 Add("R13", truckId, k,
-                    $"Machine {machine.Id} ({machine.WeightKg} kg) of order {order.Id} at step {step} is heavier than capacity {scenarioTruck.CapacityKg} kg of {label}.");
+                    $"{Cap(label)}, korak {step}: stroj {machine.Id} ({Kg(machine.WeightKg)}) naloga {order.Id} teži je od nosivosti kamiona ({Kg(scenarioTruck.CapacityKg)}).");
             }
 
         }
@@ -558,7 +574,7 @@ public static class PlanValidator
             // R4: exactly one delivery per order.
             if (delivered.Contains(order.Id))
             {
-                Add("R4", truckId, k, $"Order {order.Id} is delivered again at step {step} of {label}.");
+                Add("R4", truckId, k, $"{Cap(label)}, korak {step}: nalog {order.Id} ponovno je isporučen.");
                 return;
             }
 
@@ -568,7 +584,7 @@ public static class PlanValidator
             {
                 // R6: pickup strictly before delivery in the same route.
                 Add("R6", truckId, k,
-                    $"Order {order.Id} is delivered at step {step} of {label} before its pickup at step {laterPickup.Step + 1}.");
+                    $"{Cap(label)}, korak {step}: nalog {order.Id} isporučen je prije preuzimanja (korak {laterPickup.Step + 1}).");
                 return;
             }
 
@@ -577,12 +593,12 @@ public static class PlanValidator
             {
                 // R5: pickup and delivery of an order by the same truck.
                 Add("R5", truckId, k,
-                    $"Order {order.Id} is delivered by {label} at step {step} but picked up by {_labels[otherPickup.Route]} (step {otherPickup.Step + 1}).");
+                    $"Nalog {order.Id} isporučuje {label} (korak {step}), a preuzima ga {_labels[otherPickup.Route]} (korak {otherPickup.Step + 1}).");
                 return;
             }
 
             // R6 (and R4): a delivery without any pickup.
-            Add("R6", truckId, k, $"Order {order.Id} is delivered at step {step} of {label} without any pickup.");
+            Add("R6", truckId, k, $"{Cap(label)}, korak {step}: nalog {order.Id} isporučen je bez preuzimanja.");
         }
 
         // R20 / R21 / R29 / R35: per truck, whole route from base to base, inclusive limit.
@@ -594,7 +610,7 @@ public static class PlanValidator
                 if (Exceeds(drivingMinutes, max))
                 {
                     Add("R21", truckId, null,
-                        $"Driving time {N(drivingMinutes)} min of {label} > max {N(max)} min (DrivingOnly).");
+                        $"{Cap(label)}: vrijeme vožnje {N(drivingMinutes)} min > radni dan {N(max)} min ({ModeName}).");
                 }
             }
             else
@@ -603,7 +619,7 @@ public static class PlanValidator
                 if (Exceeds(total, max))
                 {
                     Add("R20", truckId, null,
-                        $"Working time {N(total)} min of {label} (driving {N(drivingMinutes)} + actions {N(actionMinutes)}) > max {N(max)} min (Total).");
+                        $"{Cap(label)}: radno vrijeme {N(total)} min (vožnja {N(drivingMinutes)} + radnje {N(actionMinutes)}) > radni dan {N(max)} min ({ModeName}).");
                 }
             }
         }
@@ -622,7 +638,7 @@ public static class PlanValidator
                 var second = routes[1];
                 var step = refs.First(x => x.Route == second).Step;
                 Add("R7", _routes[second]?.Truck?.Id, step,
-                    $"Order {orderId} appears on more than one route: {string.Join(", ", routes.Select(x => _labels[x]))}.");
+                    $"Nalog {orderId} nalazi se na više ruta: {string.Join(", ", routes.Select(x => _labels[x]))}.");
             }
         }
 
@@ -639,7 +655,7 @@ public static class PlanValidator
                 var entry = _infeasible[i];
                 if (entry?.Order is null)
                 {
-                    Add("R23", null, null, $"Infeasible entry {i + 1} has no order.");
+                    Add("R23", null, null, $"Neizvediva stavka {i + 1} nema nalog.");
                     continue;
                 }
 
@@ -647,7 +663,7 @@ public static class PlanValidator
                 var group = _index.FindOrderGroup(id);
                 if (group is null)
                 {
-                    Add("R23", null, null, $"Infeasible order '{id}' is not in the scenario.");
+                    Add("R23", null, null, $"Neizvediv nalog '{id}' ne postoji u scenariju.");
                     continue;
                 }
 
@@ -655,7 +671,7 @@ public static class PlanValidator
                 {
                     // R23: the entry must be an input order, not a different order that only shares the ID.
                     Add("R23", null, null,
-                        $"Infeasible entry {i + 1} ({entry.Order}) does not match the data of any scenario order with ID '{id}'.");
+                        $"Neizvediva stavka {i + 1} (stroj {entry.Order.MachineId}, {entry.Order.PickupLocationId} -> {entry.Order.DeliveryLocationId}) ne odgovara podacima nijednog naloga s ID-om '{id}' u scenariju.");
                 }
 
                 if (!entriesById.TryGetValue(group.Id, out var list))
@@ -679,19 +695,19 @@ public static class PlanValidator
                 {
                     if (!planned && count == 0)
                     {
-                        Add("R23", null, null, $"Order {group.Id} is neither planned nor listed as infeasible.");
+                        Add("R23", null, null, $"Nalog {group.Id} nije ni planiran ni naveden kao neizvediv.");
                     }
 
                     if (planned && count > 0)
                     {
                         var routes = string.Join(", ", refs!.Select(x => x.Route).Distinct().Select(x => _labels[x]));
                         Add("R23", _routes[refs![0].Route]?.Truck?.Id, refs[0].Step,
-                            $"Order {group.Id} is planned ({routes}) and also listed as infeasible.");
+                            $"Nalog {group.Id} planiran je ({routes}) i ujedno naveden kao neizvediv.");
                     }
 
                     if (count > 1)
                     {
-                        Add("R23", null, null, $"Order {group.Id} is listed as infeasible {count} times.");
+                        Add("R23", null, null, $"Nalog {group.Id} naveden je kao neizvediv {count} puta.");
                     }
 
                     continue;
@@ -700,12 +716,14 @@ public static class PlanValidator
                 var covered = (planned ? 1 : 0) + count;
                 if (covered != n)
                 {
-                    var how = planned ? $"planned once and listed as infeasible {count} times" : $"listed as infeasible {count} times";
+                    var how = planned
+                        ? $"planiran je jednom, a broj neizvedivih zapisa je {count}"
+                        : $"nije planiran, a broj neizvedivih zapisa je {count}";
                     var missing = covered < n
-                        ? $"{n - covered} of them are neither planned nor listed as infeasible"
-                        : $"{covered - n} record(s) too many";
+                        ? $"bez plana i bez neizvedivog zapisa ostaje ih {n - covered}"
+                        : $"zapisa je previše: {covered - n}";
                     Add("R23", planned ? _routes[refs![0].Route]?.Truck?.Id : null, planned ? refs![0].Step : null,
-                        $"Order ID {group.Id} occurs {n} times in the scenario but is {how}: {missing} (each occurrence needs exactly one record; the second and later ones as K4).");
+                        $"ID naloga {group.Id} pojavljuje se u scenariju {n} puta, ali {how}: {missing} (svako pojavljivanje treba točno jedan zapis; drugo i svako sljedeće kao K4).");
                 }
             }
         }
@@ -765,13 +783,13 @@ public static class PlanValidator
                 var id = entry.Order.Id;
                 if (string.IsNullOrWhiteSpace(entry.Message))
                 {
-                    Add("R33", null, null, $"Infeasible order {id} has no message.");
+                    Add("R33", null, null, $"Neizvediv nalog {id} nema poruku.");
                 }
 
                 var reasonDefined = Enum.IsDefined(entry.Reason);
                 if (!reasonDefined)
                 {
-                    Add("R33", null, null, $"Infeasible order {id} has undefined reason category {(int)entry.Reason}.");
+                    Add("R33", null, null, $"Neizvediv nalog {id} ima nedefiniranu kategoriju razloga {I((int)entry.Reason)}.");
                 }
 
                 var group = _index.FindOrderGroup(id);
@@ -783,10 +801,10 @@ public static class PlanValidator
                 var expected = ExpectCategory(group, occurrence);
                 if (reasonDefined && !expected.Allowed.Contains(entry.Reason))
                 {
-                    var allowed = string.Join(" or ", expected.Allowed.Select(Code));
-                    var which = group.Occurrences.Count > 1 ? $" (occurrence {occurrence + 1} of {group.Occurrences.Count})" : string.Empty;
+                    var allowed = string.Join(" ili ", expected.Allowed.Select(Code));
+                    var which = group.Occurrences.Count > 1 ? $" (pojavljivanje {occurrence + 1} od {group.Occurrences.Count})" : string.Empty;
                     Add("R33", null, null,
-                        $"Infeasible order {id}{which} is reported as {Code(entry.Reason)} ({entry.Reason}), but the data give {allowed}: {expected.Detail}.");
+                        $"Neizvediv nalog {id}{which} prijavljen je kao {Code(entry.Reason)} ({entry.Reason}), ali prema podacima treba biti {allowed}: {expected.Detail}.");
                 }
 
                 if (expected.FeasibleAlone && occurrence == 0 && !_occurrences.ContainsKey(group.Id) && reportedR32.Add(group.Id))
@@ -804,14 +822,14 @@ public static class PlanValidator
             // R37: without a base every order is K4.
             if (_index.Base is null)
             {
-                return new ExpectedCategory(k4, $"base location '{_index.BaseLocationId}' does not exist, so every order is K4", false);
+                return new ExpectedCategory(k4, $"lokacija baze '{_index.BaseLocationId}' ne postoji, pa je svaki nalog K4", false);
             }
 
             // R37: the second and every later order with the same ID is K4.
             if (occurrence > 0)
             {
                 return new ExpectedCategory(k4,
-                    $"order ID '{group.Id}' is duplicated; occurrence {occurrence + 1} of {group.Occurrences.Count} must be K4", false);
+                    $"ID naloga '{group.Id}' je dupliciran; pojavljivanje {occurrence + 1} od {group.Occurrences.Count} mora biti K4", false);
             }
 
             // R37: unknown / duplicated / weightless machine, unknown / duplicated / non-numeric location,
@@ -829,7 +847,7 @@ public static class PlanValidator
                 // different coordinates): the spec does not say what happens, no time can be verified - any category.
                 allowed.UnionWith(Enum.GetValues<InfeasibilityReason>());
                 return new ExpectedCategory(allowed,
-                    $"base location '{_index.BaseLocationId}' has non-numeric or ambiguous coordinates", false);
+                    $"lokacija baze '{_index.BaseLocationId}' ima nenumeričke ili dvosmislene koordinate", false);
             }
 
             // T19, T28 and the ambiguous "machine already used" reading: K4 is allowed, not required.
@@ -845,10 +863,10 @@ public static class PlanValidator
             {
                 allowed.Add(InfeasibilityReason.ExceedsAllCapacities);
                 var capacities = _index.UsableTrucks.Count == 0
-                    ? "there is no usable truck"
-                    : $"max usable capacity {_index.UsableTrucks.Max(t => t.Truck.CapacityKg)} kg";
+                    ? "nema upotrebljivih kamiona"
+                    : $"najveća nosivost upotrebljivog kamiona {Kg(_index.UsableTrucks.Max(t => t.Truck.CapacityKg))}";
                 return new ExpectedCategory(allowed,
-                    $"machine {machine.Id} {machine.WeightKg} kg > capacity of every usable truck ({capacities})", false);
+                    $"stroj {machine.Id} ({Kg(machine.WeightKg)}) teži je od nosivosti svih upotrebljivih kamiona ({capacities})", false);
             }
 
             // R33 K2: alone (base -> pickup -> delivery -> base) longer than the working day (R20 / R21).
@@ -857,7 +875,7 @@ public static class PlanValidator
             {
                 allowed.Add(InfeasibilityReason.ExceedsWorkday);
                 allowed.Add(InfeasibilityReason.DoesNotFitWithOtherOrders);
-                return new ExpectedCategory(allowed, "the base location is unknown, so the time cannot be computed", false);
+                return new ExpectedCategory(allowed, "lokacija baze nije poznata, pa se vrijeme ne može izračunati", false);
             }
 
             var max = _options.MaxMinutes;
@@ -865,13 +883,13 @@ public static class PlanValidator
             {
                 allowed.Add(InfeasibilityReason.ExceedsWorkday);
                 return new ExpectedCategory(allowed,
-                    $"alone (base -> pickup -> delivery -> base) the order needs {N(needed.Value)} min > {N(max)} min ({ModeName})", false);
+                    $"sam (baza -> preuzimanje -> isporuka -> baza) nalog traži {N(needed.Value)} min > {N(max)} min ({ModeName})", false);
             }
 
             // R33 K3: feasible alone. R32 is checked only when no reading of the data makes the order K4.
             allowed.Add(InfeasibilityReason.DoesNotFitWithOtherOrders);
             return new ExpectedCategory(allowed,
-                $"machine {machine.Id} {machine.WeightKg} kg fits truck {capable[0].Id} ({capable[0].CapacityKg} kg) and alone the order needs {N(needed.Value)} min <= {N(max)} min ({ModeName})",
+                $"stroj {machine.Id} ({Kg(machine.WeightKg)}) stane u kamion {capable[0].Id} ({Kg(capable[0].CapacityKg)}), a sam nalog traži {N(needed.Value)} min <= {N(max)} min ({ModeName})",
                 !group.PossiblyReusesMachine);
         }
 
@@ -943,7 +961,7 @@ public static class PlanValidator
                 }
 
                 Add("R32", truck.Id, null,
-                    $"Order {order.Id} is listed as infeasible, but it fits at the end of truck {truck.Id}'s route: {N(needed)} min <= {N(_options.MaxMinutes)} min ({ModeName}), machine {machine.WeightKg} kg <= {truck.CapacityKg} kg; a feasible order must not be left out.");
+                    $"Nalog {order.Id} naveden je kao neizvediv, ali stane na kraj rute kamiona {truck.Id}: {N(needed)} min <= {N(_options.MaxMinutes)} min ({ModeName}), stroj {Kg(machine.WeightKg)} <= nosivost {Kg(truck.CapacityKg)}; izvediv nalog ne smije biti izostavljen.");
                 return;
             }
         }
@@ -962,8 +980,8 @@ public static class PlanValidator
                 : Differs(_plan.TotalKm, reportedSum);
             if (wrong)
             {
-                var expected = allKnown ? $"computed {N(recomputedSum)} km" : $"sum of reported route km {N(reportedSum)} km";
-                Add("R16", null, null, $"Reported plan total {N(_plan.TotalKm)} km differs from the {expected}.");
+                var expected = allKnown ? $"izračunate {N(recomputedSum)} km" : $"zbroja prijavljenih udaljenosti ruta {N(reportedSum)} km";
+                Add("R16", null, null, $"Prijavljena ukupna udaljenost plana {N(_plan.TotalKm)} km razlikuje se od {expected}.");
             }
         }
     }
