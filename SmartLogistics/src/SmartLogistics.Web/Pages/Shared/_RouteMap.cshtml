@@ -1,0 +1,43 @@
+@model SmartLogistics.Web.ViewModels.Transport.MapViewModel
+@* Route map of the plan. Every coordinate is computed by PlanMapper / MapGeometry (y = -Y); colours come from CSS tokens. *@
+
+<figure class="sl-map">
+    <svg class="sl-map-canvas sl-map-route-canvas" viewBox="@Model.ViewBox" role="img" aria-label="Karta ruta kamiona: strelice pokazuju smjer vožnje, brojevi redoslijed radnji">
+        <defs>
+            @* One arrowhead per truck colour; the colour comes from site.css *@
+            <marker id="arrow-truck-a" class="sl-map-arrowhead sl-map-arrowhead-truck-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="arrow-truck-b" class="sl-map-arrowhead sl-map-arrowhead-truck-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="arrow-any" class="sl-map-arrowhead sl-map-arrowhead-any" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+        </defs>
+
+        <partial name="_MapFrame" model="Model.Frame" />
+
+        @foreach (var segment in Model.Segments)
+        {
+            <line class="@segment.CssClass" x1="@segment.X1" y1="@segment.Y1" x2="@segment.X2" y2="@segment.Y2">
+                <title>@segment.Title</title>
+            </line>
+        }
+
+        @foreach (var location in Model.Locations)
+        {
+            <g class="@location.CssClass">
+                <circle cx="@location.X" cy="@location.Y" r="@Model.PointRadius" />
+                <text x="@location.LabelX" y="@location.LabelY">@location.Id</text>
+            </g>
+        }
+
+        @foreach (var step in Model.Steps)
+        {
+            <g><text class="@step.CssClass" x="@step.X" y="@step.Y"><title>@step.Title</title>@step.Text</text></g>
+        }
+    </svg>
+
+    <figcaption class="sl-map-legend">
+        @foreach (var item in Model.Legend)
+        {
+            <span class="sl-map-legend-item"><span class="@item.SwatchCssClass"></span>@item.Text</span>
+        }
+        <span class="sl-map-legend-item sl-cell-muted">brojevi = redoslijed radnji kamiona</span>
+    </figcaption>
+</figure>

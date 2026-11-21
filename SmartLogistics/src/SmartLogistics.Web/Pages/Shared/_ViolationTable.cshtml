@@ -1,7 +1,7 @@
 @model IReadOnlyList<ViolationRowViewModel>
 
 <div class="table-responsive">
-    <table class="table data-table">
+    <table class="table sl-table">
         <thead>
             <tr>
                 <th scope="col">Pravilo</th>
@@ -14,10 +14,10 @@
             @foreach (var violation in Model)
             {
                 <tr>
-                    <td><span class="badge-soft is-danger">@violation.RuleId</span></td>
+                    <td><span class="sl-badge sl-badge-danger">@violation.RuleId</span></td>
                     <td>@violation.Truck</td>
-                    <td class="text-end num">@violation.Step</td>
-                    <td class="cell-muted">@violation.Message</td>
+                    <td class="text-end sl-num">@violation.Step</td>
+                    <td class="sl-cell-muted">@violation.Message</td>
                 </tr>
             }
         </tbody>

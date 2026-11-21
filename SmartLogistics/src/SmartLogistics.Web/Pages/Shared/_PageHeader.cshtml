@@ -1,10 +1,10 @@
 @model PageHeaderViewModel
 
-<header class="page-header">
-    <div class="page-eyebrow">@Model.Eyebrow</div>
-    <h1 class="page-title">@Model.Title</h1>
+<header class="sl-page-header">
+    <div class="sl-page-eyebrow">@Model.Eyebrow</div>
+    <h1 class="sl-page-title">@Model.Title</h1>
     @if (Model.Subtitle is not null)
     {
-        <p class="page-subtitle">@Model.Subtitle</p>
+        <p class="sl-page-subtitle">@Model.Subtitle</p>
     }
 </header>

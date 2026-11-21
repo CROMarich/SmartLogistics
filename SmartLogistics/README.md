@@ -1,176 +1,226 @@
 # Smart Logistics Planner
 
-Web application that plans the transport of construction machines between locations: it assigns
-transport orders to two trucks, orders the pickups and deliveries of every truck and minimises the
-total distance, with a mandatory return to the depot. The planner is **exact** and every plan is
-checked by an **independent validator** before it is shown.
-
-| Workday interpretation | Total | Truck A | Truck B | Orders planned | Validator |
-|------------------------|------:|--------:|--------:|---------------:|-----------|
-| `Total` – driving + actions ≤ 9 h (default) | **200.1 km** | 37.2 km | 162.9 km | 10 / 10 | 0 violations |
-| `DrivingOnly` – driving ≤ 9 h | **182.2 km** | 0 km (unused) | 182.2 km | 10 / 10 | 0 violations |
-
-Full routes (location, action, order, load after every action, km, minutes): [docs/rezultati.md](docs/rezultati.md).
-
-The user interface and the project documents in `docs/` are in Croatian; code, comments and this
-README are in English.
+A web application that plans the transport of construction machines with two trucks – assigning orders to
+trucks, ordering pickups and deliveries, and minimising the total distance with a mandatory return to the depot.
 
 ---
 
-## Quick start
+## 1. Prerequisites and running
 
-**Prerequisites:** .NET 10 SDK (SDK 11 also builds the solution). No database, no external services.
+**Prerequisites:** .NET 10 SDK (the solution also builds with SDK 11). No database and no external services.
 
 ```bash
-dotnet build              # whole solution
-dotnet test               # 144 tests
+dotnet build
+dotnet test
 dotnet run --project src/SmartLogistics.Web
 ```
 
-Open the URL printed by `dotnet run` (launch profile: `http://localhost:5186`). In Visual Studio or
-VS Code open `SmartLogistics.slnx` and start `SmartLogistics.Web`.
+Open the URL printed by `dotnet run` (launch profile: `http://localhost:5186`). In Visual Studio or VS Code open
+`SmartLogistics.slnx` and start `SmartLogistics.Web`.
 
-Input data lives in [`data/scenario.json`](data/scenario.json). The app reads it on every request,
-so an edited file is planned again on the next page load; a malformed file is shown as an error
-message instead of crashing the app.
+The input data is in [`data/scenario.json`](data/scenario.json). It is loaded into an in-memory store when the
+application starts; orders can then be added, edited and deleted on the **Nalozi** page and reset to the original
+file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, comments and this README are in English.
 
-## What the application shows
+| Page | URL | Content |
+|------|-----|---------|
+| Ulazni podaci (input data) | `/` | Trucks, machines, locations and orders; map of orders; 10 × 10 distance matrix |
+| Nalozi (orders) | `/Orders` | Add, edit and delete orders, including a new machine with a typed-in weight |
+| Plan prijevoza (transport plan) | `/Plan` | Plan per truck, warnings, validator result, SVG route map; query parameters `algoritam=exact|ortools`, `nacin=ukupno|voznja`, `maxMinuta=1..1440` (e.g. `/Plan?algoritam=ortools&nacin=voznja&maxMinuta=300`) |
+| Pregled, Dokumentacija, Pravila i provjere | `/Pregled`, `/Dokumentacija`, `/Pravila` | Project progress, project documents, rules and validator coverage |
 
-| Page (menu) | Content |
-|-------------|---------|
-| **Pregled** (overview) | Project progress, key figures, documents, pending decisions |
-| **Dokumentacija** | Task, specification, decision log, AI log, results, time spent, design system – rendered from `docs/*.md` |
-| **Pravila i provjere** (rules) | Rules R1–R39 from the specification, which of them the validator checks, and a live validator run |
-| **Ulazni podaci** (input data) | Trucks, machines (which truck they fit on), locations, orders, 10×10 distance matrix, map of locations and orders |
-| **Plan ruta** (route plan) | Switch between `Total` and `DrivingOnly`; per truck: km, driving/action/total time, workday usage, and the full route with the load after every action; infeasible orders with a reason; validator result; computation time and search statistics |
-| **Karta** (map) | SVG map of both routes with direction arrows |
+## 2. Screenshots
 
-## Domain rules and assumptions
+<!-- Screenshots are added by hand. -->
+![Transport plan](docs/screenshot-plan.png)
 
-The task was turned into 39 numbered, testable rules in [docs/spec.md](docs/spec.md). The most
-important ones:
+![Route map](docs/screenshot-map.png)
 
-- Truck A: 3500 kg / 2 machines, truck B: 10000 kg / 3 machines – the limits hold **after every action**.
-- The same truck picks up and delivers an order; pickup before delivery.
-- Every route starts and ends at the depot L0; a truck may stay unused.
-- A leg is the Euclidean distance **rounded to one decimal** (`MidpointRounding.AwayFromZero`) before summing.
-- 60 km/h (1 km = 1 min); every pickup or delivery takes 20 min, also at the depot.
-- **"The driver may drive 9 h a day" is ambiguous.** Default `WorkdayMode.Total` counts driving + actions
-  (≤ 540 min); `WorkdayMode.DrivingOnly` counts driving only. The app shows both.
-- A feasible order may not be dropped to save kilometres: the objective is *most planned orders, then
-  fewest km*. An order that cannot be planned is reported with a category (K1 heavier than every truck,
-  K2 does not fit into the workday even alone, K3 does not fit together with the other orders, K4 invalid data).
+## 3. The problem
 
-Every assumption, deviation and proposal is recorded with its reason and status in
-[docs/odluke.md](docs/odluke.md); the list of decisions still waiting for approval is at the top of that file.
+This is a **Pickup and Delivery Vehicle Routing Problem (PDP-VRP)** with capacities and a working-day limit:
 
-## How the planner works
+- Two trucks start and end at the depot L0: **A** – 3500 kg, at most 2 machines; **B** – 10000 kg, at most 3 machines.
+- Ten orders; each order moves one machine (800–9400 kg) from a pickup location to a delivery location.
+- The same truck picks up and delivers an order, and the pickup comes before the delivery.
+- Weight and machine count must stay within the truck's limits **after every action**.
+- A leg is the Euclidean distance between two locations, **rounded to one decimal** before legs are summed.
+- Speed is 60 km/h (1 km = 1 min); every pickup or delivery takes 20 min, also at the depot.
+- The driver may drive 9 hours a day.
+- Goal: minimise the total distance; orders that cannot be served must be reported clearly.
 
-`Core/Planning/ExactDpPlanner.cs` (the XML comment of the class contains the full description and proofs).
+The task was turned into 40 numbered, testable rules in [docs/spec.md](docs/spec.md).
 
-1. **Assignment.** An order may only go to a truck that can carry its machine. Orders N06–N10 (3900–9400 kg)
-   fit only truck B; for the k orders both trucks can carry (N01–N05) **all 2^k = 32 assignments** are tried.
-2. **Shortest route per truck – dynamic programming.** State = (current location, status of every order:
-   0 not picked up, 1 on the truck, 2 delivered), with the status encoded as a base-3 number. Value =
-   minimum remaining km to finish all orders and return to L0, memoised in a dictionary. Transitions: pick up
-   an order with status 0 if weight and machine count still fit, or deliver an order with status 1. The load is
-   derived from the status, not stored. The route is reconstructed from the memo.
-3. **Working day.** For a fixed set of orders the number of actions is fixed (2 per order) and driving time
-   grows with km, so the shortest route is also the fastest. The workday limit is therefore checked after the
-   shortest route is found; an assignment that breaks it on any truck is infeasible.
-4. The feasible assignment with the smallest total km wins. If no assignment of all orders is feasible, the
-   search is extended with an "unassigned" option and the planner maximises the number of planned orders first.
-0. **Input checks** (`Core/Feasibility.cs`). Invalid data never stops planning – the planner always returns a plan. Invalid orders (unknown machine or location, pickup == delivery, weight ≤ 0, duplicate order, …) are reported as K4, a machine heavier than every usable truck as K1, an order that alone exceeds the working day as K2; unusable trucks (repeated ID, capacity ≤ 0) are not used. Only invalid `PlanningOptions` throw.
-5. **Self-check.** Before returning, the plan goes through `PlanValidator`; any violation throws (it would be a bug).
-6. **Working day too short for all orders.** The planner leaves out the smallest possible number of orders (1, then 2, …) and, among those plans, picks the one with the fewest km; omitted orders are K3 "Ne stane u radni dan". Example: a 300-minute day leaves out N08 and N09 (8 orders, 203.8 km), confirmed by an independent exhaustive test oracle.
+## 4. Assumptions
 
-Distances are kept in **whole tenths of a km** (`int`) inside the planner, so sums and tie-breaking are exact
-and the result is deterministic. For the task data the search tries 32 assignments, solves 63 distinct DPs
-(284,366 states) and takes about **40–90 ms**.
+All assumptions and decisions are recorded with their reasons in [docs/odluke.md](docs/odluke.md). The most important:
 
-The planner is exact, not a heuristic: it enumerates every assignment and solves every truck's routing
-optimally, and the two trucks are independent once the assignment is fixed.
+- **"9 hours of driving" is ambiguous.** The default `WorkdayMode.Total` counts driving **and** actions
+  (≤ 540 min per truck, including the return to the depot). The alternative `WorkdayMode.DrivingOnly` counts driving
+  only. The application shows both. The interpretation changes the result:
 
-## How the plan is validated
+  | Mode | Total distance | Why |
+  |------|---------------:|-----|
+  | `Total` (default) | **200.1 km** | Truck B cannot do all 10 orders within 540 min (400 min of actions + at least 182.2 min of driving), so truck A takes one order. |
+  | `DrivingOnly` | **182.2 km** | Truck B does all 10 orders; its working day including actions is 9 h 42 min. |
 
-`Core/Validation/PlanValidator.cs` was written **only from the specification**, without access to the
-planner code (a rule in the agent's instructions, see T5). It replays every route from the depot step by step and **recomputes** km, minutes, load and
-machine count instead of trusting the numbers in the plan. It returns a list of **all** violations (rule ID,
-truck, step, message); it never stops at the first one. It checks capacity and machine count after every
-action, pickup before delivery, same truck, correct locations, return to depot, empty truck at the end,
-reported km and minutes, the workday limit for the selected mode, and that every order is planned exactly
-once or listed as infeasible with a valid reason. 23 of the 39 rules are checked at plan level; the others
-are properties of the input, the options or the UI.
+- A feasible order is never dropped to save kilometres: the objective is **most planned orders, then fewest km**.
+- One working day, one continuous route per truck; the depot appears in the middle of a route only as the place of an
+  action (orders N04 and N05). Empty intermediate stops are not allowed.
+- Invalid input never stops planning – the planner always returns a plan (see *Infeasible orders* below).
 
-## Tests
+## 5. Optimisation logic
 
-`dotnet test` – **144 tests, all green.**
+The exact planner is `Core/Planning/ExactDpPlanner.cs`; a detailed walkthrough is in [docs/planer.md](docs/planer.md).
 
-| Test class | Tests | Purpose |
-|------------|------:|---------|
-| `DistanceTests` | 16 | Reference legs (L0→L1 = 8.5, L3→L8 = 8.5, L5→L9 = 34.9), symmetry, zero diagonal, midpoint rounding |
-| `ScenarioDataTests` | 7 | `scenario.json` matches the task; default options |
-| `PlanBuilderTests` | 4 | The test helper that builds plans by hand computes the same numbers as a manual calculation |
-| `PlanValidatorValidPlanTests` | 15 | Valid plans and boundary cases pass (exactly 10000 kg, exactly 540 min, actions at the depot, unused truck) |
-| `PlanValidatorViolationTests` | 38 | Hand-built invalid plans are rejected with the right rule: overload (R11), too many machines (R12), delivery before pickup (R6), picked up by A / delivered by B (R5), no return to depot (R2), machine left on the truck (R28), wrong km (R16), workday exceeded (R20/R21), and more |
-| `ReferenceSolutionTests` | 9 | Planner returns 200.1 km (`Total`) and 182.2 km (`DrivingOnly`), its plans pass the validator, one route per truck, deterministic, `DrivingOnly` ≤ `Total` |
-| `InvalidInputPlanningTests` | 36 | Invalid input never crashes: 11000 kg machine (K1, rest at 200.1 km), unknown location, pickup == delivery, weight ≤ 0, duplicate order, unknown or reused machine, missing base, unusable trucks – all K4/K1 with a valid plan |
-| `WorkdayOverflowPlanningTests` | 19 | Short working day (300 / 200 / 80 min): plan passes the validator, omitted orders are K3 "Ne stane u radni dan", minimal omission and km confirmed by an independent exhaustive oracle, deterministic |
+**Assignment.** An order may go only to a truck that can carry its machine. Orders N06–N10 (3900–9400 kg) fit only
+truck B; for the five orders both trucks can carry (N01–N05) **all 2^5 = 32 assignments** are tried.
 
-Floating-point comparisons use a tolerance. Tests are tagged with the rule they cover (`[Trait("Rule", "R11")]`).
+**Dynamic programming per truck.** For every truck and its set of orders the shortest route is computed exactly.
+The state is **(current location, status of every order)**, where the status of an order is 0 = not picked up,
+1 = on the truck, 2 = delivered, encoded as one base-3 number. The value of a state is the minimum remaining distance
+to finish all orders and return to the depot, memoised in a dictionary. A pickup is allowed only if the weight and
+machine count after it fit the truck; the load is derived from the status, not stored. The route is reconstructed
+from the memo. Distances are kept in whole tenths of a kilometre (`int`), so sums and ties are exact and the result
+is deterministic.
 
-## Project structure
+**Why the result is optimal.** The DP explores every valid sequence of actions for a truck (the remaining distance
+depends only on the state, so memoisation is correct); once the assignment is fixed the trucks are independent; and
+all assignments are enumerated. The minimum found is therefore the global minimum. It is confirmed independently:
+the plan passes a validator written only from the specification, and an exhaustive test oracle reproduces the same totals.
+
+**Why the working day is checked afterwards.** For a fixed set of m orders every route has exactly 2m actions, so the
+action time is constant, while driving time grows with distance. The shortest route is therefore also the fastest:
+if it does not fit the working day, no route for that set does. Time is checked once, after the DP.
+
+**Complexity.** Up to ∏ (trucks per order) assignments; one DP over m orders has at most 3^m × (2m + 1) states, each
+with O(m) work; with caching per (truck, order set) the worst case is O(T · 4^n · n²). For the task data the search
+evaluates 32 assignments, solves 63 DPs with 284,366 states and takes about 0.1–0.15 s in the running application (152 ms for `Total`, 114 ms for `DrivingOnly` on first request).
+
+**Scaling.** Measured on synthetic data where every order fits both trucks, each extra order roughly multiplies the
+time by four: 10 orders 0.7 s, 12 orders 11 s, 14 orders 175 s (see [docs/planer.md](docs/planer.md)). For larger
+problems the application also offers a heuristic planner, `Core/Planning/OrToolsPlanner.cs` (Google OR-Tools:
+pickup-and-delivery pairs, weight, count and time dimensions, `PATH_CHEAPEST_ARC` + `GUIDED_LOCAL_SEARCH`, 5 s limit).
+Its result goes through the same validator, and the UI marks it as "optimum not guaranteed". See *Results* for the
+comparison on the task data.
+
+**Infeasible orders.** Before planning, `Core/Feasibility.cs` classifies every order: **K4** invalid data (unknown
+machine or location, pickup = delivery, weight ≤ 0, duplicate order), **K1** machine heavier than every truck,
+**K2** the order alone does not fit into the working day. If the remaining orders cannot all fit into the working day,
+the planner leaves out the smallest possible number of orders (one, then two, …) and, among those plans, picks the one
+with the fewest kilometres; omitted orders are **K3** ("Ne stane u radni dan"). Every infeasible order is shown with
+its reason and numbers.
+
+## 6. Architecture
 
 ```
-SmartLogistics.slnx
-data/scenario.json                     input data from the task
-docs/                                  task, specification, decisions, results, AI log, time, design system
-src/SmartLogistics.Core/               domain logic, no dependency on Web
-  Domain/                              records: Location, Truck, Machine, TransportOrder, Scenario,
-                                       Stop, TruckRoute, Plan, PlanningOptions, WorkdayMode
-  Distance.cs                          rounded leg + distance matrix
-  ScenarioLoader.cs                    strict JSON loading
-  Planning/IRoutePlanner.cs            planner contract
-  Planning/ExactDpPlanner.cs, ...      exact planner
-  Validation/PlanValidator.cs, ...     independent validator
-src/SmartLogistics.Web/                ASP.NET Core Razor Pages
-  Pages/                               pages + partial views in Pages/Shared
-  ViewModels/                          everything a page shows, already formatted (km, kg, hh:mm)
-  Services/                            scenario loading, plan cache, docs reader, Markdown renderer
-  wwwroot/css/site.css                 the whole design system (CSS variables, no inline styles)
-tests/SmartLogistics.Tests/            xUnit tests
-.claude/agents/                        sub-agent definitions used during development
-CLAUDE.md                              project rules for the AI assistant
+src/SmartLogistics.Core      domain logic, no dependency on Web
+  Domain/                    records: Location, Truck, Machine, TransportOrder, Scenario, Stop, TruckRoute, Plan, PlanningOptions
+  Distance.cs                rounded legs and distance matrix
+  Feasibility.cs             input checks and infeasible orders (K1, K2, K4)
+  Planning/                  IRoutePlanner, ExactDpPlanner (exact), OrToolsPlanner (heuristic)
+  Validation/                PlanValidator – independent plan validator
+src/SmartLogistics.Web       ASP.NET Core Razor Pages
+  Pages/                     Index (input data), Orders (CRUD), Plan, Pregled, Dokumentacija, Pravila
+  Pages/Shared/              partial views (tables, plan summary, warnings, route table, SVG map, forms)
+  ViewModels/                everything a page shows, already formatted (km, kg, hh:mm, % of capacity)
+  Services/                  in-memory scenario store, plan service with cache, document reader
+  wwwroot/css/site.css       the whole design system (CSS variables, sl- prefixed classes, no inline styles)
+tests/SmartLogistics.Tests   xUnit tests
+data/scenario.json           input data from the task
+docs/                        task, specification, decisions, planner walkthrough, results, AI log, time
 ```
 
-**Design choices:** C# records for the domain; Core has no dependency on Web; pages never render domain
-objects directly, only view models; no JavaScript framework (only the Bootstrap bundle for the mobile menu);
-no external APIs or CDNs; the SVG maps are generated on the server.
+- **Core** has no dependency on Web. Planners implement `IRoutePlanner`; both are registered in the web application
+  and selected on the plan page.
+- **Web** uses Razor Pages. Pages never render domain objects directly; they get view models from mappers, which do
+  all formatting. Repeated parts are partial views. The SVG map is generated on the server (the y axis is flipped in
+  the view model, because the SVG y axis points down).
+- **In-memory store** (`IScenarioStore`): deliberately simple for a single-user demo (state is lost on restart); a real
+  system would use a database.
+- **Independent validator.** `PlanValidator` was written from the specification only, without reading the planner
+  code. It replays every route from the depot, recomputes all kilometres, minutes and loads, and returns **all**
+  violations with the rule ID, truck and step. Every planner must pass its result through the validator before
+  returning it; a violation is treated as a bug.
 
-## Use of AI tools
+## 7. Results
 
-The project was developed with Claude Code, in phases, with a human technical lead deciding assumptions
-and architecture and reviewing every phase. Six sub-agents with narrow scopes were used: domain analyst
-(specification), validator engineer (not allowed to read the planner), test engineer, solver engineer,
-UI builder and reviewer. Validator and tests were written in parallel against a shared contract.
+Measured by running the application (`/Plan`) on `data/scenario.json`, working day 540 min. All plans pass the
+validator with 0 violations and no order is infeasible.
 
-What went wrong with the AI, how it was caught and fixed, and a reflection on the tools:
-[docs/ai-log.md](docs/ai-log.md).
+| Mode | Truck | Orders | Distance | Driving | Actions | Total time | Working day used |
+|------|-------|-------:|---------:|--------:|--------:|-----------:|-----------------:|
+| `Total` | A | 1 (N03) | 37.2 km | 00:37 | 00:40 | 01:17 | 14 % |
+| `Total` | B | 9 | 162.9 km | 02:43 | 06:00 | 08:43 | 97 % |
+| `Total` | **both** | **10 / 10** | **200.1 km** | | | | |
+| `DrivingOnly` | A | 0 | 0.0 km | – | – | – | unused |
+| `DrivingOnly` | B | 10 | 182.2 km | 03:02 | 06:40 | 09:42 | 34 % (driving only) |
+| `DrivingOnly` | **both** | **10 / 10** | **182.2 km** | | | | |
 
-## Time spent
+**Exact planner vs OR-Tools** (same application, same data):
 
-About **2 h 35 min** of joint work in the development session, measured from git commits and file
-timestamps; the per-phase breakdown is in [docs/vrijeme.md](docs/vrijeme.md).
+| Case | Exact DP | OR-Tools | Computation time (exact / OR-Tools) |
+|------|---------:|---------:|------------------------------------:|
+| `Total`, 540 min | 200.1 km, 10 / 10 | 200.1 km, 10 / 10 (same split A 37.2 / B 162.9) | 152 ms / 2.7 s |
+| `DrivingOnly`, 540 min | 182.2 km, 10 / 10 | 182.2 km, 10 / 10 | 114 ms / 2.3 s |
+| `Total`, 300 min | 203.8 km, 8 / 10 (N08, N09 left out) | 212.0 km, 8 / 10 | – |
+
+OR-Tools reaches the optimum on the task data, but not in general: with a 300-minute day it leaves out as many
+orders as the exact planner but drives 8.2 km more. A single default guided-local-search run with the 5 s limit
+found only 9 of 10 orders (156.4 km) in `Total` mode; the planner therefore runs two guided-local-search
+configurations with a solution limit (deterministic) and keeps the better plan (see [docs/odluke.md](docs/odluke.md), T55).
+
+Full routes (location, action, order, load after every action): [docs/rezultati.md](docs/rezultati.md).
+
+## 8. Tests
+
+`dotnet test` – **323 tests, all green** (about 25 s; the OR-Tools tests run on their own, without parallelism, because
+each OR-Tools call takes 2–3 s).
+
+| Test class | Tests | What it proves |
+|------------|------:|----------------|
+| `DistanceTests` | 16 | Legs are Euclidean and rounded to one decimal before summing (L0→L1 = 8.5, L3→L8 = 8.5, L5→L9 = 34.9), symmetric, zero to itself; midpoint rounding away from zero |
+| `ScenarioDataTests` | 7 | `data/scenario.json` matches the task; default options 540 min / 20 min / 60 km/h |
+| `PlanBuilderTests` | 4 | The helper that builds plans by hand for validator tests computes the same numbers as a manual calculation |
+| `PlanValidatorValidPlanTests` | 15 | Valid plans and boundary cases pass: exactly 10,000 kg, exactly 2 machines, working day exactly at the limit, actions at the depot, unused truck |
+| `PlanValidatorViolationTests` | 38 | Hand-built invalid plans are rejected with the right rule: overload (R11), too many machines (R12), delivery before pickup (R6), picked up by A and delivered by B (R5), no return to the depot (R2), machine left on the truck (R28), wrong km (R16), working day exceeded (R20/R21), order on two trucks, missing order, and more |
+| `ReferenceSolutionTests` | 9 | The planner returns 200.1 km (`Total`) and 182.2 km (`DrivingOnly`), its plans pass the validator, one route per truck, deterministic, `DrivingOnly` ≤ `Total` |
+| `ReferenceOracleTests` | 83 | A second, deliberately simple exact implementation (Dijkstra over states, no shared code) gives the same total km and number of planned orders as the planner on the task data and on 20 seeded random scenarios in both modes |
+| `InvalidInputPlanningTests` | 36 | Invalid input never crashes the planner: 11,000 kg machine (K1, rest at 200.1 km), unknown location, pickup = delivery, weight ≤ 0, duplicate order, unknown or reused machine, missing depot, unusable trucks |
+| `WorkdayOverflowPlanningTests` | 19 | Working day too short (300 / 200 / 80 min): the plan passes the validator, omitted orders are K3 "Ne stane u radni dan", the number of omitted orders is minimal and the km are confirmed by an independent exhaustive oracle |
+| `OrToolsPlannerTests` | 17 | The OR-Tools plan passes the validator, is never better than the exact plan (more orders, or fewer km for the same number of orders), is deterministic, and is marked as not guaranteeing the optimum |
+| `WebMapping.FormatTests` | 44 | Formatting in view models: km with one decimal ("162,9 km"), kg with a thousands dot ("10.000 kg"), hh:mm with rounding to whole minutes ("08:43"), percentages of capacity and of the working day |
+| `WebMapping.PlanMapperTests` | 22 | The plan mapper: departure and return rows, load and % of capacity after every action, working-day percentage per mode (B in `Total` = 97 %), unused truck |
+| `WebMapping.MapViewModelTests` | 13 | The SVG map: y = −Y (L4, south of the depot, is drawn below it), view box with margin, invariant-culture numbers, route segments and legend |
+
+## 9. AI tools
+
+## 10. Time spent
+
+## 11. Known limitations and next steps
+
+- **Straight-line distances.** Legs are Euclidean; real road distances and travel times (e.g. from a routing service)
+  would replace `Distance.Leg` and the distance matrix.
+- **No time windows.** Opening hours or fixed pickup and delivery times are not modelled; they would become an extra
+  time dimension in both planners and new validator rules.
+- **One working day.** Orders that do not fit are reported as infeasible instead of being moved to the next day; a
+  multi-day plan needs a day index in the model.
+- **Two trucks, exact search.** The exact planner grows roughly as 4^n with the number of orders both trucks can
+  carry; with more vehicles or orders the OR-Tools planner (or another solver) must take over, with "optimum not
+  guaranteed".
+- **In-memory store.** Edits are lost on restart and there is one shared state for all users; production would use a
+  database with users, concurrency control and history.
+- **Editing in the UI** covers orders (and new machines) only; trucks and locations are edited in `data/scenario.json`.
 
 ## Documents
 
 | Document | Content |
 |----------|---------|
 | [docs/zadatak.md](docs/zadatak.md) | Original task (Croatian) |
-| [docs/spec.md](docs/spec.md) | Rules R1–R39, ambiguities D1–D16, derived facts, edge cases |
-| [docs/odluke.md](docs/odluke.md) | Decision log T1–T30 with status; pending decisions at the top |
-| [docs/rezultati.md](docs/rezultati.md) | Full results for both workday modes |
-| [docs/planer.md](docs/planer.md) | Planner explained for the presentation: execution flow, DP state, optimality proof, complexity, measured scaling limits, riskiest code lines |
-| [docs/ai-log.md](docs/ai-log.md) | AI mistakes and reflection on AI tools |
-| [docs/vrijeme.md](docs/vrijeme.md) | Time spent per phase |
+| [docs/spec.md](docs/spec.md) | Rules R1–R40, ambiguities, derived facts, edge cases |
+| [docs/odluke.md](docs/odluke.md) | Decision log with status; decisions waiting for approval at the top |
+| [docs/planer.md](docs/planer.md) | Exact planner walkthrough: flow, DP state, optimality, complexity, measured scaling |
+| [docs/rezultati.md](docs/rezultati.md) | Full results for both working-day modes and edge cases |
+| [docs/ai-log.md](docs/ai-log.md) | AI mistakes and how they were caught |
+| [docs/vrijeme.md](docs/vrijeme.md) | Time per phase |
 | [docs/ui-dizajn.md](docs/ui-dizajn.md) | Design system of the web UI |

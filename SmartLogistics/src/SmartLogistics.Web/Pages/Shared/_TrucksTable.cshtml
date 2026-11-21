@@ -1,0 +1,25 @@
+@model IReadOnlyList<TruckRowViewModel>
+
+<div class="table-responsive">
+    <table class="table sl-table">
+        <thead>
+            <tr>
+                <th scope="col">Kamion</th>
+                <th scope="col" class="text-end">Nosivost</th>
+                <th scope="col" class="text-end">Strojeva</th>
+                <th scope="col">Može nositi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var truck in Model)
+            {
+                <tr>
+                    <td><span class="@truck.Badge.CssClass">@truck.Badge.Text</span></td>
+                    <td class="text-end sl-num">@truck.Capacity</td>
+                    <td class="text-end sl-num">@truck.MaxMachines</td>
+                    <td class="sl-cell-muted text-nowrap">@truck.CarriableMachines</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

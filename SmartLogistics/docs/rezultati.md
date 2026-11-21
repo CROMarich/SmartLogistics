@@ -122,7 +122,7 @@ plan računa jednom po načinu i verziji `scenario.json`, zatim se čuva u memor
 
 ## Rubni slučajevi (faza 5)
 
-Primjeri se mogu birati u aplikaciji (Plan ruta → Scenarij); datoteke su u `data/primjeri/`. Validator: 0 prekršaja u svim slučajevima.
+Slučajevi su izračunati u fazi 5 (tada kao primjeri scenarija; od faze 6b isti se slučajevi u aplikaciji rade uređivanjem naloga na stranici Nalozi i poljem "max minuta" na stranici Plan). Validator: 0 prekršaja u svim slučajevima.
 
 | Primjer | Ukupno | Isplanirano | Neizvedivi nalozi |
 |---------|-------:|------------:|-------------------|

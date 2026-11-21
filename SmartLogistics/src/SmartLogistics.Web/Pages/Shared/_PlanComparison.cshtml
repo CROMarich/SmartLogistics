@@ -1,0 +1,61 @@
+@model SmartLogistics.Web.ViewModels.Transport.PlanComparisonViewModel
+@* "Egzaktni vs. OR-Tools": cached results of all registered algorithms for the same scenario version and options.
+   A missing result is never computed here; the button opens the plan with that algorithm. *@
+
+<section class="sl-card sl-plan-comparison sl-section-gap" aria-label="@Model.Title">
+    <div class="sl-card-header">
+        <h2 class="sl-card-title">@Icons.Get("scale") @Model.Title</h2>
+    </div>
+    <div class="sl-card-body">
+        <p class="sl-card-lead">@Model.Note</p>
+        @if (Model.Warning is not null)
+        {
+            <div class="sl-callout sl-callout-warning" role="status">
+                <span class="sl-callout-icon">@Icons.Get("alert")</span>
+                <div>@Model.Warning</div>
+            </div>
+        }
+    </div>
+    <div class="table-responsive">
+        <table class="table sl-table">
+            <thead>
+                <tr>
+                    <th scope="col">Algoritam</th>
+                    <th scope="col">Jamstvo</th>
+                    <th scope="col" class="text-end">Ukupno km</th>
+                    <th scope="col" class="text-end">Razlika</th>
+                    <th scope="col" class="text-end">Nalozi</th>
+                    <th scope="col" class="text-end">Izračun</th>
+                    <th scope="col">Validator</th>
+                    <th scope="col" class="text-end">Prikaz</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr class="@(row.IsCurrent ? "sl-plan-comparison-current" : null)">
+                        <td class="fw-semibold">@row.Algorithm</td>
+                        <td><span class="@row.GuaranteeCssClass">@row.GuaranteeText</span></td>
+                        <td class="text-end sl-num">@row.TotalKm</td>
+                        <td class="text-end sl-num">@row.Difference</td>
+                        <td class="text-end sl-num">@row.Orders</td>
+                        <td class="text-end sl-num">@row.Elapsed</td>
+                        <td><span class="@row.ResultCssClass">@row.ResultText</span></td>
+                        <td class="text-end">
+                            @if (row.IsCurrent)
+                            {
+                                <span class="sl-badge sl-badge-accent">prikazano</span>
+                            }
+                            else
+                            {
+                                <a class="sl-button sl-button-secondary sl-button-sm" asp-page="/Plan" asp-all-route-data="@row.ComputeRoute.ToDictionary()">
+                                    @Icons.Get(row.ActionIcon) @row.ActionText
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

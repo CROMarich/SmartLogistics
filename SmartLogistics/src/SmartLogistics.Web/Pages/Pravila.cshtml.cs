@@ -4,9 +4,9 @@ using SmartLogistics.Web.ViewModels;
 
 namespace SmartLogistics.Web.Pages;
 
-public class PravilaModel(ProjectDocumentStore documents, ScenarioProvider scenarios) : PageModel
+public class PravilaModel(ProjectDocumentStore documents, IScenarioStore store) : PageModel
 {
     public RulesPageViewModel ViewModel { get; private set; } = null!;
 
-    public void OnGet() => ViewModel = RulesViewModelFactory.Create(documents, scenarios.Load());
+    public void OnGet() => ViewModel = RulesViewModelFactory.Create(documents, store.GetSnapshot());
 }

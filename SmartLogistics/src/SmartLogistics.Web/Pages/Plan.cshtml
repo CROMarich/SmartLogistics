@@ -1,0 +1,63 @@
+@page
+@model PlanModel
+@{
+    var vm = Model.ViewModel;
+    var plan = vm.Plan;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+<partial name="_PlanForm" model="vm.Form" />
+
+<div class="sl-chip-row sl-meta-row">
+    <span class="@(vm.ScenarioModified ? "sl-badge sl-badge-warning" : "sl-chip")">@vm.ScenarioNote</span>
+    <a class="sl-chip sl-chip-link" asp-page="/Orders/Index">@Icons.Get("list") Uredi naloge</a>
+</div>
+
+@if (vm.Error is not null)
+{
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div><strong>@vm.ErrorTitle</strong> @vm.Error</div>
+    </div>
+}
+
+@if (plan is not null && vm.Summary is not null)
+{
+    <div class="@plan.Status.CssClass" role="status">
+        <span class="sl-callout-icon">@Icons.Get(plan.Status.Icon)</span>
+        <div>@plan.Status.Text</div>
+    </div>
+
+    <partial name="_Warnings" model="vm.Warnings" />
+    <partial name="_PlanSummary" model="vm.Summary" />
+
+    @if (vm.Comparison is not null)
+    {
+        <partial name="_PlanComparison" model="vm.Comparison" />
+    }
+
+    <div class="row g-4">
+        @if (plan.Map is not null)
+        {
+            <section class="col-12">
+                <div class="sl-card">
+                    <div class="sl-card-header">
+                        <h2 class="sl-card-title">@Icons.Get("map") Karta ruta</h2>
+                        <span class="sl-chip">strelice = smjer vožnje · mreža @plan.Map.Frame.GridStepText</span>
+                    </div>
+                    <div class="sl-card-body">
+                        <partial name="_RouteMap" model="plan.Map" />
+                    </div>
+                </div>
+            </section>
+        }
+
+        @foreach (var truck in plan.Trucks)
+        {
+            <section class="col-12">
+                <partial name="_TruckRouteTable" model="truck" />
+            </section>
+        }
+    </div>
+}

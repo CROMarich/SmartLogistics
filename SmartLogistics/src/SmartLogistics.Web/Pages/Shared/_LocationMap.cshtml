@@ -1,14 +1,16 @@
-@model MapViewModel
+@model LocationMapViewModel
 
-<figure class="map">
-    <svg class="map-canvas" viewBox="@Model.ViewBox" role="img" aria-label="Karta lokacija sa strelicama">
+<figure class="sl-map">
+    <svg class="sl-map-canvas" viewBox="@Model.Frame.ViewBox" role="img" aria-label="Karta lokacija s nalozima (strelica od preuzimanja do isporuke)">
         <defs>
             @* One arrowhead per colour; the colour comes from site.css *@
-            <marker id="arrow-any" class="map-arrowhead is-any" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
-            <marker id="arrow-truck-a" class="map-arrowhead is-truck-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
-            <marker id="arrow-truck-b" class="map-arrowhead is-truck-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
-            <marker id="arrow-none" class="map-arrowhead is-none" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="order-arrow-any" class="sl-map-arrowhead sl-map-arrowhead-any" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="order-arrow-truck-a" class="sl-map-arrowhead sl-map-arrowhead-truck-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="order-arrow-truck-b" class="sl-map-arrowhead sl-map-arrowhead-truck-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
+            <marker id="order-arrow-none" class="sl-map-arrowhead sl-map-arrowhead-none" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" /></marker>
         </defs>
+
+        <partial name="_MapFrame" model="Model.Frame" />
 
         @foreach (var arrow in Model.Arrows)
         {
@@ -17,19 +19,19 @@
             </line>
         }
 
-        @foreach (var point in Model.Points)
+        @foreach (var location in Model.Locations)
         {
-            <g class="map-location @(point.IsBase ? "is-base" : null)">
-                <circle cx="@point.Cx" cy="@point.Cy" r="@Model.PointRadius" />
-                <text x="@point.LabelX" y="@point.LabelY">@point.Id</text>
+            <g class="@location.CssClass">
+                <circle cx="@location.X" cy="@location.Y" r="@Model.PointRadius" />
+                <text x="@location.LabelX" y="@location.LabelY">@location.Id</text>
             </g>
         }
     </svg>
 
-    <figcaption class="map-legend">
+    <figcaption class="sl-map-legend">
         @foreach (var item in Model.Legend)
         {
-            <span class="map-legend-item"><span class="@item.SwatchCssClass"></span>@item.Text</span>
+            <span class="sl-map-legend-item"><span class="@item.SwatchCssClass"></span>@item.Text</span>
         }
     </figcaption>
 </figure>

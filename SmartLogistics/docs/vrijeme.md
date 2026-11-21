@@ -19,7 +19,7 @@ i demo. To dopiši u posljednji redak tablice.
 | 3 – Validator i testovi | 23:17 – 23:33 | 16 min | validator-engineer i test-engineer paralelno; stranica Pravila i provjere | commit `f04f0da` |
 | 4 – Egzaktni planer | 23:33 – 23:51 | 18 min | solver-engineer: `ExactDpPlanner`; stranice Plan ruta i Karta | commit `c858034` |
 | D – Dokumentacija predaje | 23:51 – 00:15 | ~24 min | README, rezultati, AI log, utrošeno vrijeme, pregled otvorenih odluka | ova datoteka |
-| 5 – Neizvedivi nalozi | 00:15 – 00:42 | ~27 min | `Feasibility.cs`, planer uvijek vraća plan (R37, R40); validator prilagođen; 50 novih testova s neovisnim oracleom; primjeri scenarija u aplikaciji; objašnjenje planera (`planer.md`) | ova datoteka |
+| 5 – Neizvedivi nalozi | 00:15 – 00:42 | ~27 min | `Feasibility.cs`, planer uvijek vraća plan (R37, R40); validator prilagođen; 50 novih testova s neovisnim oracleom; primjeri scenarija u aplikaciji (kasnije, u fazi 6b, zamijenjeni uređivanjem naloga); objašnjenje planera (`planer.md`) | ova datoteka |
 | **Ukupno u sesiji** | | **~2 h 35 min** | | |
 | Izvan sesije (dopisati) | | … | čitanje i razumijevanje koda, priprema prezentacije, demo | – |
 

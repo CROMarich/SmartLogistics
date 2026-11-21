@@ -1,0 +1,8 @@
+@page
+@model SmartLogistics.Web.Pages.Orders.CreateModel
+@{
+    ViewData["Title"] = Model.Form.Header.Title;
+}
+
+<partial name="_PageHeader" model="Model.Form.Header" />
+<partial name="_OrderForm" model="Model" />

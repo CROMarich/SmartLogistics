@@ -1,10 +1,10 @@
 @model DistanceMatrixViewModel
 
 <div class="table-responsive">
-    <table class="table matrix-table">
+    <table class="table sl-matrix">
         <thead>
             <tr>
-                <th scope="col" class="matrix-corner">od \ do</th>
+                <th scope="col" class="sl-matrix-corner">od \ do</th>
                 @foreach (var header in Model.Headers)
                 {
                     <th scope="col" class="text-end">@header</th>
@@ -18,7 +18,7 @@
                     <th scope="row">@row.LocationId</th>
                     @foreach (var cell in row.Cells)
                     {
-                        <td class="text-end num @(cell.IsDiagonal ? "is-diagonal" : null)">@cell.Text</td>
+                        <td class="text-end sl-num @(cell.IsDiagonal ? "sl-matrix-diagonal" : null)">@cell.Text</td>
                     }
                 </tr>
             }

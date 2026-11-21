@@ -24,6 +24,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SmartLogistics.Core\SmartLogistics.Core.csproj" />
+    <!-- Web view models and PlanMapper are tested here (docs/odluke.md T41 d). -->
+    <ProjectReference Include="..\..\src\SmartLogistics.Web\SmartLogistics.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

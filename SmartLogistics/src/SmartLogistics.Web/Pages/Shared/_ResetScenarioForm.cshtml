@@ -1,0 +1,6 @@
+@model string
+@* POST with an antiforgery token (added by the form tag helper); the page's OnPostReset redirects back (PRG). *@
+
+<form method="post" asp-page="@Model" asp-page-handler="Reset" class="sl-inline-form">
+    <button type="submit" class="sl-button sl-button-secondary sl-button-sm">@Icons.Get("reset") Vrati izvorne podatke</button>
+</form>

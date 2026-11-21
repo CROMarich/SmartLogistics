@@ -1,0 +1,10 @@
+@model ScenarioStatusViewModel
+
+<div class="@Model.CssClass sl-callout-with-action" role="status">
+    <span class="sl-callout-icon">@Icons.Get(Model.Icon)</span>
+    <div class="sl-callout-body">
+        <strong>@Model.Text</strong>
+        <div class="sl-callout-detail">@Model.Detail</div>
+    </div>
+    <partial name="_ResetScenarioForm" model="Model.ResetPage" />
+</div>

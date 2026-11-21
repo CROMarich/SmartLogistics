@@ -1,0 +1,11 @@
+@{
+    // Success message of the previous POST (Post-Redirect-Get), shown once.
+    var message = FlashMessage.Take(TempData);
+}
+@if (message is not null)
+{
+    <div class="sl-callout sl-callout-ok" role="status">
+        <span class="sl-callout-icon">@Icons.Get("check")</span>
+        <div>@message</div>
+    </div>
+}

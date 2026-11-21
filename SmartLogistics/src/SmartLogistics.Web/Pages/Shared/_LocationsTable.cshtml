@@ -1,0 +1,31 @@
+@model IReadOnlyList<LocationRowViewModel>
+
+<div class="table-responsive">
+    <table class="table sl-table">
+        <thead>
+            <tr>
+                <th scope="col">Lokacija</th>
+                <th scope="col" class="text-end">X (km)</th>
+                <th scope="col" class="text-end">Y (km)</th>
+                <th scope="col" class="text-end">Od baze</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var location in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">
+                        @location.Id
+                        @if (location.IsBase)
+                        {
+                            <span class="sl-badge sl-badge-accent">@location.Note</span>
+                        }
+                    </td>
+                    <td class="text-end sl-num">@location.X</td>
+                    <td class="text-end sl-num">@location.Y</td>
+                    <td class="text-end sl-num">@location.DistanceFromBase</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

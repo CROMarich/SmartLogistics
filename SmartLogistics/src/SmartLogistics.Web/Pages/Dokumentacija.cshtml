@@ -7,10 +7,10 @@
 
 <partial name="_PageHeader" model="vm.Header" />
 
-<nav class="segmented" aria-label="Dokumenti">
+<nav class="sl-segmented" aria-label="Dokumenti">
     @foreach (var document in vm.Documents)
     {
-        <a class="segmented-item @(document.Slug == vm.Current.Slug ? "is-active" : null)"
+        <a class="sl-segmented-item @(document.Slug == vm.Current.Slug ? "sl-segmented-item-active" : null)"
            asp-page="/Dokumentacija" asp-route-slug="@document.Slug"
            aria-current="@(document.Slug == vm.Current.Slug ? "page" : null)">
             @Icons.Get(document.Icon)
@@ -19,19 +19,19 @@
     }
 </nav>
 
-<div class="chip-row doc-meta-row">
-    <span class="chip">@vm.Current.FileName</span>
-    <span class="chip">zadnja izmjena: @vm.Current.LastModifiedText</span>
+<div class="sl-chip-row sl-meta-row">
+    <span class="sl-chip">@vm.Current.FileName</span>
+    <span class="sl-chip">zadnja izmjena: @vm.Current.LastModifiedText</span>
     @foreach (var stat in vm.Current.Stats)
     {
-        <span class="chip">@stat</span>
+        <span class="sl-chip">@stat</span>
     }
 </div>
 
 @if (vm.Body is null)
 {
-    <div class="callout is-warning" role="status">
-        <span class="callout-icon">@Icons.Get("alert")</span>
+    <div class="sl-callout sl-callout-warning" role="status">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
         <div>Dokument <code>@vm.Current.FileName</code> još ne postoji.</div>
     </div>
 }
@@ -45,8 +45,8 @@ else
             </aside>
         }
         <article class="col-lg-9 order-lg-1">
-            <div class="panel">
-                <div class="panel-body markdown-body">
+            <div class="sl-card">
+                <div class="sl-card-body sl-markdown">
                     @vm.Body
                 </div>
             </div>

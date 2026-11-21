@@ -9,13 +9,13 @@
 
 @if (vm.Error is not null)
 {
-    <div class="callout is-danger" role="alert">
-        <span class="callout-icon">@Icons.Get("alert")</span>
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
         <div>@vm.Error</div>
     </div>
 }
 
-<section class="stat-grid" aria-label="Pokrivenost pravila">
+<section class="sl-stat-grid" aria-label="Pokrivenost pravila">
     @foreach (var stat in vm.Stats)
     {
         <partial name="_StatTile" model="stat" />
@@ -26,15 +26,15 @@
     @if (vm.Demo is not null)
     {
         <section class="col-12">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2 class="panel-title">@vm.Demo.Title</h2>
-                    <span class="chip">uživo: PlanValidator.Validate</span>
+            <div class="sl-card">
+                <div class="sl-card-header">
+                    <h2 class="sl-card-title">@vm.Demo.Title</h2>
+                    <span class="sl-chip">uživo: PlanValidator.Validate</span>
                 </div>
-                <div class="panel-body">
-                    <p class="panel-lead">@vm.Demo.Description</p>
+                <div class="sl-card-body">
+                    <p class="sl-card-lead">@vm.Demo.Description</p>
                     <div class="@vm.Demo.SummaryCssClass" role="status">
-                        <span class="callout-icon">@Icons.Get(vm.Demo.ValidatorAvailable ? "check" : "clock")</span>
+                        <span class="sl-callout-icon">@Icons.Get(vm.Demo.ValidatorAvailable ? "check" : "clock")</span>
                         <div>@vm.Demo.Summary</div>
                     </div>
                 </div>
@@ -47,10 +47,10 @@
     }
 
     <section class="col-12">
-        <div class="panel">
-            <div class="panel-header"><h2 class="panel-title">Pravila iz specifikacije</h2></div>
+        <div class="sl-card">
+            <div class="sl-card-header"><h2 class="sl-card-title">Pravila iz specifikacije</h2></div>
             <div class="table-responsive">
-                <table class="table data-table">
+                <table class="table sl-table">
                     <thead>
                         <tr>
                             <th scope="col">ID</th>
@@ -64,16 +64,16 @@
                         {
                             <tr>
                                 <td class="fw-semibold">@rule.Id</td>
-                                <td class="rule-text">@rule.Text</td>
-                                <td class="cell-muted">@rule.Source</td>
+                                <td class="sl-rule-text">@rule.Text</td>
+                                <td class="sl-cell-muted">@rule.Source</td>
                                 <td>
                                     @if (rule.CheckedByValidator)
                                     {
-                                        <span class="badge-soft is-success">provjerava</span>
+                                        <span class="sl-badge sl-badge-ok">provjerava</span>
                                     }
                                     else
                                     {
-                                        <span class="badge-soft is-neutral">–</span>
+                                        <span class="sl-badge sl-badge-neutral">–</span>
                                     }
                                 </td>
                             </tr>

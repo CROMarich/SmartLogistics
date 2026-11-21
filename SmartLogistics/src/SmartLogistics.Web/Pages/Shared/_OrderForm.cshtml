@@ -1,0 +1,86 @@
+@model SmartLogistics.Web.Pages.Orders.OrderFormPageModel
+@* Create / edit form of an order. Server-side validation (DataAnnotations + ModelState), Croatian messages, no JS. *@
+@{
+    var form = Model.Form;
+}
+
+@if (Model.NotFoundMessage is not null)
+{
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div>@Model.NotFoundMessage <a asp-page="/Orders/Index">Natrag na naloge</a></div>
+    </div>
+}
+else
+{
+    <partial name="_FormErrors" model="Model.ModelState.FormErrors()" />
+    @if (!Model.ModelState.IsValid && Model.ModelState.FormErrors().Count == 0)
+    {
+        <div class="sl-callout sl-callout-danger" role="alert">
+            <span class="sl-callout-icon">@Icons.Get("alert")</span>
+            <div>Nalog nije spremljen – ispravi označena polja.</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <section class="col-xl-8">
+            <form method="post" class="sl-card sl-form" novalidate>
+                <div class="sl-card-header">
+                    <h2 class="sl-card-title">@Icons.Get("list") Nalog @form.OrderId</h2>
+                    <span class="sl-chip">@form.OrderIdHint</span>
+                </div>
+                <div class="sl-card-body sl-form-grid">
+                    <div class="sl-field sl-field-wide">
+                        <label class="sl-field-label" asp-for="Input.MachineId"></label>
+                        <select class="sl-input" asp-for="Input.MachineId" asp-items="form.MachineOptions">
+                            <option value="">Odaberi stroj…</option>
+                        </select>
+                        <span class="sl-field-error" asp-validation-for="Input.MachineId"></span>
+                    </div>
+
+                    <div class="sl-field sl-field-wide">
+                        <label class="sl-field-label" asp-for="Input.NewMachineWeightKg"></label>
+                        <input class="sl-input sl-input-number" asp-for="Input.NewMachineWeightKg" type="number" min="1" step="1" inputmode="numeric" aria-describedby="newMachineHint" />
+                        <div id="newMachineHint" class="sl-field-hint">@form.NewMachineHint</div>
+                        <span class="sl-field-error" asp-validation-for="Input.NewMachineWeightKg"></span>
+                    </div>
+
+                    <div class="sl-field">
+                        <label class="sl-field-label" asp-for="Input.PickupLocationId"></label>
+                        <select class="sl-input" asp-for="Input.PickupLocationId" asp-items="form.LocationOptions">
+                            <option value="">Odaberi lokaciju…</option>
+                        </select>
+                        <span class="sl-field-error" asp-validation-for="Input.PickupLocationId"></span>
+                    </div>
+
+                    <div class="sl-field">
+                        <label class="sl-field-label" asp-for="Input.DeliveryLocationId"></label>
+                        <select class="sl-input" asp-for="Input.DeliveryLocationId" asp-items="form.LocationOptions">
+                            <option value="">Odaberi lokaciju…</option>
+                        </select>
+                        <span class="sl-field-error" asp-validation-for="Input.DeliveryLocationId"></span>
+                    </div>
+                </div>
+                <div class="sl-card-body sl-form-actions sl-form-footer">
+                    <button type="submit" class="sl-button sl-button-primary">@Icons.Get("check") @form.SubmitText</button>
+                    <a class="sl-button sl-button-secondary" asp-page="/Orders/Index">Odustani</a>
+                </div>
+            </form>
+        </section>
+
+        <aside class="col-xl-4">
+            <div class="sl-card">
+                <div class="sl-card-header"><h2 class="sl-card-title">@Icons.Get("info") Pravila obrasca</h2></div>
+                <div class="sl-card-body">
+                    <ul class="sl-form-rules">
+                        <li>Stroj, preuzimanje i isporuka su obavezni; isporuka mora biti na drugoj lokaciji.</li>
+                        <li>Novi stroj ("Novi stroj…") dobiva oznaku @form.NewMachineId i masu veću od 0 kg.</li>
+                        <li>Masa smije biti veća od nosivosti svih kamiona: plan tada nalog prikazuje kao neizvediv (K1).</li>
+                        <li>Stroj koji je već u drugom nalogu planer odbija kao neispravne podatke (K4).</li>
+                        <li>Izmjene vrijede do ponovnog pokretanja aplikacije ili "Vrati izvorne podatke".</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+}

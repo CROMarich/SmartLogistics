@@ -23,7 +23,9 @@
 ## UI pravila (zbog kasnije zamjene teme)
 - Bez inline stilova (`style="..."`); sav CSS u `wwwroot/css/site.css`.
 - Boje i razmaci kao CSS varijable u `:root` (npr. `--truck-a`, `--truck-b`,
-  `--warning`); SVG karta koristi te varijable.
+  `--color-warning`, `--color-ok`, `--map-grid`, `--map-base`); SVG karta koristi te varijable.
+- Sve vlastite CSS klase imaju prefiks `sl-` (npr. `sl-card`, `sl-table`,
+  `sl-badge-warning`); Bootstrap klase ostaju kakve jesu.
 - Stranice prikazuju ViewModel tipove iz `Web/ViewModels`, ne domenske
   objekte izravno; formatiranje (km, kg, hh:mm) u ViewModelu.
 - Ponovljivi dijelovi su partial viewovi u `Pages/Shared`.

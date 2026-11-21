@@ -1,11 +1,11 @@
 @model IReadOnlyList<OutlineItemViewModel>
 
-<nav class="doc-outline" aria-label="Sadržaj dokumenta">
-    <div class="doc-outline-title">Sadržaj</div>
-    <ul class="doc-outline-list">
+<nav class="sl-doc-outline" aria-label="Sadržaj dokumenta">
+    <div class="sl-doc-outline-title">Sadržaj</div>
+    <ul class="sl-doc-outline-list">
         @foreach (var item in Model)
         {
-            <li class="@(item.IsSubsection ? "is-sub" : null)">
+            <li class="@(item.IsSubsection ? "sl-doc-outline-sub" : null)">
                 <a href="@item.Anchor">@item.Text</a>
             </li>
         }

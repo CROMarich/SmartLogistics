@@ -1,0 +1,34 @@
+@model IReadOnlyList<MachineRowViewModel>
+
+<div class="table-responsive">
+    <table class="table sl-table">
+        <thead>
+            <tr>
+                <th scope="col">Stroj</th>
+                <th scope="col" class="text-end">Masa</th>
+                <th scope="col">Stane na kamion</th>
+                <th scope="col">U nalogu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var machine in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@machine.Id</td>
+                    <td class="text-end sl-num">@machine.Weight</td>
+                    <td>
+                        @if (machine.FitsNowhere)
+                        {
+                            <span class="sl-badge sl-badge-danger">ne stane ni na jedan</span>
+                        }
+                        else
+                        {
+                            <partial name="_TruckBadges" model="machine.FitsOn" />
+                        }
+                    </td>
+                    <td class="sl-cell-muted">@machine.UsedIn</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

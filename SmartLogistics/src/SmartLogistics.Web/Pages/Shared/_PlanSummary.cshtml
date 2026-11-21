@@ -1,0 +1,35 @@
+@model SmartLogistics.Web.ViewModels.Transport.PlanSummaryViewModel
+@* Key figures of the plan (total km, km per truck, orders), the algorithm with its optimality guarantee (R38),
+   the validator result and how the plan was computed. *@
+
+<section class="sl-stat-grid" aria-label="Sažetak plana">
+    @foreach (var stat in Model.Stats)
+    {
+        <partial name="_StatTile" model="stat" />
+    }
+</section>
+
+<div class="sl-chip-row sl-meta-row">
+    <span class="sl-algorithm-label">@Icons.Get("layers") @Model.AlgorithmText</span>
+    <span class="@Model.GuaranteeCssClass">@Icons.Get(Model.GuaranteeIcon) @Model.GuaranteeText</span>
+    @if (Model.IsValid)
+    {
+        <span class="sl-badge sl-badge-ok sl-badge-lg">@Icons.Get("check") @Model.ValidatorText</span>
+    }
+    else
+    {
+        <span class="sl-badge sl-badge-danger sl-badge-lg">@Icons.Get("alert") @Model.ValidatorText</span>
+    }
+    @foreach (var fact in Model.Facts)
+    {
+        <span class="sl-chip">@fact</span>
+    }
+</div>
+
+@if (!Model.IsValid)
+{
+    <section class="sl-card sl-card-danger sl-section-gap">
+        <div class="sl-card-header"><h2 class="sl-card-title">@Icons.Get("alert") Prekršaji validatora</h2></div>
+        <partial name="_ViolationTable" model="Model.Violations" />
+    </section>
+}

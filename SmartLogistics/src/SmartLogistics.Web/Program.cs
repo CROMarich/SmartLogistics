@@ -1,13 +1,35 @@
+using Microsoft.AspNetCore.Rewrite;
 using SmartLogistics.Core.Planning;
 using SmartLogistics.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages()
+    .AddMvcOptions(options =>
+    {
+        // Croatian messages for values that cannot be bound (e.g. "abc" in a number field).
+        var messages = options.ModelBindingMessageProvider;
+        messages.SetValueMustBeANumberAccessor(field => $"Polje {field} mora biti broj.");
+        messages.SetNonPropertyValueMustBeANumberAccessor(() => "Vrijednost mora biti broj.");
+        messages.SetAttemptedValueIsInvalidAccessor((value, field) => $"Vrijednost \"{value}\" nije ispravna za polje {field}.");
+        messages.SetNonPropertyAttemptedValueIsInvalidAccessor(value => $"Vrijednost \"{value}\" nije ispravna.");
+        messages.SetUnknownValueIsInvalidAccessor(field => $"Vrijednost nije ispravna za polje {field}.");
+        messages.SetNonPropertyUnknownValueIsInvalidAccessor(() => "Vrijednost nije ispravna.");
+        messages.SetValueIsInvalidAccessor(value => $"Vrijednost \"{value}\" nije ispravna.");
+        messages.SetValueMustNotBeNullAccessor(field => $"Polje {field} je obavezno.");
+        messages.SetMissingBindRequiredValueAccessor(field => $"Nedostaje vrijednost za polje {field}.");
+        messages.SetMissingKeyOrValueAccessor(() => "Nedostaje vrijednost.");
+        messages.SetMissingRequestBodyRequiredValueAccessor(() => "Zahtjev nema sadržaj.");
+    });
 builder.Services.AddSingleton<ProjectDocumentStore>();
-builder.Services.AddSingleton<ScenarioProvider>();
-builder.Services.AddSingleton<IRoutePlanner, ExactDpPlanner>();
+// Current scenario (data/scenario.json + order edits), in memory for the demo: lost on restart.
+builder.Services.AddSingleton<IScenarioStore>(services =>
+    InMemoryScenarioStore.FromEnvironment(services.GetRequiredService<IWebHostEnvironment>()));
+// Planners are keyed by PlannerCatalog keys (the "algoritam" query value of /Plan). An algorithm of the catalog without
+// a registration here is shown as "nije dostupan" instead of throwing. New planners are registered in this block only.
+builder.Services.AddKeyedSingleton<IRoutePlanner, ExactDpPlanner>(PlannerCatalog.ExactKey);
+builder.Services.AddKeyedSingleton<IRoutePlanner, OrToolsPlanner>(PlannerCatalog.OrToolsKey);
 builder.Services.AddSingleton<PlanService>();
 
 var app = builder.Build();
@@ -21,6 +43,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Addresses of earlier phases (T43 b) redirect permanently (301); the query string is kept (?nacin=voznja still works).
+app.UseRewriter(new RewriteOptions()
+    .AddRedirect("(?i)^UlazniPodaci/?$", "/", StatusCodes.Status301MovedPermanently)
+    .AddRedirect("(?i)^(PlanRuta|Karta)/?$", "/Plan", StatusCodes.Status301MovedPermanently));
 
 app.UseRouting();
 

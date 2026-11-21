@@ -1,0 +1,59 @@
+@model SmartLogistics.Web.ViewModels.Transport.PlanFormViewModel
+@* GET form: the result is addressable by URL (/Plan?algoritam=ortools&nacin=voznja&maxMinuta=300). Server-side validation only. *@
+
+<form method="get" asp-page="/Plan" class="sl-card sl-form sl-plan-form sl-section-gap" novalidate>
+    <div class="sl-card-body sl-form-row">
+        <fieldset class="sl-field">
+            <legend class="sl-field-label">Algoritam</legend>
+            <div class="sl-choice-group">
+                @foreach (var algorithm in Model.Algorithms)
+                {
+                    <label class="sl-choice @(algorithm.IsAvailable ? null : "sl-choice-disabled")" title="@algorithm.Title">
+                        <input type="radio" class="sl-choice-input" name="@Model.AlgorithmParameter" value="@algorithm.Value"
+                               checked="@algorithm.IsChecked" disabled="@(!algorithm.IsAvailable)" />
+                        <span class="sl-choice-text">@algorithm.Text</span>
+                        <span class="sl-choice-hint">@algorithm.Hint</span>
+                    </label>
+                }
+            </div>
+            @if (Model.AlgorithmError is not null)
+            {
+                <div class="sl-field-error">@Model.AlgorithmError</div>
+            }
+        </fieldset>
+
+        <fieldset class="sl-field">
+            <legend class="sl-field-label">Način radnog dana</legend>
+            <div class="sl-choice-group">
+                @foreach (var mode in Model.Modes)
+                {
+                    <label class="sl-choice">
+                        <input type="radio" class="sl-choice-input" name="@Model.ModeParameter" value="@mode.Value" checked="@mode.IsChecked" />
+                        <span class="sl-choice-text">@mode.Text</span>
+                        <span class="sl-choice-hint">@mode.Hint</span>
+                    </label>
+                }
+            </div>
+            @if (Model.ModeError is not null)
+            {
+                <div class="sl-field-error">@Model.ModeError</div>
+            }
+        </fieldset>
+
+        <div class="sl-field">
+            <label class="sl-field-label" for="maxMinuta">Najdulje trajanje radnog dana (min)</label>
+            <input id="maxMinuta" class="sl-input sl-input-number @(Model.MaxMinutesError is null ? null : "sl-input-invalid")" type="number"
+                   name="@Model.MaxMinutesParameter" value="@Model.MaxMinutes" min="@Model.MinMinutes" max="@Model.MaxMinutesLimit" step="1"
+                   inputmode="numeric" aria-describedby="maxMinutaHint" aria-invalid="@(Model.MaxMinutesError is null ? "false" : "true")" />
+            <div id="maxMinutaHint" class="sl-field-hint">@Model.MaxMinutesHint</div>
+            @if (Model.MaxMinutesError is not null)
+            {
+                <div class="sl-field-error">@Model.MaxMinutesError</div>
+            }
+        </div>
+
+        <div class="sl-form-actions">
+            <button type="submit" class="sl-button sl-button-primary">@Icons.Get("play") Izračunaj</button>
+        </div>
+    </div>
+</form>

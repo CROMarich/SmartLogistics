@@ -1,0 +1,67 @@
+@model OrdersTableViewModel
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="sl-card-body sl-cell-muted">Scenarij nema nijedan nalog.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table sl-table">
+            <thead>
+                <tr>
+                    <th scope="col">Nalog</th>
+                    <th scope="col">Stroj</th>
+                    <th scope="col" class="text-end">Masa</th>
+                    <th scope="col">Preuzimanje → isporuka</th>
+                    <th scope="col" class="text-end">Izravna dionica</th>
+                    <th scope="col">Mogući kamioni</th>
+                    @if (Model.ShowActions)
+                    {
+                        <th scope="col" class="text-end">Radnje</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Rows)
+                {
+                    <tr>
+                        <td class="fw-semibold">@order.Id</td>
+                        <td>@order.Machine</td>
+                        <td class="text-end sl-num">@order.Weight</td>
+                        <td>
+                            <span class="sl-route-pair">@order.Pickup @Icons.Get("arrow-right") @order.Delivery</span>
+                            @if (order.DataWarning is not null)
+                            {
+                                <span class="sl-badge sl-badge-danger">@order.DataWarning</span>
+                            }
+                        </td>
+                        <td class="text-end sl-num">@order.DirectLeg</td>
+                        <td>
+                            @if (order.Trucks.Count == 0)
+                            {
+                                <span class="sl-badge sl-badge-danger">nijedan</span>
+                            }
+                            else
+                            {
+                                <partial name="_TruckBadges" model="order.Trucks" />
+                            }
+                        </td>
+                        @if (Model.ShowActions)
+                        {
+                            <td class="text-end">
+                                @if (order.CanEdit)
+                                {
+                                    <span class="sl-button-row">
+                                        <a class="sl-button sl-button-secondary sl-button-sm" asp-page="/Orders/Edit" asp-route-id="@order.Id">@Icons.Get("edit") Uredi</a>
+                                        <a class="sl-button sl-button-danger sl-button-sm" asp-page="/Orders/Delete" asp-route-id="@order.Id">@Icons.Get("trash") Obriši</a>
+                                    </span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

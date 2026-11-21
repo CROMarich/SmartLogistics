@@ -22,16 +22,16 @@ public sealed record PhaseViewModel(string Number, string Title, string Descript
 
     public string BadgeCssClass => Status switch
     {
-        PhaseStatus.Done => "badge-soft is-success",
-        PhaseStatus.AwaitingApproval => "badge-soft is-warning",
-        _ => "badge-soft is-neutral",
+        PhaseStatus.Done => "sl-badge sl-badge-ok",
+        PhaseStatus.AwaitingApproval => "sl-badge sl-badge-warning",
+        _ => "sl-badge sl-badge-neutral",
     };
 
     public string ItemCssClass => Status switch
     {
-        PhaseStatus.Done => "timeline-item is-done",
-        PhaseStatus.AwaitingApproval => "timeline-item is-review",
-        _ => "timeline-item is-planned",
+        PhaseStatus.Done => "sl-timeline-item sl-timeline-item-done",
+        PhaseStatus.AwaitingApproval => "sl-timeline-item sl-timeline-item-review",
+        _ => "sl-timeline-item sl-timeline-item-planned",
     };
 
     public string Icon => Status switch
@@ -76,12 +76,12 @@ public static class HomeViewModelFactory
 
         var stats = new List<StatTileViewModel>
         {
-            new("Završene faze", donePhases.ToString(), $"od {phases.Count} na vremenskoj liniji", "layers", "tone-accent"),
-            new("Pravila u specifikaciji", rules.ToString(), "R1..Rn u docs/spec.md", "list", "tone-accent"),
+            new("Završene faze", donePhases.ToString(), $"od {phases.Count} na vremenskoj liniji", "layers", "sl-stat-tile-accent"),
+            new("Pravila u specifikaciji", rules.ToString(), "R1..Rn u docs/spec.md", "list", "sl-stat-tile-accent"),
             new("Potvrđene odluke", confirmed.ToString(),
                 pending == 0 ? "sve odluke su potvrđene" : $"{pending} {Format.Plural(pending, "čeka", "čekaju", "čeka")} potvrdu", "scale",
-                pending == 0 ? "tone-success" : "tone-warning"),
-            new("Dokumenti", $"{existingDocuments} / {documents.Count}", "u mapi docs/", "file", "tone-neutral"),
+                pending == 0 ? "sl-stat-tile-ok" : "sl-stat-tile-warning"),
+            new("Dokumenti", $"{existingDocuments} / {documents.Count}", "u mapi docs/", "file", "sl-stat-tile-neutral"),
         };
 
         var header = new PageHeaderViewModel(

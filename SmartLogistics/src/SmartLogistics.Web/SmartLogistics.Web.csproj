@@ -13,8 +13,6 @@
   <!-- Project documents (docs/*.md) are copied to the output so the app can show them after publish. -->
   <ItemGroup>
     <None Include="..\..\docs\*.md" Link="docs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\data\primjeri\*.json" Link="data\primjeri\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+    <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />  </ItemGroup>
 
 </Project>

@@ -1,0 +1,33 @@
+@page "{id}"
+@model SmartLogistics.Web.Pages.Orders.DeleteModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+<partial name="_FormErrors" model="ModelState.FormErrors()" />
+
+@if (vm.Order is null)
+{
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div>Nalog @vm.OrderId ne postoji (možda je već obrisan ili su vraćeni izvorni podaci). <a asp-page="/Orders/Index">Natrag na naloge</a></div>
+    </div>
+}
+else
+{
+    <div class="sl-callout sl-callout-warning" role="status">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div><strong>Obrisati nalog @vm.OrderId?</strong> Plan prijevoza se nakon brisanja računa bez njega.</div>
+    </div>
+
+    <section class="sl-card sl-section-gap">
+        <div class="sl-card-header"><h2 class="sl-card-title">@Icons.Get("list") Nalog @vm.OrderId</h2></div>
+        <partial name="_OrdersTable" model="vm.Order" />
+        <form method="post" class="sl-card-body sl-form-actions sl-form-footer">
+            <button type="submit" class="sl-button sl-button-danger">@Icons.Get("trash") Obriši nalog</button>
+            <a class="sl-button sl-button-secondary" asp-page="/Orders/Index">Odustani</a>
+        </form>
+    </section>
+}

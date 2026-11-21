@@ -10,48 +10,57 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="app-body">
-    <a class="skip-link" href="#main-content">Preskoči na sadržaj</a>
+<body class="sl-app-body">
+    <a class="sl-skip-link" href="#main-content">Preskoči na sadržaj</a>
 
-    <div class="app-shell">
-        @* Desktop: fixed sidebar *@
-        <aside class="app-sidebar d-none d-lg-flex" aria-label="Glavni izbornik">
-            <partial name="_AppBrand" />
+    <div class="sl-shell">
+        @* ==================== Region: sidebar (desktop, lg and up) ====================
+           Dark fixed column: header with the app name, navigation, short footer note. *@
+        <aside class="sl-sidebar d-none d-lg-flex">
+            <header class="sl-sidebar-header">
+                <partial name="_AppBrand" />
+            </header>
             <partial name="_AppNavigation" model="navigation" />
-            <div class="app-sidebar-footer">Tehnički zadatak · .NET 10</div>
+            <div class="sl-sidebar-footer">Tehnički zadatak · .NET 10</div>
         </aside>
 
-        @* Mobile: the same navigation in an off-canvas panel *@
-        <div class="offcanvas offcanvas-start app-offcanvas" tabindex="-1" id="appNavigation" aria-labelledby="appNavigationTitle">
-            <div class="offcanvas-header">
+        @* ==================== Region: navigation (mobile, below lg) ====================
+           The same navigation in a Bootstrap off-canvas panel, opened from the top bar. *@
+        <div class="offcanvas offcanvas-start sl-offcanvas" tabindex="-1" id="appNavigation" aria-labelledby="appNavigationTitle">
+            <header class="offcanvas-header">
                 <span id="appNavigationTitle"><partial name="_AppBrand" /></span>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Zatvori izbornik"></button>
-            </div>
+            </header>
             <div class="offcanvas-body">
                 <partial name="_AppNavigation" model="navigation" />
             </div>
         </div>
 
-        <div class="app-main">
-            <header class="app-topbar d-lg-none">
-                <button class="app-icon-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#appNavigation"
+        <div class="sl-main">
+            @* ==================== Region: header (mobile top bar) ==================== *@
+            <header class="sl-topbar d-lg-none">
+                <button class="sl-icon-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#appNavigation"
                         aria-controls="appNavigation" aria-label="Otvori izbornik">
                     @Icons.Get("menu")
                 </button>
-                <span class="app-topbar-title">Smart Logistics Planner</span>
+                <span class="sl-topbar-title">Smart Logistics Planner</span>
             </header>
 
-            <main id="main-content" class="app-content" role="main">
+            @* ==================== Region: main (page content) ==================== *@
+            <main id="main-content" class="sl-content">
                 @RenderBody()
             </main>
 
-            <footer class="app-footer">
+            @* ==================== Region: footer ==================== *@
+            <footer class="sl-footer">
                 Smart Logistics Planner · planiranje prijevoza radnih strojeva
             </footer>
         </div>
     </div>
 
+    @* ==================== Region: scripts ====================
+       Only the Bootstrap bundle (off-canvas menu); pages add their own scripts in the "Scripts" section. *@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

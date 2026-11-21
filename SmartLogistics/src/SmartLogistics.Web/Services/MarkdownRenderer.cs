@@ -98,7 +98,7 @@ public static partial class MarkdownRenderer
 
     private static int RenderCodeBlock(string[] lines, int start, StringBuilder html)
     {
-        html.Append("<pre class=\"md-code\"><code>");
+        html.Append("<pre class=\"sl-md-code\"><code>");
         var i = start + 1;
         while (i < lines.Length && !lines[i].Trim().StartsWith("```", StringComparison.Ordinal))
         {
@@ -127,7 +127,7 @@ public static partial class MarkdownRenderer
         var header = SplitRow(lines[start]);
         var alignments = SplitRow(lines[start + 1]).Select(AlignmentClass).ToArray();
 
-        html.Append("<div class=\"table-responsive\"><table class=\"table table-sm table-bordered md-table\"><thead><tr>");
+        html.Append("<div class=\"table-responsive\"><table class=\"table table-sm table-bordered sl-md-table\"><thead><tr>");
         for (var c = 0; c < header.Length; c++)
         {
             html.Append($"<th{ClassAttribute(alignments, c)}>").Append(Inline(header[c])).Append("</th>");
@@ -187,7 +187,7 @@ public static partial class MarkdownRenderer
         var first = ListItemPattern().Match(lines[start]);
         var ordered = IsOrderedMarker(first.Groups["marker"].Value);
         var tag = ordered ? "ol" : "ul";
-        html.Append($"<{tag} class=\"md-list\">\n");
+        html.Append($"<{tag} class=\"sl-md-list\">\n");
 
         string? currentText = null;
         var currentNested = false;
@@ -199,7 +199,7 @@ public static partial class MarkdownRenderer
                 return;
             }
 
-            var css = currentNested ? " class=\"md-nested\"" : string.Empty;
+            var css = currentNested ? " class=\"sl-md-nested\"" : string.Empty;
             html.Append($"<li{css}>").Append(Inline(currentText)).Append("</li>\n");
             currentText = null;
         }
@@ -273,7 +273,7 @@ public static partial class MarkdownRenderer
             i++;
         }
 
-        html.Append("<blockquote class=\"md-quote\"><p>").Append(Inline(string.Join(" ", parts))).Append("</p></blockquote>\n");
+        html.Append("<blockquote class=\"sl-md-quote\"><p>").Append(Inline(string.Join(" ", parts))).Append("</p></blockquote>\n");
         return i;
     }
 

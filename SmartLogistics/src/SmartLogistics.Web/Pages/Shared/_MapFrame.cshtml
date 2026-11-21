@@ -1,0 +1,24 @@
+@model MapFrameViewModel
+@* Grid, axes through the origin and their km labels; rendered inside an <svg>. Coordinates come from MapGeometry.
+   SVG <text> is wrapped in <g> because Razor reserves a bare <text> inside code blocks. *@
+
+<g class="sl-map-grid" aria-hidden="true">
+    @foreach (var line in Model.GridLines)
+    {
+        <line class="@line.CssClass" x1="@line.X1" y1="@line.Y1" x2="@line.X2" y2="@line.Y2" />
+    }
+</g>
+<g class="sl-map-axes" aria-hidden="true">
+    @foreach (var axis in Model.Axes)
+    {
+        <line class="@axis.CssClass" x1="@axis.X1" y1="@axis.Y1" x2="@axis.X2" y2="@axis.Y2" />
+    }
+    @foreach (var tick in Model.Ticks)
+    {
+        <g><text class="@tick.CssClass" x="@tick.X" y="@tick.Y">@tick.Text</text></g>
+    }
+    @foreach (var label in Model.AxisLabels)
+    {
+        <g><text class="@label.CssClass" x="@label.X" y="@label.Y">@label.Text</text></g>
+    }
+</g>

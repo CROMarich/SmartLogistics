@@ -1,18 +1,27 @@
 using SmartLogistics.Core;
 using SmartLogistics.Core.Domain;
 using SmartLogistics.Web.Services;
+using SmartLogistics.Web.ViewModels.Transport;
 
 namespace SmartLogistics.Web.ViewModels;
 
 /// <summary>Small coloured label for a truck (A, B, ...).</summary>
 public sealed record TruckBadgeViewModel(string Text, string CssClass);
 
+/// <summary>Row of _TrucksTable.</summary>
+/// <param name="CarriableMachines">"5 od 10 strojeva".</param>
 public sealed record TruckRowViewModel(TruckBadgeViewModel Badge, string Capacity, string MaxMachines, string CarriableMachines);
 
-public sealed record MachineRowViewModel(string Id, string Weight, IReadOnlyList<TruckBadgeViewModel> FitsOn, bool FitsNowhere);
+/// <summary>Row of _MachinesTable.</summary>
+/// <param name="UsedIn">Orders that transport the machine, e.g. "N03" or "N03, N11"; "–" when unused.</param>
+public sealed record MachineRowViewModel(string Id, string Weight, IReadOnlyList<TruckBadgeViewModel> FitsOn, bool FitsNowhere, string UsedIn);
 
+/// <summary>Row of _LocationsTable.</summary>
 public sealed record LocationRowViewModel(string Id, string X, string Y, string Note, string DistanceFromBase, bool IsBase);
 
+/// <summary>Row of _OrdersTable.</summary>
+/// <param name="DataWarning">Why the planner will reject the order as K4 (unknown machine ...), or null.</param>
+/// <param name="CanEdit">False for an order without ID (the store cannot address it).</param>
 public sealed record OrderRowViewModel(
     string Id,
     string Machine,
@@ -21,7 +30,11 @@ public sealed record OrderRowViewModel(
     string Delivery,
     string DirectLeg,
     IReadOnlyList<TruckBadgeViewModel> Trucks,
-    string? DataWarning);
+    string? DataWarning,
+    bool CanEdit);
+
+/// <summary>Model of _OrdersTable: read-only on the input data page, with edit / delete buttons on the orders page.</summary>
+public sealed record OrdersTableViewModel(IReadOnlyList<OrderRowViewModel> Rows, bool ShowActions);
 
 public sealed record DistanceCellViewModel(string Text, bool IsDiagonal);
 
@@ -29,157 +42,273 @@ public sealed record DistanceMatrixRowViewModel(string LocationId, IReadOnlyList
 
 public sealed record DistanceMatrixViewModel(IReadOnlyList<string> Headers, IReadOnlyList<DistanceMatrixRowViewModel> Rows);
 
+/// <summary>An order on the input data map: an arrow from pickup to delivery, coloured by which trucks can carry it.</summary>
+/// <param name="CssClass">"sl-map-order sl-map-order-any", "-truck-a", "-truck-b" or "-none".</param>
+public sealed record MapArrowViewModel(string Id, string X1, string Y1, string X2, string Y2, string CssClass, string Title);
 
-/// <summary>The "Ulazni podaci" page.</summary>
+/// <summary>Map of locations and orders (_LocationMap); geometry from <see cref="MapGeometry"/>.</summary>
+public sealed record LocationMapViewModel(
+    MapFrameViewModel Frame,
+    string PointRadius,
+    IReadOnlyList<MapLocationViewModel> Locations,
+    IReadOnlyList<MapArrowViewModel> Arrows,
+    IReadOnlyList<MapLegendEntryViewModel> Legend);
+
+/// <summary>Whether the current scenario differs from data/scenario.json (_ScenarioStatus).</summary>
+/// <param name="Text">"Scenarij je izmijenjen u aplikaciji: 2 izmjene u odnosu na data/scenario.json." or the unchanged text.</param>
+/// <param name="CssClass">"sl-callout sl-callout-warning" when modified, otherwise "sl-callout sl-callout-info".</param>
+/// <param name="ResetPage">Razor page that handles the "Vrati izvorne podatke" POST (handler "Reset").</param>
+public sealed record ScenarioStatusViewModel(
+    bool IsModified,
+    int ChangeCount,
+    string Text,
+    string Detail,
+    string CssClass,
+    string Icon,
+    string ResetPage);
+
+/// <summary>The "Ulazni podaci" page (Pages/Index).</summary>
 public sealed record InputDataPageViewModel(
     PageHeaderViewModel Header,
     string? Error,
-    string? SourceText,
+    ScenarioStatusViewModel Status,
+    IReadOnlyList<string> Facts,
     IReadOnlyList<StatTileViewModel> Stats,
     IReadOnlyList<TruckRowViewModel> Trucks,
     IReadOnlyList<MachineRowViewModel> Machines,
     IReadOnlyList<LocationRowViewModel> Locations,
-    IReadOnlyList<OrderRowViewModel> Orders,
+    OrdersTableViewModel Orders,
     DistanceMatrixViewModel? Matrix,
-    MapViewModel? Map);
+    LocationMapViewModel? Map);
 
 /// <summary>
-/// Maps a scenario to the input data page. Only presentation: no planning and no validation.
-/// Missing references (unknown machine or location) are shown as text instead of throwing.
+/// Maps a scenario to the input data views (tables, summary tiles, distance matrix, map of orders). Only presentation:
+/// no planning and no validation. Robust to any data (spec R37): missing references are shown as text, never thrown.
+/// Truck colours follow the truck's position in the scenario, like on the plan (<see cref="PlanMapper.TruckColor"/>).
 /// </summary>
 public static class InputDataViewModelFactory
 {
+    private const string Dash = "–";
+
     private static readonly PageHeaderViewModel Header = new(
         "Planiranje",
         "Ulazni podaci",
-        "Kamioni, strojevi, lokacije i nalozi iz data/scenario.json te matrica udaljenosti između svih lokacija.");
+        "Kamioni, strojevi, lokacije i nalozi trenutnog scenarija (data/scenario.json i izmjene u aplikaciji), matrica udaljenosti i karta naloga.");
 
-    public static InputDataPageViewModel Create(ScenarioLoadResult result)
+    /// <summary>The input data page for the current state of the store.</summary>
+    public static InputDataPageViewModel Create(ScenarioSnapshot snapshot)
     {
-        if (result.Scenario is null)
+        ArgumentNullException.ThrowIfNull(snapshot);
+        var status = CreateStatus(snapshot, "/Index");
+        if (snapshot.LoadError is not null)
         {
-            return new InputDataPageViewModel(Header, result.Error, null, [], [], [], [], [], null, null);
+            return new InputDataPageViewModel(Header, snapshot.LoadError, status, [], [], [], [], [], new OrdersTableViewModel([], false), null, null);
         }
 
-        var scenario = result.Scenario;
-        var matrix = new DistanceMatrix(scenario.Locations.DistinctBy(l => l.Id).ToList());
-        var machinesById = scenario.Machines.DistinctBy(m => m.Id).ToDictionary(m => m.Id);
-        var locationIds = scenario.Locations.Select(l => l.Id).ToHashSet();
-
-        var source = $"data/{ScenarioProvider.FileName} · zadnja izmjena {result.LastModifiedLocal:dd.MM.yyyy. HH:mm}";
+        var scenario = snapshot.Scenario;
+        var lookup = new Lookup(scenario);
 
         return new InputDataPageViewModel(
             Header,
             Error: null,
-            source,
-            CreateStats(scenario, machinesById),
-            scenario.Trucks.Select(t => CreateTruckRow(t, scenario)).ToList(),
-            scenario.Machines.Select(m => CreateMachineRow(m, scenario)).ToList(),
-            scenario.Locations.Select(l => CreateLocationRow(l, scenario, matrix, locationIds)).ToList(),
-            scenario.Orders.Select(o => CreateOrderRow(o, scenario, matrix, machinesById, locationIds)).ToList(),
-            CreateMatrix(matrix),
-            CreateMap(scenario, machinesById));
+            status,
+            CreateFacts(PlanningOptions.Default),
+            CreateStats(scenario, lookup),
+            CreateTruckRows(lookup),
+            CreateMachineRows(lookup),
+            CreateLocationRows(scenario, lookup),
+            new OrdersTableViewModel(CreateOrderRows(lookup), ShowActions: false),
+            CreateMatrix(lookup.Matrix),
+            CreateMap(scenario, lookup));
     }
 
-    public static TruckBadgeViewModel Badge(Truck truck) => truck.Id switch
+    /// <summary>
+    /// Modified / unchanged callout with source and load time, e.g. "2 izmjene u odnosu na data/scenario.json".
+    /// </summary>
+    /// <param name="resetPage">Page whose "Reset" POST handler the button calls ("/Index" or "/Orders/Index").</param>
+    public static ScenarioStatusViewModel CreateStatus(ScenarioSnapshot snapshot, string resetPage)
     {
-        "A" => new(truck.Id, "badge-soft is-truck-a"),
-        "B" => new(truck.Id, "badge-soft is-truck-b"),
-        _ => new(truck.Id, "badge-soft is-neutral"),
-    };
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(resetPage);
 
-    private static IReadOnlyList<StatTileViewModel> CreateStats(Scenario scenario, Dictionary<string, Machine> machinesById)
+        var detail = $"Izvor: {snapshot.Source} · učitano {snapshot.LoadedAt:dd.MM.yyyy. HH:mm} · izmjene vrijede do ponovnog pokretanja aplikacije.";
+        if (!snapshot.IsModified)
+        {
+            return new ScenarioStatusViewModel(false, 0, $"Podaci odgovaraju datoteci {snapshot.Source} (bez izmjena).", detail,
+                "sl-callout sl-callout-info", "info", resetPage);
+        }
+
+        var count = snapshot.ChangeCount;
+        return new ScenarioStatusViewModel(true, count,
+            $"Scenarij je izmijenjen u aplikaciji: {count} {Format.Plural(count, "izmjena", "izmjene", "izmjena")} u odnosu na {snapshot.Source}.",
+            detail, "sl-callout sl-callout-warning", "alert", resetPage);
+    }
+
+    /// <summary>Order rows with edit / delete buttons for the orders page.</summary>
+    public static OrdersTableViewModel CreateOrdersTable(Scenario scenario, bool showActions)
     {
-        var totalCapacity = scenario.Trucks.Sum(t => t.CapacityKg);
-        var totalWeight = scenario.Machines.Sum(m => m.WeightKg);
+        ArgumentNullException.ThrowIfNull(scenario);
+        return new OrdersTableViewModel(CreateOrderRows(new Lookup(scenario)), showActions);
+    }
+
+    // Rules that turn the coordinates into km and minutes (defaults of the planner).
+    private static IReadOnlyList<string> CreateFacts(PlanningOptions options) =>
+    [
+        "dionica = euklidska udaljenost zaokružena na 0,1 km (R14)",
+        $"{Format.Coordinate(options.SpeedKmh)} km/h · 1 km = {Format.Coordinate(options.DrivingMinutes(1))} min",
+        $"svaka radnja {Format.Coordinate(options.MinutesPerAction)} min",
+        $"radni dan {Format.Clock(options.MaxMinutes)} (zadano, mijenja se na planu)",
+    ];
+
+    private static IReadOnlyList<StatTileViewModel> CreateStats(Scenario scenario, Lookup lookup)
+    {
+        var totalCapacity = lookup.Trucks.Sum(t => (long)t.CapacityKg);
+        var totalWeight = lookup.Machines.Sum(m => (long)m.WeightKg);
 
         // How many orders can be carried by only one truck, e.g. "5 samo kamion B".
-        var restricted = scenario.Orders
-            .Select(o => machinesById.GetValueOrDefault(o.MachineId))
+        var restricted = lookup.Orders
+            .Select(o => lookup.Machine(o.MachineId))
             .Where(m => m is not null)
-            .Select(m => scenario.Trucks.Where(t => t.CanCarry(m!)).ToList())
+            .Select(m => lookup.Trucks.Where(t => t.CanCarry(m!)).ToList())
             .Where(carriers => carriers.Count == 1)
             .GroupBy(carriers => carriers[0].Id)
             .Select(g => $"{g.Count()} samo kamion {g.Key}")
             .ToList();
+        var nowhere = lookup.Orders.Count(o => lookup.Machine(o.MachineId) is { } m && !lookup.Trucks.Any(t => t.CanCarry(m)));
+        if (nowhere > 0)
+        {
+            restricted.Add($"{nowhere} ni na jedan kamion");
+        }
 
         return
         [
-            new("Kamioni", Format.Integer(scenario.Trucks.Count), $"ukupna nosivost {Format.Kg(totalCapacity)}", "truck", "tone-accent"),
-            new("Strojevi", Format.Integer(scenario.Machines.Count), $"ukupna masa {Format.Kg(totalWeight)}", "layers", "tone-accent"),
-            new("Lokacije", Format.Integer(scenario.Locations.Count), $"baza {scenario.BaseLocationId}", "map", "tone-neutral"),
-            new("Nalozi", Format.Integer(scenario.Orders.Count),
+            new("Kamioni", Format.Integer(lookup.Trucks.Count), $"ukupna nosivost {Format.Kg((int)Math.Min(int.MaxValue, totalCapacity))}", "truck", "sl-stat-tile-accent"),
+            new("Strojevi", Format.Integer(lookup.Machines.Count), $"ukupna masa {Format.Kg((int)Math.Min(int.MaxValue, totalWeight))}", "layers", "sl-stat-tile-accent"),
+            new("Lokacije", Format.Integer(lookup.Locations.Count), $"baza {scenario.BaseLocationId}", "map", "sl-stat-tile-neutral"),
+            new("Nalozi", Format.Integer(lookup.Orders.Count),
                 restricted.Count == 0 ? "svaki nalog može svaki kamion" : string.Join(", ", restricted), "route",
-                restricted.Count == 0 ? "tone-success" : "tone-warning"),
+                restricted.Count == 0 ? "sl-stat-tile-ok" : "sl-stat-tile-warning"),
         ];
     }
 
-    private static TruckRowViewModel CreateTruckRow(Truck truck, Scenario scenario)
-    {
-        // A count, not a list: the per-machine detail is in the machines table ("5 od 10 strojeva").
-        var carriable = scenario.Machines.Count(truck.CanCarry);
-        var carriableText = $"{carriable} od {scenario.Machines.Count} {Format.Plural(scenario.Machines.Count, "stroja", "stroja", "strojeva")}";
+    private static IReadOnlyList<TruckRowViewModel> CreateTruckRows(Lookup lookup) =>
+        lookup.Trucks
+            .Select(truck =>
+            {
+                // A count, not a list: the per-machine detail is in the machines table ("5 od 10 strojeva").
+                var carriable = lookup.Machines.Count(truck.CanCarry);
+                var all = lookup.Machines.Count;
+                return new TruckRowViewModel(
+                    lookup.Badge(truck),
+                    Format.Kg(truck.CapacityKg),
+                    Format.Integer(truck.MaxMachines),
+                    $"{carriable} od {all} {Format.Plural(all, "stroja", "stroja", "strojeva")}");
+            })
+            .ToList();
 
-        return new TruckRowViewModel(Badge(truck), Format.Kg(truck.CapacityKg), Format.Integer(truck.MaxMachines), carriableText);
+    private static IReadOnlyList<MachineRowViewModel> CreateMachineRows(Lookup lookup) =>
+        lookup.Machines
+            .Select(machine =>
+            {
+                var fitsOn = lookup.Trucks.Where(t => t.CanCarry(machine)).Select(lookup.Badge).ToList();
+                var usedIn = lookup.Orders.Where(o => o.MachineId == machine.Id).Select(o => o.Id ?? Dash).ToList();
+                return new MachineRowViewModel(machine.Id, Format.Kg(machine.WeightKg), fitsOn, FitsNowhere: fitsOn.Count == 0,
+                    usedIn.Count == 0 ? Dash : string.Join(", ", usedIn));
+            })
+            .ToList();
+
+    private static IReadOnlyList<LocationRowViewModel> CreateLocationRows(Scenario scenario, Lookup lookup)
+    {
+        var baseKnown = lookup.Location(scenario.BaseLocationId) is not null;
+        return lookup.Locations
+            .Select(location =>
+            {
+                var isBase = location.Id == scenario.BaseLocationId;
+                return new LocationRowViewModel(
+                    location.Id, Format.Coordinate(location.X), Format.Coordinate(location.Y),
+                    isBase ? "baza" : string.Empty,
+                    baseKnown && location.Id is not null ? Format.Km(lookup.Matrix[scenario.BaseLocationId, location.Id]) : Dash,
+                    isBase);
+            })
+            .ToList();
     }
 
-    private static MachineRowViewModel CreateMachineRow(Machine machine, Scenario scenario)
+    private static IReadOnlyList<OrderRowViewModel> CreateOrderRows(Lookup lookup)
     {
-        var fitsOn = scenario.Trucks.Where(t => t.CanCarry(machine)).Select(Badge).ToList();
-        return new MachineRowViewModel(machine.Id, Format.Kg(machine.WeightKg), fitsOn, FitsNowhere: fitsOn.Count == 0);
-    }
+        var rows = new List<OrderRowViewModel>();
+        var firstOrderOfMachine = new Dictionary<string, string>();
+        var seenOrderIds = new HashSet<string>();
 
-    private static LocationRowViewModel CreateLocationRow(
-        Location location, Scenario scenario, DistanceMatrix matrix, HashSet<string> locationIds)
-    {
-        var isBase = location.Id == scenario.BaseLocationId;
-        var fromBase = locationIds.Contains(scenario.BaseLocationId)
-            ? Format.Km(matrix[scenario.BaseLocationId, location.Id])
-            : "–";
-
-        return new LocationRowViewModel(
-            location.Id, Format.Coordinate(location.X), Format.Coordinate(location.Y),
-            isBase ? "baza" : string.Empty, fromBase, isBase);
-    }
-
-    private static OrderRowViewModel CreateOrderRow(
-        TransportOrder order,
-        Scenario scenario,
-        DistanceMatrix matrix,
-        Dictionary<string, Machine> machinesById,
-        HashSet<string> locationIds)
-    {
-        var machine = machinesById.GetValueOrDefault(order.MachineId);
-        var locationsKnown = locationIds.Contains(order.PickupLocationId) && locationIds.Contains(order.DeliveryLocationId);
-
-        var warnings = new List<string>();
-        if (machine is null)
+        foreach (var order in lookup.Orders)
         {
-            warnings.Add($"nepoznat stroj {order.MachineId}");
+            var machine = lookup.Machine(order.MachineId);
+            var pickupKnown = lookup.Location(order.PickupLocationId) is not null;
+            var deliveryKnown = lookup.Location(order.DeliveryLocationId) is not null;
+
+            // The same checks the planner reports as K4 (spec R37, T28), so the reason is visible before planning.
+            var warnings = new List<string>();
+            if (string.IsNullOrEmpty(order.Id))
+            {
+                warnings.Add("nalog bez oznake");
+            }
+            else if (!seenOrderIds.Add(order.Id))
+            {
+                warnings.Add("oznaka naloga se ponavlja");
+            }
+
+            if (machine is null)
+            {
+                warnings.Add($"nepoznat stroj {order.MachineId}");
+            }
+            else if (machine.WeightKg <= 0)
+            {
+                warnings.Add("masa stroja nije pozitivna");
+            }
+
+            if (!pickupKnown || !deliveryKnown)
+            {
+                warnings.Add("nepoznata lokacija");
+            }
+            else if (order.PickupLocationId == order.DeliveryLocationId)
+            {
+                warnings.Add("preuzimanje i isporuka na istoj lokaciji");
+            }
+
+            if (order.MachineId is not null)
+            {
+                if (firstOrderOfMachine.TryGetValue(order.MachineId, out var earlier))
+                {
+                    warnings.Add($"stroj je već u nalogu {earlier}");
+                }
+                else
+                {
+                    firstOrderOfMachine[order.MachineId] = order.Id ?? Dash;
+                }
+            }
+
+            var trucks = machine is null ? [] : lookup.Trucks.Where(t => t.CanCarry(machine)).Select(lookup.Badge).ToList();
+            rows.Add(new OrderRowViewModel(
+                string.IsNullOrEmpty(order.Id) ? Dash : order.Id,
+                order.MachineId ?? Dash,
+                machine is null ? Dash : Format.Kg(machine.WeightKg),
+                order.PickupLocationId ?? Dash,
+                order.DeliveryLocationId ?? Dash,
+                pickupKnown && deliveryKnown ? Format.Km(lookup.Matrix[order.PickupLocationId!, order.DeliveryLocationId!]) : Dash,
+                trucks,
+                warnings.Count == 0 ? null : string.Join(", ", warnings),
+                CanEdit: !string.IsNullOrEmpty(order.Id)));
         }
 
-        if (!locationsKnown)
-        {
-            warnings.Add("nepoznata lokacija");
-        }
-
-        var trucks = machine is null
-            ? []
-            : scenario.Trucks.Where(t => t.CanCarry(machine)).Select(Badge).ToList();
-
-        return new OrderRowViewModel(
-            order.Id,
-            order.MachineId,
-            machine is null ? "–" : Format.Kg(machine.WeightKg),
-            order.PickupLocationId,
-            order.DeliveryLocationId,
-            locationsKnown ? Format.Km(matrix[order.PickupLocationId, order.DeliveryLocationId]) : "–",
-            trucks,
-            warnings.Count == 0 ? null : string.Join(", ", warnings));
+        return rows;
     }
 
-    private static DistanceMatrixViewModel CreateMatrix(DistanceMatrix matrix)
+    private static DistanceMatrixViewModel? CreateMatrix(DistanceMatrix matrix)
     {
+        if (matrix.Locations.Count == 0)
+        {
+            return null;
+        }
+
         var headers = matrix.Locations.Select(l => l.Id).ToList();
         var rows = matrix.Locations
             .Select(from => new DistanceMatrixRowViewModel(
@@ -192,56 +321,119 @@ public static class InputDataViewModelFactory
         return new DistanceMatrixViewModel(headers, rows);
     }
 
-    private static readonly IReadOnlyList<MapLegendItemViewModel> OrderLegend =
-    [
-        new("baza", "map-swatch is-base"),
-        new("nalog – oba kamiona", "map-swatch is-any"),
-        new("nalog – samo kamion B", "map-swatch is-truck-b"),
-        new("nalog – samo kamion A", "map-swatch is-truck-a"),
-    ];
-
     // Every order as an arrow from pickup to delivery, coloured by which trucks can carry it.
-    private static MapViewModel? CreateMap(Scenario scenario, Dictionary<string, Machine> machinesById)
+    private static LocationMapViewModel? CreateMap(Scenario scenario, Lookup lookup)
     {
-        var locationsById = scenario.Locations.DistinctBy(l => l.Id).ToDictionary(l => l.Id);
-        var arrows = new List<MapArrowViewModel>();
-        foreach (var order in scenario.Orders)
+        if (lookup.Locations.Count == 0)
         {
-            if (!locationsById.TryGetValue(order.PickupLocationId, out var from)
-                || !locationsById.TryGetValue(order.DeliveryLocationId, out var to))
+            return null;
+        }
+
+        var arrows = new List<MapArrowViewModel>();
+        foreach (var order in lookup.Orders)
+        {
+            if (lookup.Location(order.PickupLocationId) is not { } from
+                || lookup.Location(order.DeliveryLocationId) is not { } to
+                || MapGeometry.Shorten(from, to) is not { } line)
             {
                 continue;
             }
 
-            var machine = machinesById.GetValueOrDefault(order.MachineId);
-            var arrow = MapBuilder.Arrow(
-                order.Id, from, to,
-                ArrowCssClass(machine, scenario.Trucks),
-                $"{order.Id}: {order.MachineId} {order.PickupLocationId} → {order.DeliveryLocationId}");
-
-            if (arrow is not null)
-            {
-                arrows.Add(arrow);
-            }
+            arrows.Add(new MapArrowViewModel(
+                order.Id ?? Dash,
+                Format.Svg(line.X1), Format.Svg(line.Y1), Format.Svg(line.X2), Format.Svg(line.Y2),
+                $"sl-map-order sl-map-order-{OrderColor(lookup.Machine(order.MachineId), lookup)}",
+                $"{order.Id}: {order.MachineId} {order.PickupLocationId} → {order.DeliveryLocationId}"));
         }
 
-        return MapBuilder.Create(scenario, arrows, OrderLegend);
+        var legend = new List<MapLegendEntryViewModel>
+        {
+            new("baza", "sl-map-swatch sl-map-swatch-base"),
+            new("nalog – više kamiona", "sl-map-swatch sl-map-swatch-any"),
+        };
+        legend.AddRange(lookup.Trucks
+            .Where(t => lookup.Color(t) != "any")
+            .Select(t => new MapLegendEntryViewModel($"nalog – samo kamion {t.Id}", $"sl-map-swatch sl-map-swatch-{lookup.Color(t)}")));
+        if (arrows.Any(a => a.CssClass.EndsWith("-none", StringComparison.Ordinal)))
+        {
+            legend.Add(new MapLegendEntryViewModel("nalog – nijedan kamion ili nepoznat stroj", "sl-map-swatch sl-map-swatch-none"));
+        }
+
+        return new LocationMapViewModel(
+            MapGeometry.Frame(lookup.Locations),
+            Format.Svg(MapGeometry.PointRadius),
+            MapGeometry.Locations(lookup.Locations, scenario.BaseLocationId),
+            arrows,
+            legend);
     }
 
-    private static string ArrowCssClass(Machine? machine, IReadOnlyList<Truck> trucks)
+    private static string OrderColor(Machine? machine, Lookup lookup)
     {
         if (machine is null)
         {
-            return "map-order is-none";
+            return "none";
         }
 
-        var carriers = trucks.Where(t => t.CanCarry(machine)).ToList();
+        var carriers = lookup.Trucks.Where(t => t.CanCarry(machine)).ToList();
         return carriers.Count switch
         {
-            0 => "map-order is-none",
-            1 when carriers[0].Id == "A" => "map-order is-truck-a",
-            1 when carriers[0].Id == "B" => "map-order is-truck-b",
-            _ => "map-order is-any",
+            0 => "none",
+            1 => lookup.Color(carriers[0]),
+            _ => "any",
         };
+    }
+
+    /// <summary>Lookups built once per page; nulls are skipped, the first occurrence of a duplicated ID wins.</summary>
+    private sealed class Lookup
+    {
+        private readonly Scenario _scenario;
+        private readonly Dictionary<string, Machine> _machines;
+        private readonly Dictionary<string, Location> _locations;
+        private readonly Dictionary<string, string> _colors = [];
+
+        public Lookup(Scenario scenario)
+        {
+            _scenario = scenario;
+            Trucks = (scenario.Trucks ?? []).Where(t => t is not null).ToList();
+            Machines = (scenario.Machines ?? []).Where(m => m is not null).ToList();
+            Locations = (scenario.Locations ?? []).Where(l => l is not null).ToList();
+            Orders = (scenario.Orders ?? []).Where(o => o is not null).ToList();
+            _machines = Machines.Where(m => m.Id is not null).DistinctBy(m => m.Id).ToDictionary(m => m.Id);
+            _locations = Locations.Where(l => l.Id is not null).DistinctBy(l => l.Id).ToDictionary(l => l.Id);
+            Matrix = new DistanceMatrix(_locations.Values.ToList());
+        }
+
+        public IReadOnlyList<Truck> Trucks { get; }
+
+        public IReadOnlyList<Machine> Machines { get; }
+
+        public IReadOnlyList<Location> Locations { get; }
+
+        public IReadOnlyList<TransportOrder> Orders { get; }
+
+        public DistanceMatrix Matrix { get; }
+
+        public Machine? Machine(string? id) => id is not null ? _machines.GetValueOrDefault(id) : null;
+
+        public Location? Location(string? id) => id is not null ? _locations.GetValueOrDefault(id) : null;
+
+        // Same colour rule as the plan; cached because PlanMapper.TruckColor builds its lookups on every call.
+        public string Color(Truck truck)
+        {
+            var key = truck.Id ?? string.Empty;
+            if (!_colors.TryGetValue(key, out var color))
+            {
+                color = PlanMapper.TruckColor(truck, _scenario);
+                _colors[key] = color;
+            }
+
+            return color;
+        }
+
+        public TruckBadgeViewModel Badge(Truck truck)
+        {
+            var color = Color(truck);
+            return new TruckBadgeViewModel(truck.Id, $"sl-badge sl-badge-{(color == "any" ? "neutral" : color)}");
+        }
     }
 }

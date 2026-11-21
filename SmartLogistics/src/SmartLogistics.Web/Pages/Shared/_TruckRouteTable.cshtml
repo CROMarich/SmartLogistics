@@ -1,0 +1,78 @@
+@model SmartLogistics.Web.ViewModels.Transport.TruckRouteViewModel
+@* Route of one truck: departure from the base, every action, return to the base; totals below the table. *@
+
+<article class="sl-card sl-truck-route">
+    <div class="sl-card-header">
+        <h2 class="sl-card-title">
+            <span class="@Model.BadgeCssClass">@Model.TruckId</span>
+            @Model.Title
+        </h2>
+        <div class="sl-chip-row">
+            <span class="sl-chip">@Model.Capacity</span>
+            <span class="sl-chip">@Model.Km</span>
+            <span class="sl-chip">@Model.OrdersText</span>
+        </div>
+    </div>
+
+    @if (Model.IsUnused)
+    {
+        <div class="sl-card-body">
+            <span class="sl-badge sl-badge-neutral">0 km</span>
+            <span class="sl-cell-muted">Kamion nije korišten u ovom planu.</span>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table sl-table sl-route-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-end">#</th>
+                        <th scope="col">Lokacija</th>
+                        <th scope="col">Radnja</th>
+                        <th scope="col">Nalog</th>
+                        <th scope="col">Stroj</th>
+                        <th scope="col" class="text-end">Teret nakon</th>
+                        <th scope="col" class="text-end">% nosivosti</th>
+                        <th scope="col" class="text-end">Strojeva</th>
+                        <th scope="col" class="text-end">Dionica</th>
+                        <th scope="col" class="text-end">Ukupno km</th>
+                        <th scope="col" class="text-end">Vrijeme</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Stops)
+                    {
+                        <tr class="@row.RowCssClass">
+                            <td class="text-end sl-num sl-cell-muted">@row.Step</td>
+                            <td class="fw-semibold">@row.LocationId</td>
+                            <td><span class="@row.ActionCssClass">@row.ActionText</span></td>
+                            <td>@row.OrderId</td>
+                            <td>@row.MachineId</td>
+                            <td class="text-end sl-num">@row.LoadKg</td>
+                            <td class="text-end sl-num">@row.CapacityPercent</td>
+                            <td class="text-end sl-num">@row.Machines</td>
+                            <td class="text-end sl-num">@row.LegKm</td>
+                            <td class="text-end sl-num">@row.CumulativeKm</td>
+                            <td class="text-end sl-num">@row.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sl-card-body sl-truck-route-summary">
+            <dl class="sl-kv-list">
+                <div><dt>Vožnja</dt><dd>@Model.DrivingTime</dd></div>
+                <div><dt>Radnje</dt><dd>@Model.ActionTime</dd></div>
+                <div><dt>Ukupno</dt><dd>@Model.TotalTime</dd></div>
+                <div><dt>Radni dan</dt><dd class="@(Model.ExceedsWorkday ? "sl-kv-value-danger" : null)">@Model.WorkdayPercent</dd></div>
+            </dl>
+            <div class="sl-workday">
+                <div class="sl-workday-label">Radni dan: @Model.WorkdayText</div>
+                <meter class="sl-workday-meter" min="0" max="@Model.WorkdayMeterMax" value="@Model.WorkdayMeterValue"
+                       aria-label="Iskorištenost radnog dana (@Model.WorkdayLabel)">@Model.WorkdayText</meter>
+            </div>
+        </div>
+    }
+</article>

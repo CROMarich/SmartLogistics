@@ -4,7 +4,7 @@ namespace SmartLogistics.Web.Ui;
 
 /// <summary>
 /// Inline SVG icon set (24x24, stroke based). No icon fonts or CDNs: every icon is plain markup
-/// styled by the <c>.icon</c> class in site.css (colour follows the surrounding text).
+/// styled by the <c>.sl-icon</c> class in site.css (colour follows the surrounding text).
 /// Usage in Razor: <c>@Icons.Get("home")</c>.
 /// </summary>
 public static class Icons
@@ -30,12 +30,17 @@ public static class Icons
         ["menu"] = """<path d="M4 6h16M4 12h16M4 18h16"/>""",
         ["arrow-right"] = """<path d="M5 12h14M13 6l6 6-6 6"/>""",
         ["layers"] = """<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>""",
+        ["edit"] = """<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>""",
+        ["trash"] = """<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>""",
+        ["reset"] = """<path d="M4 4v5h5"/><path d="M4.5 9A8 8 0 1 1 4 13"/>""",
+        ["plus"] = """<path d="M12 5v14M5 12h14"/>""",
+        ["play"] = """<path d="M7 5v14l11-7z"/>""",
     };
 
     /// <summary>Returns the SVG markup for the icon; unknown names render an empty placeholder of the same size.</summary>
     public static IHtmlContent Get(string name, string? extraCssClass = null)
     {
-        var css = extraCssClass is null ? "icon" : $"icon {extraCssClass}";
+        var css = extraCssClass is null ? "sl-icon" : $"sl-icon {extraCssClass}";
         var paths = Paths.GetValueOrDefault(name, string.Empty);
         return new HtmlString($"""<svg class="{css}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths}</svg>""");
     }

@@ -1,17 +1,17 @@
 @model IReadOnlyList<PhaseViewModel>
 
-<ol class="timeline">
+<ol class="sl-timeline">
     @foreach (var phase in Model)
     {
         <li class="@phase.ItemCssClass">
-            <span class="timeline-marker">@Icons.Get(phase.Icon)</span>
-            <div class="timeline-body">
-                <div class="timeline-heading">
-                    <span class="timeline-number">Faza @phase.Number</span>
-                    <span class="timeline-title">@phase.Title</span>
+            <span class="sl-timeline-marker">@Icons.Get(phase.Icon)</span>
+            <div class="sl-timeline-body">
+                <div class="sl-timeline-heading">
+                    <span class="sl-timeline-number">Faza @phase.Number</span>
+                    <span class="sl-timeline-title">@phase.Title</span>
                     <span class="@phase.BadgeCssClass">@phase.StatusText</span>
                 </div>
-                <p class="timeline-text">@phase.Description</p>
+                <p class="sl-timeline-text">@phase.Description</p>
             </div>
         </li>
     }

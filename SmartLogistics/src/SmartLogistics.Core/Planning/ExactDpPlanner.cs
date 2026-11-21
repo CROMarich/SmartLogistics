@@ -58,7 +58,7 @@ namespace SmartLogistics.Core.Planning;
 /// plannable orders take part in the search (far beyond what the exponential search can finish anyway).
 /// </para>
 /// </summary>
-public sealed class ExactDpPlanner : IRoutePlanner
+public sealed class ExactDpPlanner : IRoutePlanner, IPlannerCapabilities
 {
     /// <summary>Order sets are cached as 64-bit masks over the plannable orders.</summary>
     private const int MaxPlannableOrders = 63;
@@ -68,6 +68,12 @@ public sealed class ExactDpPlanner : IRoutePlanner
     public ExactDpPlanner()
     {
     }
+
+    /// <inheritdoc />
+    public string DisplayName => "ExactDpPlanner (egzaktno)";
+
+    /// <inheritdoc />
+    public bool GuaranteesOptimum => true;
 
     /// <inheritdoc />
     public Plan Solve(Scenario scenario, PlanningOptions options) => SolveWithStatistics(scenario, options).Plan;
@@ -94,14 +100,7 @@ public sealed class ExactDpPlanner : IRoutePlanner
             ?? throw new InvalidOperationException("The extended search found no plan; the empty plan is always feasible.");
 
         var plan = BuildPlan(input, search, best);
-        var violations = PlanValidator.Validate(plan, scenario, options);
-        if (violations.Count > 0)
-        {
-            throw new InvalidOperationException(
-                $"Bug in {nameof(ExactDpPlanner)}: the plan breaks {violations.Count} rule(s):" + Environment.NewLine
-                + string.Join(Environment.NewLine, violations.Select(v =>
-                    $"- {v.RuleId}{(v.TruckId is null ? "" : $" truck {v.TruckId}")}{(v.StepIndex is null ? "" : $" step {v.StepIndex + 1}")}: {v.Message}")));
-        }
+        PlanAssembly.EnsureValid(plan, scenario, options, nameof(ExactDpPlanner));
 
         var statistics = new ExactDpStatistics(
             search.AssignmentsTried, search.AssignmentsEvaluated, extended, search.DpRuns, search.DpStates);
@@ -110,7 +109,6 @@ public sealed class ExactDpPlanner : IRoutePlanner
 
     private static Plan BuildPlan(PreparedScenario input, AssignmentSearch search, Assignment best)
     {
-        var options = input.Options;
         var routes = new List<TruckRoute>(input.Trucks.Count);
         var totalKm10 = 0;
         for (var t = 0; t < input.Trucks.Count; t++)
@@ -123,35 +121,10 @@ public sealed class ExactDpPlanner : IRoutePlanner
                 continue;
             }
 
-            var stops = new List<Stop>(result.Dp.Steps.Count);
-            var location = input.BaseIndex;
-            var cumulativeKm10 = 0;
-            var loadKg = 0;
-            var machines = 0;
-            foreach (var step in result.Dp.Steps)
-            {
-                var order = result.Orders[step.OrderPosition];
-                var pickup = step.Action == StopAction.Pickup;
-                var next = pickup ? order.PickupIndex : order.DeliveryIndex;
-                var leg10 = input.Legs10[location, next];
-                cumulativeKm10 += leg10;
-                loadKg += pickup ? order.Machine.WeightKg : -order.Machine.WeightKg;
-                machines += pickup ? 1 : -1;
-                var cumulativeKm = cumulativeKm10 / 10.0;
-                var actionsDone = stops.Count + 1;
-                stops.Add(new Stop(
-                    input.Locations[next].Id,
-                    step.Action,
-                    order.Order.Id,
-                    loadKg,
-                    machines,
-                    leg10 / 10.0,
-                    cumulativeKm,
-                    options.DrivingMinutes(cumulativeKm) + actionsDone * options.MinutesPerAction));
-                location = next;
-            }
-
-            var routeKm10 = cumulativeKm10 + input.Legs10[location, input.BaseIndex];
+            var actions = result.Dp.Steps
+                .Select(step => new RouteAction(result.Orders[step.OrderPosition], step.Action))
+                .ToList();
+            var (route, routeKm10) = PlanAssembly.BuildRoute(input, truck, actions, result.Orders.Count);
             if (routeKm10 != result.Dp.Km10)
             {
                 throw new InvalidOperationException(
@@ -159,14 +132,7 @@ public sealed class ExactDpPlanner : IRoutePlanner
             }
 
             totalKm10 += routeKm10;
-            var routeKm = routeKm10 / 10.0;
-            routes.Add(new TruckRoute(
-                truck,
-                stops,
-                routeKm,
-                options.DrivingMinutes(routeKm),
-                stops.Count * options.MinutesPerAction,
-                result.Orders.Count));
+            routes.Add(route);
         }
 
         var infeasible = input.Report.Rejected.Select(r => (r.ScenarioIndex, r.Infeasible)).ToList();

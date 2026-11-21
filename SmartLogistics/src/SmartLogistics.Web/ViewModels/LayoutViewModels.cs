@@ -11,9 +11,9 @@ public sealed record NavItemViewModel(string Title, string? Page, string Icon, b
 
     public string CssClass => (IsActive, IsAvailable) switch
     {
-        (true, _) => "app-nav-link is-active",
-        (_, false) => "app-nav-link is-disabled",
-        _ => "app-nav-link",
+        (true, _) => "sl-nav-link sl-nav-link-active",
+        (_, false) => "sl-nav-link sl-nav-link-disabled",
+        _ => "sl-nav-link",
     };
 }
 
@@ -21,26 +21,28 @@ public sealed record NavItemViewModel(string Title, string? Page, string Icon, b
 public sealed record NavSectionViewModel(string Title, IReadOnlyList<NavItemViewModel> Items);
 
 /// <summary>
-/// Side navigation of the whole app. When a phase adds a page, give its entry a page path
+/// Side navigation of the whole app (T41 a). When a phase adds a page, give its entry a page path
 /// (and remove the "uskoro" badge) so it becomes clickable.
 /// </summary>
 public static class NavigationMenu
 {
-    private sealed record Entry(string Title, string? Page, string Icon, string? Badge = null);
+    /// <param name="AlsoActiveFor">Pages without an own entry that belong to this one (e.g. the order form pages).</param>
+    private sealed record Entry(string Title, string? Page, string Icon, string? Badge = null, string[]? AlsoActiveFor = null);
 
+    // Phases 6b/6c (T43): "Ulazni podaci" is the start page, "Nalozi" includes its form pages, "Pregled" moved to /Pregled.
     private static readonly (string Section, Entry[] Entries)[] Structure =
     [
-        ("Projekt",
-        [
-            new("Pregled", "/Index", "home"),
-            new("Dokumentacija", "/Dokumentacija", "book"),
-            new("Pravila i provjere", "/Pravila", "check"),
-        ]),
         ("Planiranje",
         [
-            new("Ulazni podaci", "/UlazniPodaci", "database"),
-            new("Plan ruta", "/PlanRuta", "route"),
-            new("Karta", "/Karta", "map"),
+            new("Ulazni podaci", "/Index", "database"),
+            new("Nalozi", "/Orders/Index", "list", AlsoActiveFor: ["/Orders/Create", "/Orders/Edit", "/Orders/Delete"]),
+            new("Plan prijevoza", "/Plan", "route"),
+        ]),
+        ("Projekt",
+        [
+            new("Pregled", "/Pregled", "home"),
+            new("Dokumentacija", "/Dokumentacija", "book"),
+            new("Pravila i provjere", "/Pravila", "check"),
         ]),
     ];
 
@@ -51,8 +53,14 @@ public static class NavigationMenu
                 section.Entries
                     .Select(e => new NavItemViewModel(
                         e.Title, e.Page, e.Icon,
-                        IsActive: e.Page is not null && string.Equals(e.Page, currentPage, StringComparison.OrdinalIgnoreCase),
+                        IsActive: IsActive(e, currentPage),
                         e.Badge))
                     .ToList()))
             .ToList();
+
+    private static bool IsActive(Entry entry, string? currentPage) =>
+        currentPage is not null
+        && entry.Page is not null
+        && (string.Equals(entry.Page, currentPage, StringComparison.OrdinalIgnoreCase)
+            || (entry.AlsoActiveFor ?? []).Any(p => string.Equals(p, currentPage, StringComparison.OrdinalIgnoreCase)));
 }

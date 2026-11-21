@@ -1,0 +1,41 @@
+@page
+@model SmartLogistics.Web.Pages.Orders.IndexModel
+@{
+    var vm = Model.ViewModel;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+<partial name="_FlashMessage" />
+<partial name="_FormErrors" model="ModelState.FormErrors()" />
+
+@if (vm.Error is not null)
+{
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div><strong>Scenarij nije učitan.</strong> @vm.Error</div>
+    </div>
+}
+
+<partial name="_ScenarioStatus" model="vm.Status" />
+
+@if (vm.Error is null)
+{
+    <section class="sl-stat-grid" aria-label="Sažetak naloga">
+        @foreach (var stat in vm.Stats)
+        {
+            <partial name="_StatTile" model="stat" />
+        }
+    </section>
+
+    <section class="sl-card sl-section-gap">
+        <div class="sl-card-header">
+            <h2 class="sl-card-title">@Icons.Get("list") Nalozi</h2>
+            <span class="sl-button-row">
+                <a class="sl-button sl-button-secondary sl-button-sm" asp-page="/Plan">@Icons.Get("route") Plan prijevoza</a>
+                <a class="sl-button sl-button-primary sl-button-sm" asp-page="/Orders/Create">@Icons.Get("plus") Novi nalog</a>
+            </span>
+        </div>
+        <partial name="_OrdersTable" model="vm.Table" />
+    </section>
+}

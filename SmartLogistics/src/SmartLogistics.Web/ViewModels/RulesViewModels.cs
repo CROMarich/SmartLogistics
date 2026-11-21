@@ -33,7 +33,8 @@ public static class RulesViewModelFactory
         "Pravila i provjere",
         "Pravila R1..Rn iz docs/spec.md i koja od njih automatski provjerava validator plana (Core/Validation/PlanValidator).");
 
-    public static RulesPageViewModel Create(ProjectDocumentStore documents, ScenarioLoadResult scenario)
+    /// <summary>The validator demo uses the current scenario of the store.</summary>
+    public static RulesPageViewModel Create(ProjectDocumentStore documents, ScenarioSnapshot scenario)
     {
         var specDocument = documents.Find("spec");
         var spec = specDocument is null ? null : documents.Read(specDocument);
@@ -53,14 +54,14 @@ public static class RulesViewModelFactory
 
         var stats = new List<StatTileViewModel>
         {
-            new("Pravila u specifikaciji", Format.Integer(rows.Count), $"{fromDecisions} iz potvrđenih odluka", "list", "tone-accent"),
+            new("Pravila u specifikaciji", Format.Integer(rows.Count), $"{fromDecisions} iz potvrđenih odluka", "list", "sl-stat-tile-accent"),
             new("Provjerava validator", Format.Integer(checkedCount),
                 checkedCount == 0 ? "validator još nije implementiran" : $"{rows.Count - checkedCount} se ne provjerava na razini plana",
-                "check", checkedCount == 0 ? "tone-warning" : "tone-success"),
+                "check", checkedCount == 0 ? "sl-stat-tile-warning" : "sl-stat-tile-ok"),
         };
 
-        var demo = scenario.Scenario is null ? null : CreateEmptyPlanDemo(scenario.Scenario);
-        return new RulesPageViewModel(Header, scenario.Error, stats, demo, rows);
+        var demo = scenario.LoadError is not null ? null : CreateEmptyPlanDemo(scenario.Scenario);
+        return new RulesPageViewModel(Header, scenario.LoadError, stats, demo, rows);
     }
 
     // An empty plan (no routes, no infeasible orders) for the real scenario: every order is
@@ -68,7 +69,7 @@ public static class RulesViewModelFactory
     private static ValidatorDemoViewModel CreateEmptyPlanDemo(Scenario scenario)
     {
         const string title = "Primjer: prazan plan";
-        var description = $"Plan bez ruta i bez neizvedivih naloga za scenarij iz data/scenario.json ({scenario.Orders.Count} naloga). " +
+        var description = $"Plan bez ruta i bez neizvedivih naloga za trenutni scenarij ({scenario.Orders.Count} naloga). " +
                           "Ispravan validator mora prijaviti svaki nalog koji nije ni isplaniran ni označen kao neizvediv.";
 
         IReadOnlyList<PlanViolation> violations;
@@ -79,7 +80,7 @@ public static class RulesViewModelFactory
         catch (NotImplementedException)
         {
             return new ValidatorDemoViewModel(title, description, ValidatorAvailable: false,
-                "Validator još nije implementiran.", "callout is-warning", []);
+                "Validator još nije implementiran.", "sl-callout sl-callout-warning", []);
         }
 
         var rows = violations
@@ -95,6 +96,6 @@ public static class RulesViewModelFactory
             : $"Validator je pronašao {rows.Count} {Format.Plural(rows.Count, "prekršaj", "prekršaja", "prekršaja")}.";
 
         return new ValidatorDemoViewModel(title, description, ValidatorAvailable: true, summary,
-            rows.Count == 0 ? "callout is-danger" : "callout is-success", rows);
+            rows.Count == 0 ? "sl-callout sl-callout-danger" : "sl-callout sl-callout-ok", rows);
     }
 }

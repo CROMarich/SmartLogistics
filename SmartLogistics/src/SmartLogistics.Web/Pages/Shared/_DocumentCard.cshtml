@@ -1,31 +1,31 @@
 @model DocumentCardViewModel
 
-<article class="doc-card @(Model.Exists ? null : "is-missing")">
-    <div class="doc-card-head">
-        <span class="doc-card-icon">@Icons.Get(Model.Icon)</span>
+<article class="sl-doc-card @(Model.Exists ? null : "sl-doc-card-missing")">
+    <div class="sl-doc-card-head">
+        <span class="sl-doc-card-icon">@Icons.Get(Model.Icon)</span>
         <div>
-            <h3 class="doc-card-title">@Model.Title</h3>
-            <div class="doc-card-file">@Model.FileName</div>
+            <h3 class="sl-doc-card-title">@Model.Title</h3>
+            <div class="sl-doc-card-file">@Model.FileName</div>
         </div>
     </div>
-    <p class="doc-card-text">@Model.Description</p>
-    <div class="chip-row">
+    <p class="sl-doc-card-text">@Model.Description</p>
+    <div class="sl-chip-row">
         @foreach (var stat in Model.Stats)
         {
-            <span class="chip">@stat</span>
+            <span class="sl-chip">@stat</span>
         }
     </div>
-    <div class="doc-card-foot">
-        <span class="doc-card-date">@Model.LastModifiedText</span>
+    <div class="sl-doc-card-foot">
+        <span class="sl-doc-card-date">@Model.LastModifiedText</span>
         @if (Model.Exists)
         {
-            <a class="doc-card-link stretched-link" asp-page="/Dokumentacija" asp-route-slug="@Model.Slug">
+            <a class="sl-doc-card-link stretched-link" asp-page="/Dokumentacija" asp-route-slug="@Model.Slug">
                 Otvori @Icons.Get("arrow-right")
             </a>
         }
         else
         {
-            <span class="badge-soft is-neutral">Još nije napisano</span>
+            <span class="sl-badge sl-badge-neutral">Još nije napisano</span>
         }
     </div>
 </article>

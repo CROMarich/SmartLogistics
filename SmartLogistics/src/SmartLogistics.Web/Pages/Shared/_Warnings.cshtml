@@ -1,0 +1,55 @@
+@model SmartLogistics.Web.ViewModels.Transport.PlanWarningsViewModel
+@* Infeasible orders with their reason (K1–K4) and input data warnings; always prominent, never only in a table. *@
+
+@if (Model.InfeasibleOrders.Count > 0)
+{
+    <section class="sl-callout sl-callout-warning sl-callout-block" role="alert" aria-labelledby="infeasibleTitle">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div class="sl-callout-body">
+            <strong id="infeasibleTitle">@Model.Title</strong>
+            <div class="table-responsive sl-callout-table">
+                <table class="table sl-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Nalog</th>
+                            <th scope="col">Stroj</th>
+                            <th scope="col" class="text-end">Masa</th>
+                            <th scope="col">Preuzimanje → isporuka</th>
+                            <th scope="col">Razlog</th>
+                            <th scope="col">Poruka planera</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.InfeasibleOrders)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@item.OrderId</td>
+                                <td>@item.MachineId</td>
+                                <td class="text-end sl-num">@item.Weight</td>
+                                <td><span class="sl-route-pair">@item.PickupLocationId @Icons.Get("arrow-right") @item.DeliveryLocationId</span></td>
+                                <td class="text-nowrap"><span class="@item.BadgeCssClass">@item.ReasonCode</span> @item.ReasonText</td>
+                                <td class="sl-cell-muted">@item.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+}
+
+@if (Model.InputWarnings.Count > 0)
+{
+    <div class="sl-callout sl-callout-warning" role="status">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div>
+            <strong>Upozorenja o ulaznim podacima</strong>
+            <ul class="sl-callout-list">
+                @foreach (var warning in Model.InputWarnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        </div>
+    </div>
+}

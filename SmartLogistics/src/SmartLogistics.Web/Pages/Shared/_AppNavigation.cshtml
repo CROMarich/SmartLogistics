@@ -1,11 +1,11 @@
 @model IReadOnlyList<NavSectionViewModel>
 
-<nav class="app-nav">
+<nav class="sl-nav" aria-label="Glavni izbornik">
     @foreach (var navSection in Model)
     {
-        <div class="app-nav-section">
-            <div class="app-nav-section-title">@navSection.Title</div>
-            <ul class="app-nav-list">
+        <div class="sl-nav-section">
+            <div class="sl-nav-section-title">@navSection.Title</div>
+            <ul class="sl-nav-list">
                 @foreach (var item in navSection.Items)
                 {
                     <li>
@@ -23,7 +23,7 @@
                                 <span>@item.Title</span>
                                 @if (item.Badge is not null)
                                 {
-                                    <span class="app-nav-badge">@item.Badge</span>
+                                    <span class="sl-nav-badge">@item.Badge</span>
                                 }
                             </span>
                         }

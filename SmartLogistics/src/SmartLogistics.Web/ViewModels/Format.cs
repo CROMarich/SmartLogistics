@@ -14,6 +14,17 @@ public static class Format
     /// <summary>8.5 → "8,5 km" (one decimal, as legs are rounded to one decimal).</summary>
     public static string Km(double km) => $"{Number(km)} km";
 
+    /// <summary>
+    /// Signed km difference with one decimal (rounded AwayFromZero first): 3.44 → "+3,4 km", -1.2 → "−1,2 km",
+    /// 0.04 → "0,0 km" (no sign when the rounded difference is zero).
+    /// </summary>
+    public static string SignedKm(double km)
+    {
+        var rounded = Math.Round(km, 1, MidpointRounding.AwayFromZero);
+        var sign = rounded > 0 ? "+" : rounded < 0 ? "−" : string.Empty;
+        return $"{sign}{Number(Math.Abs(rounded))} km";
+    }
+
     /// <summary>8.5 → "8,5" (for tables whose header already says km).</summary>
     public static string Number(double value) => value.ToString("0.0", Croatian);
 
@@ -26,15 +37,44 @@ public static class Format
     /// <summary>Coordinates without unnecessary decimals: -8 → "-8", 2.5 → "2,5".</summary>
     public static string Coordinate(double value) => value.ToString("0.##", Croatian);
 
-    /// <summary>Minutes as a clock duration, rounded to whole minutes: 503.4 → "08:23".</summary>
+    /// <summary>
+    /// Minutes as a clock duration, rounded to whole minutes (midpoint away from zero), at least two digits for hours:
+    /// 522.9 → "08:43", 37.5 → "00:38", 600 → "10:00". Sums of legs can carry floating-point noise
+    /// (37.4999999999 instead of 37.5), so the value is first rounded to 6 decimals.
+    /// </summary>
     public static string Clock(double minutes)
     {
-        var total = (int)Math.Round(minutes, MidpointRounding.AwayFromZero);
-        return $"{total / 60:00}:{total % 60:00}";
+        var total = (long)Math.Round(Math.Round(minutes, 6), MidpointRounding.AwayFromZero);
+        var sign = total < 0 ? "-" : string.Empty;
+        total = Math.Abs(total);
+        return $"{sign}{total / 60:00}:{total % 60:00}";
     }
 
     /// <summary>0.7 → "70 %".</summary>
     public static string Percent(double fraction) => $"{Math.Round(fraction * 100, MidpointRounding.AwayFromZero):0} %";
+
+    /// <summary>
+    /// Share as a whole percentage, computed exactly in integers (midpoint away from zero):
+    /// Percent(9900, 10000) → "99 %", Percent(1750, 3500) → "50 %", Percent(145, 1000) → "15 %".
+    /// "–" when <paramref name="whole"/> is not positive (nothing to compare with).
+    /// </summary>
+    public static string Percent(long part, long whole) =>
+        whole <= 0 ? "–" : $"{Math.Round(part * 100m / whole, MidpointRounding.AwayFromZero):0} %";
+
+    /// <summary>
+    /// Share of two measured values (e.g. minutes of the working day) as a whole percentage, midpoint away from zero,
+    /// computed in decimal so that 522.9 / 540 does not suffer from binary rounding: → "97 %".
+    /// "–" when <paramref name="whole"/> is not positive or a value is not finite.
+    /// </summary>
+    public static string Percent(double part, double whole)
+    {
+        if (!(whole > 0) || !double.IsFinite(part) || !double.IsFinite(whole) || Math.Abs(part) > 1e15 || whole > 1e15)
+        {
+            return "–";
+        }
+
+        return $"{Math.Round((decimal)part * 100m / (decimal)whole, MidpointRounding.AwayFromZero):0} %";
+    }
 
     /// <summary>Elapsed computation time: "12 ms" or "1,4 s".</summary>
     public static string Elapsed(TimeSpan elapsed) =>
