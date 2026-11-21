@@ -9,11 +9,24 @@
                 @foreach (var item in navSection.Items)
                 {
                     <li>
-                        @if (item.IsAvailable)
+                        @if (item.IsPage)
                         {
                             <a class="@item.CssClass" asp-page="@item.Page" aria-current="@(item.IsActive ? "page" : null)">
                                 @Icons.Get(item.Icon)
                                 <span>@item.Title</span>
+                            </a>
+                        }
+                        else if (item.IsLink)
+                        {
+                            @* Static file or external site: plain href (not Razor routing), optionally in a new tab. *@
+                            <a class="@item.CssClass" href="@item.Href" target="@item.Target" rel="@item.Rel">
+                                @Icons.Get(item.Icon)
+                                <span>@item.Title</span>
+                                @if (item.OpensInNewTab)
+                                {
+                                    @Icons.Get("external", "sl-nav-external-icon")
+                                    <span class="visually-hidden">@item.NewTabHint</span>
+                                }
                             </a>
                         }
                         else

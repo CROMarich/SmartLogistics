@@ -1,0 +1,4 @@
+@model LabVerdictViewModel
+@* Computed verdict of a test case: "Očekivano ✓" or "Neočekivano ✗" (every expectation met or not). *@
+
+<span class="@Model.CssClass">@Icons.Get(Model.Icon) @Model.Text</span>

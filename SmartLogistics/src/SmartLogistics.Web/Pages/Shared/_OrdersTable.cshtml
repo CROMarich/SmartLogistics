@@ -33,7 +33,8 @@ else
                             <span class="sl-route-pair">@order.Pickup @Icons.Get("arrow-right") @order.Delivery</span>
                             @if (order.DataWarning is not null)
                             {
-                                <span class="sl-badge sl-badge-danger">@order.DataWarning</span>
+                                @* The planner's own K4 message (Feasibility.Check), so the page and the plan never disagree. *@
+                                <div class="sl-cell-muted"><span class="sl-badge sl-badge-danger">@order.DataWarningCode</span> @order.DataWarning</div>
                             }
                         </td>
                         <td class="text-end sl-num">@order.DirectLeg</td>

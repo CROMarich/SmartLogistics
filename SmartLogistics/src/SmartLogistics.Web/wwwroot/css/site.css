@@ -1,16 +1,127 @@
 /* =====================================================================
-   Smart Logistics Planner – design system
+   Smart Logistics Planner – design system, UpRent theme
    All application styles live in this file (no inline styles, no CSS
-   isolation). Colours, spacing, radii and shadows are tokens in :root;
-   components only reference tokens, so the theme changes in one place.
-   Documentation: docs/ui-dizajn.md
+   isolation). Colours, spacing, radii, shadows and fonts are tokens in
+   :root; components only reference tokens, so the theme changes in one
+   place. Visual identity: UpRent (ink, signal yellow, paper; Barlow and
+   Barlow Condensed). Documentation: docs/ui-dizajn.md
    ===================================================================== */
+
+/* ---------- 0. Fonts ----------
+   Self-hosted Barlow (body) and Barlow Condensed (display), SIL Open Font License 1.1
+   (wwwroot/fonts/OFL.txt). Two subsets per face: latin and latin-ext (č, ć, đ, š, ž);
+   the browser downloads a subset only when the page uses one of its characters. */
+
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-ext-400.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-ext-500.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* 600 is the heaviest body weight: bold text (700) renders with it instead of a synthetic bold. */
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../fonts/barlow-latin-ext-600.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/barlow-condensed-latin-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/barlow-condensed-latin-ext-600.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/barlow-condensed-latin-700.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/barlow-condensed-latin-ext-700.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 
 /* ---------- 1. Tokens ---------- */
 
 :root {
-  /* Typography */
-  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Brand (UpRent) – raw palette; components use the semantic tokens below */
+  --brand-yellow: #ffec00;
+  --brand-yellow-deep: #e6d200;
+  --brand-ink: #111111;
+  --brand-ink-2: #1b1b1b;
+  --brand-ink-3: #2a2a2a;
+  --brand-paper: #f4f3ee;
+  --brand-white: #ffffff;
+  --hazard-band: 10px;
+  --brand-hazard: repeating-linear-gradient(-45deg, var(--brand-yellow) 0 var(--hazard-band), var(--brand-ink) var(--hazard-band) calc(var(--hazard-band) * 2));
+  --brand-logo-height: 1.9rem;
+  --brand-logo-height-sm: 1.6rem;
+
+  /* Typography: Barlow for text, Barlow Condensed for display (titles, labels, numbers, buttons) */
+  --font-sans: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, sans-serif;
   --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
   --text-xs: .75rem;
   --text-sm: .875rem;
@@ -18,57 +129,79 @@
   --text-lg: 1.125rem;
   --text-xl: 1.5rem;
   --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+  --tracking-display: .02em;
+  --tracking-caps: .12em;
+  --tracking-wide: .16em;
 
-  /* Neutral palette */
-  --color-bg: #f4f6fb;
-  --color-surface: #ffffff;
-  --color-surface-muted: #f8fafc;
-  --color-border: #e3e8f0;
-  --color-border-strong: #cbd5e1;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-text-subtle: #94a3b8;
+  /* Neutral palette (warm paper and ink, as on uprent.hr) */
+  --color-bg: var(--brand-paper);
+  --color-surface: var(--brand-white);
+  --color-surface-muted: #f8f7f2;
+  --color-surface-sunken: #efede5;
+  --color-border: #dddbd2;
+  --color-border-strong: #c4c1b5;
+  --color-text: #1a1a1a;
+  --color-text-muted: #5d5c57;
+  --color-text-subtle: #6f6d66;
 
-  /* Accent */
-  --color-accent: #4f46e5;
-  --color-accent-strong: #4338ca;
-  --color-accent-soft: #eef2ff;
-  --color-focus: rgba(79, 70, 229, .35);
-  --color-on-accent: #ffffff;
+  /* Accent: signal yellow is a fill (buttons, active states, markers), never text on light surfaces */
+  --color-accent: var(--brand-yellow);
+  --color-accent-strong: var(--brand-yellow-deep);
+  --color-accent-soft: #fff8c4;
+  --color-accent-ink: var(--brand-ink);
+  --color-on-accent: var(--brand-ink);
+  --color-link-underline: #9c8700;
+  --color-focus: var(--brand-ink);
+  --color-focus-on-dark: var(--brand-yellow);
+  --color-focus-ring: rgba(255, 236, 0, .6);
+
+  /* Dark surfaces (sidebar, top bar, page header, footer) */
+  --surface-dark: var(--brand-ink);
+  --surface-dark-raised: var(--brand-ink-3);
+  --text-on-dark: var(--brand-white);
+  --text-on-dark-muted: #b9b8b2;
+  --text-on-dark-subtle: #8e8d87;
+  --border-on-dark: rgba(255, 255, 255, .12);
 
   /* Sidebar */
-  --sidebar-bg: #0f172a;
-  --sidebar-bg-hover: rgba(255, 255, 255, .06);
-  --sidebar-bg-active: rgba(255, 255, 255, .10);
-  --sidebar-text: #cbd5e1;
-  --sidebar-text-muted: #64748b;
-  --sidebar-text-active: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, .08);
-  --sidebar-border-strong: rgba(255, 255, 255, .12);
-  --code-block-text: #e2e8f0;
-  --sidebar-width: 256px;
+  --sidebar-bg: var(--surface-dark);
+  --sidebar-bg-hover: rgba(255, 255, 255, .07);
+  --sidebar-bg-active: var(--brand-yellow);
+  --sidebar-text: #e9e8e3;
+  --sidebar-text-muted: var(--text-on-dark-subtle);
+  --sidebar-text-hover: var(--brand-yellow);
+  --sidebar-text-active: var(--brand-ink);
+  --sidebar-text-strong: var(--text-on-dark);
+  --sidebar-border: var(--border-on-dark);
+  --sidebar-border-strong: rgba(255, 255, 255, .22);
+  --sidebar-edge: var(--brand-yellow);
+  --code-block-text: #e9e8e3;
+  --sidebar-width: 272px;
 
-  /* Domain colours – trucks and plan states (also used by the SVG map) */
-  --truck-a: #0d9488;
-  --truck-a-soft: #ccfbf1;
-  --truck-b: #ea580c;
-  --truck-b-soft: #ffedd5;
+  /* Domain colours – trucks (also used by the SVG map). Blue / orange: distinct for colour-blind users,
+     AA on white and on their soft backgrounds; yellow stays reserved for the brand and the base L0. */
+  --truck-a: #1f5f99;
+  --truck-a-soft: #e2ecf6;
+  --truck-b: #b5400c;
+  --truck-b-soft: #fdebe0;
 
   /* Semantic colours */
-  --color-ok: #16a34a;
-  --color-ok-soft: #dcfce7;
-  --color-ok-text: #166534;
-  --color-warning: #d97706;
-  --color-warning-soft: #fef3c7;
-  --color-warning-text: #92400e;
-  --color-warning-border: rgba(217, 119, 6, .25);
-  --color-danger: #dc2626;
-  --color-danger-soft: #fee2e2;
-  --color-danger-text: #991b1b;
-  --color-danger-border: rgba(220, 38, 38, .25);
-  --color-info: #2563eb;
-  --color-info-soft: #dbeafe;
-  --color-info-text: #1e40af;
+  --color-ok: #2e7d32;
+  --color-ok-soft: #e7f3e4;
+  --color-ok-text: #1d5420;
+  --color-ok-border: rgba(46, 125, 50, .3);
+  --color-warning: #8a6d00;
+  --color-warning-soft: #fff6bf;
+  --color-warning-text: #4d3d00;
+  --color-warning-border: var(--brand-yellow-deep);
+  --color-danger: #c62828;
+  --color-danger-soft: #fdecea;
+  --color-danger-text: #8e1b1b;
+  --color-danger-border: rgba(198, 40, 40, .3);
+  --color-info: var(--brand-ink-3);
+  --color-info-soft: #ecebe4;
+  --color-info-text: var(--brand-ink-3);
 
   /* Spacing scale */
   --space-1: .25rem;
@@ -80,39 +213,48 @@
   --space-7: 3rem;
 
   /* Shape and depth */
-  --radius-sm: 6px;
-  --radius: 10px;
+  --radius-sm: 8px;
+  --radius: 12px;
   --radius-lg: 14px;
+  --radius-xl: 24px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05);
-  --shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 6px 16px rgba(15, 23, 42, .05);
-  --shadow-lg: 0 12px 32px rgba(15, 23, 42, .10);
+  --rule-thick: 3px;
+  --callout-bar: 6px;
+  --shadow-sm: 0 1px 2px rgba(17, 17, 17, .06);
+  --shadow: 0 1px 3px rgba(17, 17, 17, .08), 0 10px 24px -12px rgba(17, 17, 17, .18);
+  --shadow-lg: 0 24px 40px -20px rgba(17, 17, 17, .45);
+  --shadow-lift: 0 6px 0 var(--brand-yellow);
 
   /* Layout */
   --content-max: 1320px;
+  --page-header-decor: 18rem;
   --transition: 150ms ease;
 
   /* SVG map (sizes inside the SVG are in km units of the map, not tokens) */
   --map-bg: var(--color-surface-muted);
-  --map-grid: var(--color-border);
-  --map-axis: var(--color-text-subtle);
+  --map-grid: #e6e3d8;
+  --map-axis: #a19e92;
   --map-tick: var(--color-text-muted);
-  --map-base: var(--color-accent);
-  --map-base-border: var(--color-accent-strong);
+  --map-base: var(--brand-yellow);
+  --map-base-border: var(--brand-ink);
   --map-location: var(--color-surface);
-  --map-location-border: var(--color-text);
+  --map-location-border: var(--brand-ink-3);
   --map-label: var(--color-text);
   --map-label-halo: var(--color-surface);
-  --map-any: var(--color-accent);
+  --map-any: #55534d;
   --map-invalid: var(--color-danger);
+
+  /* Workday meter */
+  --meter-track: var(--color-surface-sunken);
+  --meter-fill: var(--brand-ink-3);
 
   /* Bootstrap integration: keep Bootstrap components on the same palette */
   --bs-body-font-family: var(--font-sans);
   --bs-body-color: var(--color-text);
   --bs-body-bg: var(--color-bg);
   --bs-border-color: var(--color-border);
-  --bs-link-color-rgb: 79, 70, 229;
-  --bs-link-hover-color-rgb: 67, 56, 202;
+  --bs-link-color-rgb: 26, 26, 26;
+  --bs-link-hover-color-rgb: 17, 17, 17;
   --bs-font-monospace: var(--font-mono);
 }
 
@@ -132,25 +274,63 @@ body.sl-app-body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4 {
   color: var(--color-text);
-  letter-spacing: -.01em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+b, strong {
+  font-weight: 600;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 code {
-  color: var(--color-accent-strong);
-  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+  background-color: var(--color-surface-sunken);
   padding: .1em .35em;
   border-radius: var(--radius-sm);
   font-size: .875em;
 }
 
+/* Plain text links in content: ink text with a yellow-family underline, filled on hover (as on uprent.hr). */
+:where(.sl-content) a:not([class]) {
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-link-underline);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: background-color var(--transition);
+}
+
+:where(.sl-content) a:not([class]):hover {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+  text-decoration-color: var(--color-on-accent);
+}
+
+/* Focus: ink ring on light surfaces, yellow ring on dark ones. */
 :focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: var(--rule-thick) solid var(--color-focus);
   outline-offset: 2px;
+}
+
+.sl-sidebar :focus-visible,
+.sl-offcanvas :focus-visible,
+.sl-topbar :focus-visible,
+.sl-page-header :focus-visible,
+.sl-footer :focus-visible {
+  outline-color: var(--color-focus-on-dark);
 }
 
 .sl-skip-link {
@@ -161,7 +341,11 @@ code {
   padding: var(--space-2) var(--space-4);
   background-color: var(--color-accent);
   color: var(--color-on-accent);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
 }
 
 .sl-skip-link:focus {
@@ -196,79 +380,131 @@ code {
   flex-shrink: 0;
   padding: var(--space-5) var(--space-4);
   background-color: var(--sidebar-bg);
+  border-right: var(--rule-thick) solid var(--sidebar-edge);
   color: var(--sidebar-text);
   overflow-y: auto;
+  scrollbar-color: var(--surface-dark-raised) transparent;
+  scrollbar-width: thin;
 }
 
 .sl-sidebar-header {
   flex-shrink: 0;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .sl-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
   margin-top: auto;
-  padding: var(--space-3) var(--space-3) 0;
+  padding: var(--space-4) var(--space-3) 0;
   border-top: 1px solid var(--sidebar-border);
   color: var(--sidebar-text-muted);
   font-size: var(--text-xs);
 }
 
+.sl-sidebar-footer-title {
+  color: var(--sidebar-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
 .sl-offcanvas {
   --bs-offcanvas-width: var(--sidebar-width);
+  --bs-btn-close-focus-shadow: 0 0 0 var(--rule-thick) var(--color-focus-on-dark);
   background-color: var(--sidebar-bg);
+  border-right: var(--rule-thick) solid var(--sidebar-edge);
   color: var(--sidebar-text);
+}
+
+.sl-offcanvas .offcanvas-header {
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sl-offcanvas .sl-brand {
+  padding: 0;
+}
+
+.sl-offcanvas .sl-brand-logo {
+  height: var(--brand-logo-height-sm);
 }
 
 .sl-brand {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 0 var(--space-2) var(--space-5);
-  color: var(--sidebar-text-active);
+  padding: 0 var(--space-2);
+  color: var(--sidebar-text-strong);
   text-decoration: none;
 }
 
 .sl-brand:hover {
-  color: var(--sidebar-text-active);
+  color: var(--sidebar-text-strong);
 }
 
-.sl-brand-mark {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--color-accent), var(--truck-a));
-  color: var(--color-on-accent);
+.sl-brand-logo {
+  display: block;
+  width: auto;
+  height: var(--brand-logo-height);
+  flex-shrink: 0;
 }
 
 .sl-brand-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
+  gap: 2px;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--sidebar-border-strong);
+  line-height: 1;
 }
 
 .sl-brand-name {
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .sl-brand-sub {
-  color: var(--sidebar-text-muted);
+  color: var(--text-on-dark-muted);
+  font-family: var(--font-display);
   font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  white-space: nowrap;
 }
 
 .sl-nav-section + .sl-nav-section {
   margin-top: var(--space-5);
 }
 
+/* Section title in the UpRent "eyebrow" style: short yellow rule, condensed capitals. */
 .sl-nav-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: 0 var(--space-3) var(--space-2);
   color: var(--sidebar-text-muted);
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 600;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  letter-spacing: .08em;
+}
+
+.sl-nav-section-title::before {
+  content: "";
+  width: var(--space-4);
+  height: 2px;
+  background-color: var(--brand-yellow);
 }
 
 .sl-nav-list {
@@ -283,9 +519,9 @@ code {
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   margin-bottom: 2px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   color: var(--sidebar-text);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: 500;
   text-decoration: none;
   transition: background-color var(--transition), color var(--transition);
@@ -293,13 +529,14 @@ code {
 
 a.sl-nav-link:hover {
   background-color: var(--sidebar-bg-hover);
-  color: var(--sidebar-text-active);
+  color: var(--sidebar-text-hover);
 }
 
-.sl-nav-link-active {
+.sl-nav-link-active,
+a.sl-nav-link-active:hover {
   background-color: var(--sidebar-bg-active);
   color: var(--sidebar-text-active);
-  box-shadow: inset 3px 0 0 var(--color-accent);
+  font-weight: 600;
 }
 
 .sl-nav-link-disabled {
@@ -307,12 +544,28 @@ a.sl-nav-link:hover {
   cursor: default;
 }
 
+/* Static/external entry (e.g. "UpRent web"): trailing "opens in a new tab" icon. */
+.sl-nav-external-icon {
+  margin-left: auto;
+  width: 1em;
+  height: 1em;
+  opacity: .7;
+}
+
+a.sl-nav-link:hover .sl-nav-external-icon {
+  opacity: 1;
+}
+
 .sl-nav-badge {
   margin-left: auto;
   padding: 0 var(--space-2);
   border: 1px solid var(--sidebar-border-strong);
   border-radius: var(--radius-pill);
+  font-family: var(--font-display);
   font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .sl-main {
@@ -330,24 +583,36 @@ a.sl-nav-link:hover {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--surface-dark);
+  border-bottom: var(--rule-thick) solid var(--sidebar-edge);
+  color: var(--text-on-dark);
 }
 
-.sl-topbar-title {
-  font-weight: 650;
+.sl-topbar .sl-brand {
+  padding: 0;
+}
+
+.sl-topbar .sl-brand-logo {
+  height: var(--brand-logo-height-sm);
 }
 
 .sl-icon-button {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background-color: var(--color-surface);
-  color: var(--color-text);
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border: 1px solid var(--sidebar-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-on-dark);
   font-size: var(--text-lg);
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.sl-icon-button:hover {
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow);
 }
 
 .sl-content {
@@ -355,48 +620,123 @@ a.sl-nav-link:hover {
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-5) var(--space-4) var(--space-6);
+}
+
+@media (min-width: 576px) {
+  .sl-content {
+    padding: var(--space-6) var(--space-5);
+  }
 }
 
 @media (min-width: 992px) {
   .sl-content {
-    padding: var(--space-7) var(--space-7) var(--space-6);
+    padding: var(--space-6) var(--space-7) var(--space-7);
   }
 }
 
+/* Footer: ink band with the UpRent hazard stripe on top. */
 .sl-footer {
-  padding: var(--space-4) var(--space-5);
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-subtle);
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  padding: calc(var(--space-4) + var(--hazard-band)) var(--space-5) var(--space-4);
+  background-color: var(--surface-dark);
+  color: var(--text-on-dark-muted);
   font-size: var(--text-sm);
   text-align: center;
 }
 
+.sl-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--hazard-band);
+  background: var(--brand-hazard);
+}
+
+.sl-footer-brand {
+  color: var(--brand-yellow);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
 /* ---------- 4. Page header ---------- */
 
+/* Dark hero panel as on uprent.hr subpages: yellow eyebrow, condensed capitals, rotated yellow square (as the catalogue block). */
 .sl-page-header {
-  margin-bottom: var(--space-6);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-dark);
+  color: var(--text-on-dark);
+}
+
+.sl-page-header::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: calc(var(--page-header-decor) / -2.4);
+  right: calc(var(--page-header-decor) / -3.6);
+  width: var(--page-header-decor);
+  height: var(--page-header-decor);
+  background-color: var(--brand-yellow);
+  opacity: .1;
+  transform: rotate(45deg);
+}
+
+@media (min-width: 768px) {
+  .sl-page-header {
+    padding: var(--space-6) var(--space-6) var(--space-6);
+    border-radius: var(--radius-xl);
+  }
 }
 
 .sl-page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-2);
-  color: var(--color-accent);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  color: var(--brand-yellow);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  letter-spacing: .1em;
+}
+
+.sl-page-eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: var(--rule-thick);
+  background-color: var(--brand-yellow);
 }
 
 .sl-page-title {
   margin: 0;
-  font-size: var(--text-2xl);
+  color: var(--text-on-dark);
+  font-size: clamp(var(--text-2xl), 1.4rem + 2vw, var(--text-3xl));
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: .005em;
+  text-transform: uppercase;
+  text-wrap: balance;
 }
 
 .sl-page-subtitle {
   max-width: 70ch;
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
+  margin: var(--space-3) 0 0;
+  color: var(--text-on-dark-muted);
   font-size: var(--text-lg);
 }
 
@@ -420,17 +760,34 @@ a.sl-nav-link:hover {
 
 .sl-card-title {
   margin: 0;
-  font-size: var(--text-md);
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 .sl-card-action {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: .08em;
   text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color var(--transition);
+}
+
+.sl-card-action:hover {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .sl-card-body {
@@ -446,6 +803,7 @@ a.sl-nav-link:hover {
   margin-bottom: var(--space-5);
 }
 
+/* The top rule (inset shadow, follows the rounded corners) carries the tile's tone. */
 .sl-stat-tile {
   display: flex;
   align-items: flex-start;
@@ -454,7 +812,7 @@ a.sl-nav-link:hover {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 4px 0 var(--color-border-strong), var(--shadow-sm);
 }
 
 .sl-stat-icon {
@@ -462,94 +820,137 @@ a.sl-nav-link:hover {
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
+  flex-shrink: 0;
   border-radius: var(--radius);
   font-size: var(--text-lg);
 }
 
 .sl-stat-label {
   color: var(--color-text-muted);
+  font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
 }
 
 .sl-stat-value {
-  font-size: var(--text-xl);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.3;
+  line-height: 1.1;
+  letter-spacing: .01em;
 }
 
 .sl-stat-hint {
+  margin-top: var(--space-1);
   color: var(--color-text-subtle);
   font-size: var(--text-xs);
 }
 
-.sl-stat-tile-accent .sl-stat-icon { background-color: var(--color-accent-soft); color: var(--color-accent); }
+.sl-stat-tile-accent { box-shadow: inset 0 4px 0 var(--color-accent), var(--shadow-sm); }
+.sl-stat-tile-accent .sl-stat-icon { background-color: var(--color-accent); color: var(--color-on-accent); }
+.sl-stat-tile-ok { box-shadow: inset 0 4px 0 var(--color-ok), var(--shadow-sm); }
 .sl-stat-tile-ok .sl-stat-icon { background-color: var(--color-ok-soft); color: var(--color-ok); }
+.sl-stat-tile-warning { box-shadow: inset 0 4px 0 var(--color-warning-border), var(--shadow-sm); }
 .sl-stat-tile-warning .sl-stat-icon { background-color: var(--color-warning-soft); color: var(--color-warning); }
-.sl-stat-tile-neutral .sl-stat-icon { background-color: var(--color-surface-muted); color: var(--color-text-muted); }
+.sl-stat-tile-neutral .sl-stat-icon { background-color: var(--color-surface-sunken); color: var(--color-text-muted); }
 
 /* ---------- 7. Badges and chips ---------- */
 
 .sl-badge {
   display: inline-flex;
   align-items: center;
-  padding: .15rem var(--space-2);
+  padding: .1rem var(--space-2);
+  border: 1px solid transparent;
   border-radius: var(--radius-pill);
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .05em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.sl-badge-ok { background-color: var(--color-ok-soft); color: var(--color-ok-text); }
-.sl-badge-warning { background-color: var(--color-warning-soft); color: var(--color-warning-text); }
-.sl-badge-danger { background-color: var(--color-danger-soft); color: var(--color-danger-text); }
-.sl-badge-neutral { background-color: var(--color-surface-muted); color: var(--color-text-muted); border: 1px solid var(--color-border); }
-.sl-badge-accent { background-color: var(--color-accent-soft); color: var(--color-accent-strong); }
+.sl-badge-ok { background-color: var(--color-ok-soft); border-color: var(--color-ok-border); color: var(--color-ok-text); }
+.sl-badge-warning { background-color: var(--color-warning-soft); border-color: var(--color-warning-border); color: var(--color-warning-text); }
+.sl-badge-danger { background-color: var(--color-danger-soft); border-color: var(--color-danger-border); color: var(--color-danger-text); }
+.sl-badge-neutral { background-color: var(--color-surface-muted); border-color: var(--color-border); color: var(--color-text-muted); }
+.sl-badge-accent { background-color: var(--surface-dark); color: var(--brand-yellow); }
 .sl-badge-truck-a { background-color: var(--truck-a-soft); color: var(--truck-a); }
 .sl-badge-truck-b { background-color: var(--truck-b-soft); color: var(--truck-b); }
 
 .sl-chip-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
 
 .sl-chip {
   display: inline-flex;
   align-items: center;
-  padding: .1rem var(--space-2);
+  padding: .15rem var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background-color: var(--color-surface);
   color: var(--color-text-muted);
   font-size: var(--text-xs);
+  font-weight: 500;
 }
 
 /* ---------- 8. Callouts ---------- */
 
+/* Left bar in the state colour; warnings get the UpRent hazard stripe so they cannot be overlooked. */
 .sl-callout {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + var(--callout-bar));
   border: 1px solid transparent;
   border-radius: var(--radius);
   font-size: var(--text-sm);
 }
 
+.sl-callout::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--callout-bar);
+  border-radius: calc(var(--radius) - 1px) 0 0 calc(var(--radius) - 1px);
+  background-color: currentColor;
+}
+
 .sl-callout-icon {
-  font-size: var(--text-lg);
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
   line-height: 1;
 }
 
-.sl-callout-info { background-color: var(--color-info-soft); color: var(--color-info-text); }
-.sl-callout-warning { background-color: var(--color-warning-soft); color: var(--color-warning-text); border-color: var(--color-warning-border); }
-.sl-callout-danger { background-color: var(--color-danger-soft); color: var(--color-danger-text); border-color: var(--color-danger-border); }
-.sl-callout-ok { background-color: var(--color-ok-soft); color: var(--color-ok-text); }
+.sl-callout-info { background-color: var(--color-info-soft); border-color: var(--color-border); color: var(--color-info-text); }
+.sl-callout-info .sl-callout-icon { background-color: var(--surface-dark); color: var(--brand-yellow); }
+.sl-callout-warning { background-color: var(--color-warning-soft); border-color: var(--color-warning-border); color: var(--color-warning-text); }
+.sl-callout-warning::before { background: var(--brand-hazard); }
+.sl-callout-warning .sl-callout-icon { background-color: var(--color-accent); color: var(--color-on-accent); }
+.sl-callout-danger { background-color: var(--color-danger-soft); border-color: var(--color-danger-border); color: var(--color-danger-text); }
+.sl-callout-danger::before { background-color: var(--color-danger); }
+.sl-callout-danger .sl-callout-icon { background-color: var(--color-danger); color: var(--brand-white); }
+.sl-callout-ok { background-color: var(--color-ok-soft); border-color: var(--color-ok-border); color: var(--color-ok-text); }
+.sl-callout-ok::before { background-color: var(--color-ok); }
+.sl-callout-ok .sl-callout-icon { background-color: var(--color-ok); color: var(--brand-white); }
 
-.sl-callout a {
+.sl-callout a:not([class]) {
   color: inherit;
   font-weight: 600;
 }
@@ -595,7 +996,7 @@ a.sl-nav-link:hover {
   font-size: var(--text-sm);
 }
 
-.sl-timeline-item-done .sl-timeline-marker { background-color: var(--color-ok); color: var(--color-on-accent); }
+.sl-timeline-item-done .sl-timeline-marker { background-color: var(--color-accent); color: var(--color-on-accent); }
 .sl-timeline-item-review .sl-timeline-marker { background-color: var(--color-warning-soft); color: var(--color-warning); border: 2px solid var(--color-warning); }
 .sl-timeline-item-planned .sl-timeline-marker { background-color: var(--color-surface); color: var(--color-text-subtle); border: 2px dashed var(--color-border-strong); }
 
@@ -608,14 +1009,18 @@ a.sl-nav-link:hover {
 
 .sl-timeline-number {
   color: var(--color-text-subtle);
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: var(--tracking-caps);
 }
 
 .sl-timeline-title {
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
 }
 
 .sl-timeline-text {
@@ -632,6 +1037,7 @@ a.sl-nav-link:hover {
   gap: var(--space-4);
 }
 
+/* Hover as the UpRent catalogue cards: ink border and a yellow "shelf" underneath. */
 .sl-doc-card {
   position: relative;
   display: flex;
@@ -639,20 +1045,26 @@ a.sl-nav-link:hover {
   gap: var(--space-3);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background-color: var(--color-surface);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 
 .sl-doc-card:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow);
-  transform: translateY(-1px);
+  border-color: var(--brand-ink);
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-3px);
 }
 
 .sl-doc-card-missing {
   background-color: var(--color-surface-muted);
   border-style: dashed;
+}
+
+.sl-doc-card-missing:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: none;
+  transform: none;
 }
 
 .sl-doc-card-head {
@@ -667,15 +1079,23 @@ a.sl-nav-link:hover {
   width: 2.25rem;
   height: 2.25rem;
   flex-shrink: 0;
-  border-radius: var(--radius);
-  background-color: var(--color-accent-soft);
-  color: var(--color-accent);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.sl-doc-card-missing .sl-doc-card-icon {
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-muted);
 }
 
 .sl-doc-card-title {
   margin: 0;
-  font-size: var(--text-md);
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
 }
 
 .sl-doc-card-file {
@@ -708,9 +1128,25 @@ a.sl-nav-link:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  color: var(--color-text);
+  font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: .08em;
   text-decoration: none;
+  text-transform: uppercase;
+}
+
+.sl-doc-card-link .sl-icon {
+  transition: transform var(--transition);
+}
+
+.sl-doc-card:hover .sl-doc-card-link {
+  color: var(--color-text);
+}
+
+.sl-doc-card:hover .sl-doc-card-link .sl-icon {
+  transform: translateX(3px);
 }
 
 /* ---------- 11. Segmented navigation ---------- */
@@ -724,7 +1160,7 @@ a.sl-nav-link:hover {
   margin-bottom: var(--space-4);
   padding: var(--space-1);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
   background-color: var(--color-surface);
 }
 
@@ -732,17 +1168,20 @@ a.sl-nav-link:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: .06em;
   text-decoration: none;
+  text-transform: uppercase;
   transition: background-color var(--transition), color var(--transition);
 }
 
 .sl-segmented-item:hover {
-  background-color: var(--color-surface-muted);
+  background-color: var(--color-surface-sunken);
   color: var(--color-text);
 }
 
@@ -750,7 +1189,6 @@ a.sl-nav-link:hover {
 .sl-segmented-item-active:hover {
   background-color: var(--color-accent);
   color: var(--color-on-accent);
-  box-shadow: var(--shadow-sm);
 }
 
 .sl-meta-row {
@@ -770,12 +1208,23 @@ a.sl-nav-link:hover {
 }
 
 .sl-doc-outline-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin-bottom: var(--space-2);
-  color: var(--color-text-subtle);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: var(--tracking-wide);
+}
+
+.sl-doc-outline-title::before {
+  content: "";
+  width: var(--space-4);
+  height: 2px;
+  background-color: var(--brand-ink);
 }
 
 .sl-doc-outline-list {
@@ -793,8 +1242,8 @@ a.sl-nav-link:hover {
 }
 
 .sl-doc-outline-list a:hover {
-  background-color: var(--color-surface-muted);
-  color: var(--color-accent);
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
 }
 
 .sl-doc-outline-list .sl-doc-outline-sub a {
@@ -814,8 +1263,9 @@ a.sl-nav-link:hover {
 
 .sl-markdown h1 {
   margin-bottom: var(--space-5);
-  font-size: var(--text-xl);
-  font-weight: 700;
+  font-size: var(--text-2xl);
+  line-height: 1.05;
+  text-transform: uppercase;
 }
 
 .sl-markdown h2 {
@@ -823,14 +1273,22 @@ a.sl-nav-link:hover {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--color-border);
-  font-size: var(--text-lg);
-  font-weight: 700;
+  font-size: var(--text-xl);
+  text-transform: uppercase;
+}
+
+.sl-markdown h2::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: var(--rule-thick);
+  margin-bottom: var(--space-2);
+  background-color: var(--brand-yellow);
 }
 
 .sl-markdown h3 {
   margin-top: var(--space-6);
-  font-size: var(--text-md);
-  font-weight: 650;
+  font-size: var(--text-lg);
 }
 
 .sl-markdown h2,
@@ -861,10 +1319,11 @@ a.sl-nav-link:hover {
 .sl-markdown .sl-md-table th {
   background-color: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .08em;
   white-space: nowrap;
 }
 
@@ -883,8 +1342,9 @@ a.sl-nav-link:hover {
 
 .sl-markdown .sl-md-code {
   padding: var(--space-4);
+  border-left: 4px solid var(--brand-yellow);
   border-radius: var(--radius);
-  background-color: var(--sidebar-bg);
+  background-color: var(--surface-dark);
   color: var(--code-block-text);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -899,7 +1359,7 @@ a.sl-nav-link:hover {
 .sl-markdown .sl-md-quote {
   margin: var(--space-4) 0;
   padding: var(--space-3) var(--space-4);
-  border-left: 4px solid var(--color-warning);
+  border-left: 4px solid var(--color-warning-border);
   border-radius: 0 var(--radius) var(--radius) 0;
   background-color: var(--color-warning-soft);
   color: var(--color-warning-text);
@@ -928,16 +1388,34 @@ a.sl-nav-link:hover {
   padding: var(--space-3) var(--space-5);
   background-color: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .08em;
   white-space: nowrap;
 }
 
 .sl-table td {
   padding: var(--space-3) var(--space-5);
   vertical-align: middle;
+}
+
+/* Wide tables (route per truck, algorithm comparison): tighter columns, outer cells stay aligned with the card. */
+.sl-table-dense th,
+.sl-table-dense td {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.sl-table-dense th:first-child,
+.sl-table-dense td:first-child {
+  padding-left: var(--space-5);
+}
+
+.sl-table-dense th:last-child,
+.sl-table-dense td:last-child {
+  padding-right: var(--space-5);
 }
 
 .sl-table tbody tr:last-child > * {
@@ -993,19 +1471,21 @@ a.sl-nav-link:hover {
 .sl-matrix tbody th {
   background-color: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 700;
+  letter-spacing: .04em;
 }
 
 .sl-matrix .sl-matrix-corner {
   color: var(--color-text-subtle);
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .sl-matrix td.sl-matrix-diagonal {
   color: var(--color-text-subtle);
-  background-color: var(--color-surface-muted);
+  background-color: var(--color-surface-sunken);
 }
 
 .sl-matrix tbody tr:hover > * {
@@ -1022,6 +1502,7 @@ a.sl-nav-link:hover {
   display: block;
   width: 100%;
   height: auto;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background-color: var(--map-bg);
 }
@@ -1047,7 +1528,7 @@ a.sl-nav-link:hover {
 
 .sl-map-tick-x { text-anchor: middle; }
 .sl-map-tick-y { text-anchor: end; }
-.sl-map-axis-label { font-weight: 700; }
+.sl-map-axis-label { font-family: var(--font-display); font-weight: 700; letter-spacing: .04em; }
 .sl-map-axis-label-x { text-anchor: end; }
 .sl-map-axis-label-y { text-anchor: start; }
 
@@ -1060,13 +1541,15 @@ a.sl-nav-link:hover {
 .sl-map-location-base circle {
   fill: var(--map-base);
   stroke: var(--map-base-border);
+  stroke-width: .3;
 }
 
 .sl-map-location text {
   fill: var(--map-label);
-  font-family: var(--font-sans);
-  font-size: 1.1px;
+  font-family: var(--font-display);
+  font-size: 1.15px;
   font-weight: 700;
+  letter-spacing: .02em;
 }
 
 .sl-map-order {
@@ -1087,7 +1570,7 @@ a.sl-nav-link:hover {
 .sl-map-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
   margin-top: var(--space-3);
   color: var(--color-text-muted);
   font-size: var(--text-xs);
@@ -1102,11 +1585,11 @@ a.sl-nav-link:hover {
 .sl-map-swatch {
   display: inline-block;
   width: 1.25rem;
-  height: 3px;
+  height: 4px;
   border-radius: var(--radius-pill);
 }
 
-.sl-map-swatch-base { width: .75rem; height: .75rem; background-color: var(--map-base); }
+.sl-map-swatch-base { width: .8rem; height: .8rem; background-color: var(--map-base); border: 2px solid var(--map-base-border); }
 .sl-map-swatch-any { background-color: var(--map-any); }
 .sl-map-swatch-truck-a { background-color: var(--truck-a); }
 .sl-map-swatch-truck-b { background-color: var(--truck-b); }
@@ -1141,7 +1624,9 @@ a.sl-nav-link:hover {
   gap: var(--space-2);
 }
 
+.sl-stat-tile-truck-a { box-shadow: inset 0 4px 0 var(--truck-a), var(--shadow-sm); }
 .sl-stat-tile-truck-a .sl-stat-icon { background-color: var(--truck-a-soft); color: var(--truck-a); }
+.sl-stat-tile-truck-b { box-shadow: inset 0 4px 0 var(--truck-b), var(--shadow-sm); }
 .sl-stat-tile-truck-b .sl-stat-icon { background-color: var(--truck-b-soft); color: var(--truck-b); }
 
 .sl-truck-route-summary {
@@ -1154,23 +1639,27 @@ a.sl-nav-link:hover {
 
 .sl-kv-list {
   display: flex;
-  gap: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
   margin: 0;
 }
 
 .sl-kv-list dt {
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .08em;
 }
 
 .sl-kv-list dd {
   margin: 0;
-  font-size: var(--text-lg);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
 
 .sl-kv-list .sl-kv-value-danger {
@@ -1188,10 +1677,35 @@ a.sl-nav-link:hover {
   font-size: var(--text-sm);
 }
 
+/* Workday meter: ink fill on a warm track (the native green/yellow/red would carry a meaning it does not have). */
 .sl-workday-meter {
   display: block;
   width: 100%;
   height: .6rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--meter-track);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sl-workday-meter::-webkit-meter-bar {
+  height: .6rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--meter-track);
+}
+
+.sl-workday-meter::-webkit-meter-optimum-value,
+.sl-workday-meter::-webkit-meter-suboptimum-value,
+.sl-workday-meter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-pill);
+  background: var(--meter-fill);
+}
+
+.sl-workday-meter::-moz-meter-bar {
+  border-radius: var(--radius-pill);
+  background: var(--meter-fill);
 }
 
 .sl-route-table .sl-route-table-base-row > * {
@@ -1210,8 +1724,8 @@ a.sl-nav-link:hover {
 
 /* Step numbers next to locations (Transport.MapViewModel.Steps); the halo keeps them readable over lines. */
 .sl-map-step {
-  font-family: var(--font-sans);
-  font-size: .9px;
+  font-family: var(--font-display);
+  font-size: 1px;
   font-weight: 700;
   paint-order: stroke;
   stroke: var(--map-label-halo);
@@ -1237,12 +1751,13 @@ a.sl-nav-link:hover {
 
 /* Callout with a button on the right (scenario status + "Vrati izvorne podatke"). */
 .sl-callout-with-action {
+  flex-wrap: wrap;
   align-items: center;
 }
 
 .sl-callout-body {
   flex: 1;
-  min-width: 0;
+  min-width: 12rem;
 }
 
 .sl-callout-detail {
@@ -1271,35 +1786,48 @@ a.sl-nav-link:hover {
 
 /* ---------- 20. Buttons ---------- */
 
+/* Pill buttons in condensed capitals (uprent.hr .btn); primary = yellow, hover turns ink. */
 .sl-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  line-height: 1.4;
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-5);
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .08em;
   text-decoration: none;
+  text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .sl-button-sm {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  border-width: 1px;
+  font-size: var(--text-sm);
+  letter-spacing: .06em;
 }
 
-.sl-button-primary { background-color: var(--color-accent); color: var(--color-on-accent); }
-.sl-button-primary:hover { background-color: var(--color-accent-strong); color: var(--color-on-accent); }
+.sl-button:disabled,
+.sl-button[aria-disabled="true"] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.sl-button-primary { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+.sl-button-primary:hover { background-color: var(--surface-dark); border-color: var(--surface-dark); color: var(--brand-yellow); }
 .sl-button-secondary { background-color: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-text); }
-.sl-button-secondary:hover { background-color: var(--color-surface-muted); color: var(--color-text); }
+.sl-button-secondary:hover { background-color: var(--color-surface); border-color: var(--brand-ink); color: var(--color-text); }
 .sl-button-danger { background-color: var(--color-surface); border-color: var(--color-danger-border); color: var(--color-danger-text); }
-.sl-button-danger:hover { background-color: var(--color-danger-soft); color: var(--color-danger-text); }
+.sl-button-danger:hover { background-color: var(--color-danger); border-color: var(--color-danger); color: var(--brand-white); }
 
 .sl-button-row {
   display: inline-flex;
@@ -1345,22 +1873,29 @@ a.sl-nav-link:hover {
   margin-bottom: var(--space-1);
   padding: 0;
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: var(--tracking-caps);
 }
 
 .sl-input {
   width: 100%;
   max-width: 32rem;
+  min-height: 2.5rem;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   background-color: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.sl-input:hover {
+  border-color: var(--color-text-subtle);
 }
 
 .sl-input-number {
@@ -1368,16 +1903,20 @@ a.sl-nav-link:hover {
   font-variant-numeric: tabular-nums;
 }
 
-.sl-input:focus {
-  border-color: var(--color-accent);
-  outline: 3px solid var(--color-focus);
+/* Focus: ink outline plus the yellow halo of the uprent.hr search field. */
+.sl-input:focus,
+.sl-input:focus-visible {
+  border-color: var(--brand-ink);
+  outline: 2px solid var(--color-focus);
   outline-offset: 0;
+  box-shadow: 0 0 0 6px var(--color-focus-ring);
 }
 
 /* The tag helper adds input-validation-error to fields with a ModelState error. */
 .sl-input-invalid,
 .sl-input.input-validation-error {
   border-color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
 }
 
 .sl-field-hint {
@@ -1409,20 +1948,37 @@ a.sl-nav-link:hover {
   align-items: center;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background-color: var(--color-surface);
   cursor: pointer;
+  transition: border-color var(--transition), background-color var(--transition), box-shadow var(--transition);
 }
 
-/* Highlight of the checked option without JavaScript. */
+.sl-choice:hover {
+  border-color: var(--brand-ink);
+}
+
+/* Highlight of the checked option without JavaScript: ink frame (2px without a layout shift) on soft yellow. */
 .sl-choice:has(.sl-choice-input:checked) {
-  border-color: var(--color-accent);
+  border-color: var(--brand-ink);
   background-color: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--brand-ink);
+}
+
+.sl-choice:has(.sl-choice-input:focus-visible) {
+  outline: var(--rule-thick) solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .sl-choice-input {
   grid-row: span 2;
-  accent-color: var(--color-accent);
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--brand-ink);
+}
+
+.sl-choice-input:focus-visible {
+  outline: none;
 }
 
 .sl-choice-text {
@@ -1462,34 +2018,45 @@ a.sl-nav-link:hover {
   margin-top: var(--space-2);
 }
 
+.sl-form-rules li::marker {
+  color: var(--color-warning);
+}
+
 /* ---------- 22. Plan extras ---------- */
 
 .sl-card-danger {
   border-color: var(--color-danger-border);
+  box-shadow: inset 0 4px 0 var(--color-danger), var(--shadow-sm);
 }
 
 .sl-badge-lg {
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 a.sl-chip-link {
   gap: var(--space-1);
-  color: var(--color-accent);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
   font-weight: 600;
   text-decoration: none;
+  transition: background-color var(--transition), border-color var(--transition);
 }
 
 a.sl-chip-link:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-accent-strong);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 /* ---------- 23. Algorithm choice and comparison (phase 7) ---------- */
 
 /* An algorithm without a registered planner: visible, but cannot be selected. */
-.sl-choice-disabled {
+.sl-choice-disabled,
+.sl-choice-disabled:hover {
   border-style: dashed;
+  border-color: var(--color-border-strong);
   background-color: var(--color-surface-muted);
   color: var(--color-text-subtle);
   cursor: not-allowed;
@@ -1511,9 +2078,160 @@ a.sl-chip-link:hover {
 
 /* The row of the algorithm whose plan is shown on the page. */
 .sl-plan-comparison-current > * {
+  background-color: var(--color-accent-soft);
   font-weight: 600;
 }
 
 .sl-plan-comparison-current > :first-child {
-  box-shadow: inset 3px 0 0 var(--color-accent);
+  box-shadow: inset 4px 0 0 var(--brand-ink);
+}
+
+/* Scenario lab */
+/* "Testni scenariji" (/Scenariji): overview grid of test cases, expectation list and defect choice. */
+
+.sl-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+/* A whole case card is a link; hover as the document cards. */
+.sl-lab-case {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.sl-lab-case:hover {
+  border-color: var(--color-text);
+  box-shadow: var(--shadow-lift);
+  color: var(--color-text);
+  transform: translateY(-3px);
+}
+
+/* Theme focus (ink outline + yellow halo): a yellow ring alone is not visible enough on white. */
+.sl-lab-case:focus-visible {
+  outline: var(--rule-thick) solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 calc(var(--rule-thick) * 2 + 2px) var(--color-focus-ring);
+}
+
+/* The case shown below the grid. */
+.sl-lab-case-active,
+.sl-lab-case-active:hover {
+  border-color: var(--color-text);
+  box-shadow: inset 0 calc(-1 * var(--callout-bar)) 0 var(--color-accent);
+  transform: none;
+}
+
+.sl-lab-case-head,
+.sl-lab-case-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.sl-lab-case-number {
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.sl-lab-case-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.sl-lab-case-text {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.sl-lab-case-foot {
+  margin-top: auto;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.sl-lab-subtitle {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.sl-lab-list {
+  margin: 0 0 var(--space-5);
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.sl-lab-list li + li {
+  margin-top: var(--space-1);
+}
+
+/* Expectations of the test definition: mark, code badge, text. */
+.sl-lab-checks {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sl-lab-check {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.sl-lab-check-mark {
+  flex-shrink: 0;
+  color: var(--color-ok);
+  font-weight: 700;
+}
+
+.sl-lab-check-failed .sl-lab-check-mark {
+  color: var(--color-danger);
+}
+
+.sl-lab-outcomes {
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+/* Defect choice (sl-segmented): expected rules and the verdict mark after the title. */
+.sl-lab-defect-rules {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  opacity: .75;
+}
+
+.sl-lab-defect-mark {
+  font-weight: 700;
+}
+
+/* Timeline: the phase in progress (PhaseStatus.InProgress, /Pregled). */
+.sl-timeline-item-current .sl-timeline-marker {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-accent);
 }

@@ -55,10 +55,15 @@ public sealed class InMemoryScenarioStore : IScenarioStore
     }
 
     /// <summary>The store for the app: data/scenario.json found via <see cref="ProjectPaths"/>.</summary>
-    public static InMemoryScenarioStore FromEnvironment(IWebHostEnvironment environment)
+    public static InMemoryScenarioStore FromEnvironment(IWebHostEnvironment environment) =>
+        new(TaskDataPath(environment));
+
+    /// <summary>Full path of the task scenario (data/scenario.json via <see cref="ProjectPaths"/>), or null when data/ is not found.</summary>
+    public static string? TaskDataPath(IWebHostEnvironment environment)
     {
+        ArgumentNullException.ThrowIfNull(environment);
         var dataDirectory = ProjectPaths.FindDirectory(environment, "data");
-        return new InMemoryScenarioStore(dataDirectory is null ? null : Path.Combine(dataDirectory, FileName));
+        return dataDirectory is null ? null : Path.Combine(dataDirectory, FileName);
     }
 
     public Scenario Get() => GetSnapshot().Scenario;
@@ -218,7 +223,8 @@ public sealed class InMemoryScenarioStore : IScenarioStore
 
     private static ReadOnlyCollection<T> ReadOnly<T>(IReadOnlyList<T>? items) => (items ?? []).ToList().AsReadOnly();
 
-    private static (Scenario? Scenario, string? Error) LoadFile(string? path, string source)
+    /// <summary>Loads a scenario file; a missing path or file, or malformed JSON, gives null and a Croatian error.</summary>
+    internal static (Scenario? Scenario, string? Error) LoadFile(string? path, string source)
     {
         if (path is null)
         {

@@ -1,4 +1,5 @@
 using SmartLogistics.Core.Planning;
+using SmartLogistics.Web.ViewModels;
 
 namespace SmartLogistics.Web.Services;
 
@@ -32,7 +33,11 @@ public static class PlannerCatalog
     public static readonly PlannerDescriptor OrTools = new(
         OrToolsKey,
         "OR-Tools (heuristika)",
-        "Google OR-Tools, usmjeravanje vozila s preuzimanjem i isporukom; lokalna pretraga s vremenskim ograničenjem.",
+        // Search limits come from the planner itself (decision T55), so the text cannot drift from the code.
+        "Google OR-Tools, usmjeravanje vozila s preuzimanjem i isporukom; vođena lokalna pretraga (GLS) u "
+            + $"{OrToolsPlanner.GuidedLocalSearchLambdas.Count} deterministička pokretanja (lambda "
+            + $"{string.Join(" i ", OrToolsPlanner.GuidedLocalSearchLambdas.Select(Format.Number))}), svako do "
+            + $"{Format.Integer(OrToolsPlanner.SolutionLimit)} rješenja, zajedno najviše {OrToolsPlanner.TimeLimitSeconds} s.",
         IsExact: false);
 
     public static IReadOnlyList<PlannerDescriptor> All { get; } = [Exact, OrTools];

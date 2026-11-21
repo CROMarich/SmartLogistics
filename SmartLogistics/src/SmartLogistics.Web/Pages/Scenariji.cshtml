@@ -1,0 +1,186 @@
+@page
+@model ScenarijiModel
+@{
+    var vm = Model.ViewModel;
+    var selected = vm.Selected;
+    ViewData["Title"] = vm.Header.Title;
+}
+
+<partial name="_PageHeader" model="vm.Header" />
+
+<div class="sl-callout sl-callout-info" role="status">
+    <span class="sl-callout-icon">@Icons.Get("info")</span>
+    <div>@vm.SourceNote</div>
+</div>
+
+@if (vm.Error is not null)
+{
+    <div class="sl-callout sl-callout-danger" role="alert">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div><strong>Podaci zadatka nisu učitani.</strong> @vm.Error</div>
+    </div>
+}
+
+@if (vm.SelectionWarning is not null)
+{
+    <div class="sl-callout sl-callout-warning" role="status">
+        <span class="sl-callout-icon">@Icons.Get("alert")</span>
+        <div>@vm.SelectionWarning</div>
+    </div>
+}
+
+@if (selected is not null)
+{
+    <div class="@selected.VerdictCallout.CssClass" role="status">
+        <span class="sl-callout-icon">@Icons.Get(selected.VerdictCallout.Icon)</span>
+        <div>@selected.VerdictCallout.Text</div>
+    </div>
+}
+
+@if (vm.Stats.Count > 0)
+{
+    <section class="sl-stat-grid" aria-label="Sažetak testnih scenarija">
+        @foreach (var stat in vm.Stats)
+        {
+            <partial name="_StatTile" model="stat" />
+        }
+    </section>
+}
+
+@if (vm.Cases.Count > 0)
+{
+    <section class="sl-card sl-section-gap" aria-labelledby="casesTitle">
+        <div class="sl-card-header">
+            <h2 class="sl-card-title" id="casesTitle">@Icons.Get("layers") Slučajevi</h2>
+            <span class="sl-chip">očekivanje = testna definicija · rezultat = planer + validator</span>
+        </div>
+        <div class="sl-card-body">
+            <div class="sl-lab-grid">
+                @foreach (var item in vm.Cases)
+                {
+                    <partial name="_LabCaseCard" model="item" />
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (selected is not null)
+{
+    <section class="sl-card sl-section-gap" id="slucaj" aria-labelledby="caseTitle">
+        <div class="sl-card-header">
+            <h2 class="sl-card-title" id="caseTitle">@Icons.Get("check") @selected.Heading</h2>
+            <partial name="_LabVerdict" model="selected.Verdict" />
+        </div>
+        <div class="sl-card-body">
+            @if (selected.Defects.Count > 0)
+            {
+                <h3 class="sl-lab-subtitle">Kvar plana</h3>
+                <nav class="sl-segmented" aria-label="Izbor kvara">
+                    @foreach (var defect in selected.Defects)
+                    {
+                        <a class="@defect.CssClass" asp-page="/Scenariji" asp-all-route-data="@defect.Route.ToDictionary()" asp-fragment="slucaj"
+                           title="@defect.Tooltip" aria-current="@(defect.IsSelected ? "true" : null)">
+                            @defect.Title
+                            <span class="sl-lab-defect-rules">@defect.ExpectedText</span>
+                            <span class="sl-lab-defect-mark">@defect.Verdict.Mark</span>
+                        </a>
+                    }
+                </nav>
+            }
+
+            <div class="row g-4">
+                <div class="col-xl-6">
+                    <h3 class="sl-lab-subtitle">Što je promijenjeno</h3>
+                    <ul class="sl-lab-list">
+                        @foreach (var change in selected.Changes)
+                        {
+                            <li>@change</li>
+                        }
+                    </ul>
+
+                    <h3 class="sl-lab-subtitle">Očekivano (testna definicija)</h3>
+                    <ul class="sl-lab-checks">
+                        @foreach (var check in selected.Checks)
+                        {
+                            <li class="@check.CssClass">
+                                <span class="sl-lab-check-mark" title="@check.MarkTitle">@check.Mark</span>
+                                <span class="@check.CodeCssClass">@check.Code</span>
+                                <span>@check.Text</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="col-xl-6">
+                    <h3 class="sl-lab-subtitle">Stvarni rezultat (izračunato)</h3>
+                    @if (selected.Error is not null)
+                    {
+                        <div class="sl-callout sl-callout-danger" role="alert">
+                            <span class="sl-callout-icon">@Icons.Get("alert")</span>
+                            <div>@selected.Error</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="sl-badge-row sl-lab-outcomes">
+                            @foreach (var outcome in selected.Outcomes)
+                            {
+                                <span class="@outcome.CssClass" title="@outcome.Title">@outcome.Text</span>
+                            }
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table sl-table">
+                                <tbody>
+                                    @foreach (var fact in selected.Actual)
+                                    {
+                                        <tr>
+                                            <th scope="row" class="text-nowrap">@fact.Label</th>
+                                            <td>@fact.Value</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@if (selected?.Plan is not null && selected.Summary is not null)
+{
+    var shown = selected.Plan;
+    <div class="@shown.Status.CssClass" role="status">
+        <span class="sl-callout-icon">@Icons.Get(shown.Status.Icon)</span>
+        <div>@shown.Status.Text</div>
+    </div>
+
+    <partial name="_Warnings" model="selected.Warnings" />
+    <partial name="_PlanSummary" model="selected.Summary" />
+
+    <div class="row g-4">
+        @if (shown.Map is not null)
+        {
+            <section class="col-12">
+                <div class="sl-card">
+                    <div class="sl-card-header">
+                        <h2 class="sl-card-title">@Icons.Get("map") Karta ruta</h2>
+                        <span class="sl-chip">strelice = smjer vožnje · mreža @shown.Map.Frame.GridStepText</span>
+                    </div>
+                    <div class="sl-card-body">
+                        <partial name="_RouteMap" model="shown.Map" />
+                    </div>
+                </div>
+            </section>
+        }
+
+        @foreach (var truck in shown.Trucks)
+        {
+            <section class="col-12">
+                <partial name="_TruckRouteTable" model="truck" />
+            </section>
+        }
+    </div>
+}

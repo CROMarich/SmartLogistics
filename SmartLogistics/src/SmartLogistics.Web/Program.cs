@@ -31,6 +31,12 @@ builder.Services.AddSingleton<IScenarioStore>(services =>
 builder.Services.AddKeyedSingleton<IRoutePlanner, ExactDpPlanner>(PlannerCatalog.ExactKey);
 builder.Services.AddKeyedSingleton<IRoutePlanner, OrToolsPlanner>(PlannerCatalog.OrToolsKey);
 builder.Services.AddSingleton<PlanService>();
+// "Testni scenariji": edge cases built from the original task data (never from the store), planned on demand and cached.
+builder.Services.AddSingleton(services =>
+    ScenarioLab.FromEnvironment(services.GetRequiredService<IWebHostEnvironment>()));
+// Static copy of the UpRent website (repo folder web/), linked from the navigation; null-safe when the folder is missing.
+builder.Services.AddSingleton(services =>
+    UpRentWebsite.FromEnvironment(services.GetRequiredService<IWebHostEnvironment>()));
 
 var app = builder.Build();
 
@@ -48,6 +54,19 @@ app.UseHttpsRedirection();
 app.UseRewriter(new RewriteOptions()
     .AddRedirect("(?i)^UlazniPodaci/?$", "/", StatusCodes.Status301MovedPermanently)
     .AddRedirect("(?i)^(PlanRuta|Karta)/?$", "/Plan", StatusCodes.Status301MovedPermanently));
+
+// UpRent website at /uprent/ (web/*.html and web/assets/** only); /uprent and /uprent/ open its start page.
+var upRentWebsite = app.Services.GetRequiredService<UpRentWebsite>();
+if (upRentWebsite.IsAvailable)
+{
+    app.UseRewriter(new RewriteOptions()
+        .AddRedirect("(?i)^uprent/?$", UpRentWebsite.StartPage, StatusCodes.Status302Found));
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = upRentWebsite.CreateFileProvider(),
+        RequestPath = UpRentWebsite.RequestPath,
+    });
+}
 
 app.UseRouting();
 

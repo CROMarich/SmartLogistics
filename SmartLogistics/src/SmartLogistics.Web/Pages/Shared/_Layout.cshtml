@@ -1,12 +1,18 @@
 ﻿<!DOCTYPE html>
 <html lang="hr">
+@inject SmartLogistics.Web.Services.UpRentWebsite UpRentWebsite
 @{
-    var navigation = NavigationMenu.Build(ViewContext.RouteData.Values["page"] as string);
+    var navigation = NavigationMenu.Build(new NavigationContext(
+        ViewContext.RouteData.Values["page"] as string,
+        UpRentWebsite.IsAvailable ? Url.Content("~" + SmartLogistics.Web.Services.UpRentWebsite.StartPage) : null));
 }
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] · Smart Logistics Planner</title>
+    <title>@ViewData["Title"] · Smart Logistics · UpRent</title>
+    @* Self-hosted brand fonts (wwwroot/fonts, OFL); preloading the two most used faces avoids a late font swap. *@
+    <link rel="preload" href="~/fonts/barlow-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="~/fonts/barlow-condensed-latin-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -15,20 +21,23 @@
 
     <div class="sl-shell">
         @* ==================== Region: sidebar (desktop, lg and up) ====================
-           Dark fixed column: header with the app name, navigation, short footer note. *@
+           Dark (ink) fixed column: UpRent logo with the app name, navigation, short footer note. *@
         <aside class="sl-sidebar d-none d-lg-flex">
             <header class="sl-sidebar-header">
                 <partial name="_AppBrand" />
             </header>
             <partial name="_AppNavigation" model="navigation" />
-            <div class="sl-sidebar-footer">Tehnički zadatak · .NET 10</div>
+            <div class="sl-sidebar-footer">
+                <span class="sl-sidebar-footer-title">Tehnički zadatak</span>
+                <span>ASP.NET Core · .NET 10</span>
+            </div>
         </aside>
 
         @* ==================== Region: navigation (mobile, below lg) ====================
            The same navigation in a Bootstrap off-canvas panel, opened from the top bar. *@
         <div class="offcanvas offcanvas-start sl-offcanvas" tabindex="-1" id="appNavigation" aria-labelledby="appNavigationTitle">
             <header class="offcanvas-header">
-                <span id="appNavigationTitle"><partial name="_AppBrand" /></span>
+                <div id="appNavigationTitle" class="sl-offcanvas-title"><partial name="_AppBrand" /></div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Zatvori izbornik"></button>
             </header>
             <div class="offcanvas-body">
@@ -43,7 +52,7 @@
                         aria-controls="appNavigation" aria-label="Otvori izbornik">
                     @Icons.Get("menu")
                 </button>
-                <span class="sl-topbar-title">Smart Logistics Planner</span>
+                <partial name="_AppBrand" />
             </header>
 
             @* ==================== Region: main (page content) ==================== *@
@@ -53,7 +62,8 @@
 
             @* ==================== Region: footer ==================== *@
             <footer class="sl-footer">
-                Smart Logistics Planner · planiranje prijevoza radnih strojeva
+                <span class="sl-footer-brand">Smart Logistics</span>
+                <span>Planiranje prijevoza radnih strojeva · UpRent</span>
             </footer>
         </div>
     </div>

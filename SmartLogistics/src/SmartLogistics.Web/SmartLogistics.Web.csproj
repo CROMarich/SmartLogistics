@@ -13,6 +13,14 @@
   <!-- Project documents (docs/*.md) are copied to the output so the app can show them after publish. -->
   <ItemGroup>
     <None Include="..\..\docs\*.md" Link="docs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />  </ItemGroup>
+    <None Include="..\..\data\*.json" Link="data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Static copy of the UpRent website, served at /uprent/ (Services/UpRentWebsite). Only the published part:
+       top-level *.html and assets/**; the generator sources (web/src/, web/build.js) are not copied. -->
+  <ItemGroup>
+    <None Include="..\..\web\*.html" Link="web\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\web\assets\**\*" Link="web\assets\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

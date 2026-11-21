@@ -35,6 +35,9 @@ public static class Icons
         ["reset"] = """<path d="M4 4v5h5"/><path d="M4.5 9A8 8 0 1 1 4 13"/>""",
         ["plus"] = """<path d="M12 5v14M5 12h14"/>""",
         ["play"] = """<path d="M7 5v14l11-7z"/>""",
+        ["external"] = """<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>""",
+        ["globe"] = """<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>""",
+        ["flask"] = """<path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/>""",
     };
 
     /// <summary>Returns the SVG markup for the icon; unknown names render an empty placeholder of the same size.</summary>

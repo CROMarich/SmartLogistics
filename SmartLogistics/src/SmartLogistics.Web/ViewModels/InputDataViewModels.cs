@@ -20,7 +20,10 @@ public sealed record MachineRowViewModel(string Id, string Weight, IReadOnlyList
 public sealed record LocationRowViewModel(string Id, string X, string Y, string Note, string DistanceFromBase, bool IsBase);
 
 /// <summary>Row of _OrdersTable.</summary>
-/// <param name="DataWarning">Why the planner will reject the order as K4 (unknown machine ...), or null.</param>
+/// <param name="DataWarning">
+/// Why the planner rejects the order as K4 – the message of <see cref="Feasibility.Check"/>, the same check the planner
+/// runs – or null for a valid order.
+/// </param>
 /// <param name="CanEdit">False for an order without ID (the store cannot address it).</param>
 public sealed record OrderRowViewModel(
     string Id,
@@ -31,7 +34,11 @@ public sealed record OrderRowViewModel(
     string DirectLeg,
     IReadOnlyList<TruckBadgeViewModel> Trucks,
     string? DataWarning,
-    bool CanEdit);
+    bool CanEdit)
+{
+    /// <summary>Category label shown with <see cref="DataWarning"/> ("K4"), from the same mapping as the plan page.</summary>
+    public string DataWarningCode => Transport.PlanMapper.ReasonCode(InfeasibilityReason.InvalidOrderData);
+}
 
 /// <summary>Model of _OrdersTable: read-only on the input data page, with edit / delete buttons on the orders page.</summary>
 public sealed record OrdersTableViewModel(IReadOnlyList<OrderRowViewModel> Rows, bool ShowActions);
@@ -82,8 +89,9 @@ public sealed record InputDataPageViewModel(
     LocationMapViewModel? Map);
 
 /// <summary>
-/// Maps a scenario to the input data views (tables, summary tiles, distance matrix, map of orders). Only presentation:
-/// no planning and no validation. Robust to any data (spec R37): missing references are shown as text, never thrown.
+/// Maps a scenario to the input data views (tables, summary tiles, distance matrix, map of orders). No planning; invalid
+/// orders (K4) and usable trucks come from <see cref="Feasibility.Check"/> with the default options, the single source the
+/// planner uses too (docs/odluke.md T63 a). Robust to any data (spec R37): missing references are shown as text, never thrown.
 /// Truck colours follow the truck's position in the scenario, like on the plan (<see cref="PlanMapper.TruckColor"/>).
 /// </summary>
 public static class InputDataViewModelFactory
@@ -165,19 +173,26 @@ public static class InputDataViewModelFactory
         var totalCapacity = lookup.Trucks.Sum(t => (long)t.CapacityKg);
         var totalWeight = lookup.Machines.Sum(m => (long)m.WeightKg);
 
-        // How many orders can be carried by only one truck, e.g. "5 samo kamion B".
-        var restricted = lookup.Orders
+        // How many valid orders can be carried by only one usable truck, e.g. "5 samo kamion B"; K4 orders are counted apart.
+        var valid = lookup.Orders.Where(o => !lookup.IsInvalid(o)).ToList();
+        var restricted = valid
             .Select(o => lookup.Machine(o.MachineId))
             .Where(m => m is not null)
-            .Select(m => lookup.Trucks.Where(t => t.CanCarry(m!)).ToList())
+            .Select(m => lookup.CarriersOf(m!))
             .Where(carriers => carriers.Count == 1)
             .GroupBy(carriers => carriers[0].Id)
             .Select(g => $"{g.Count()} samo kamion {g.Key}")
             .ToList();
-        var nowhere = lookup.Orders.Count(o => lookup.Machine(o.MachineId) is { } m && !lookup.Trucks.Any(t => t.CanCarry(m)));
+        var nowhere = valid.Count(o => lookup.Machine(o.MachineId) is { } m && lookup.CarriersOf(m).Count == 0);
         if (nowhere > 0)
         {
             restricted.Add($"{nowhere} ni na jedan kamion");
+        }
+
+        var invalid = lookup.Orders.Count - valid.Count;
+        if (invalid > 0)
+        {
+            restricted.Add($"{invalid} s neispravnim podacima (K4)");
         }
 
         return
@@ -210,7 +225,7 @@ public static class InputDataViewModelFactory
         lookup.Machines
             .Select(machine =>
             {
-                var fitsOn = lookup.Trucks.Where(t => t.CanCarry(machine)).Select(lookup.Badge).ToList();
+                var fitsOn = lookup.CarriersOf(machine).Select(lookup.Badge).ToList();
                 var usedIn = lookup.Orders.Where(o => o.MachineId == machine.Id).Select(o => o.Id ?? Dash).ToList();
                 return new MachineRowViewModel(machine.Id, Format.Kg(machine.WeightKg), fitsOn, FitsNowhere: fitsOn.Count == 0,
                     usedIn.Count == 0 ? Dash : string.Join(", ", usedIn));
@@ -233,74 +248,31 @@ public static class InputDataViewModelFactory
             .ToList();
     }
 
-    private static IReadOnlyList<OrderRowViewModel> CreateOrderRows(Lookup lookup)
-    {
-        var rows = new List<OrderRowViewModel>();
-        var firstOrderOfMachine = new Dictionary<string, string>();
-        var seenOrderIds = new HashSet<string>();
-
-        foreach (var order in lookup.Orders)
-        {
-            var machine = lookup.Machine(order.MachineId);
-            var pickupKnown = lookup.Location(order.PickupLocationId) is not null;
-            var deliveryKnown = lookup.Location(order.DeliveryLocationId) is not null;
-
-            // The same checks the planner reports as K4 (spec R37, T28), so the reason is visible before planning.
-            var warnings = new List<string>();
-            if (string.IsNullOrEmpty(order.Id))
+    private static IReadOnlyList<OrderRowViewModel> CreateOrderRows(Lookup lookup) =>
+        lookup.Orders
+            .Select(order =>
             {
-                warnings.Add("nalog bez oznake");
-            }
-            else if (!seenOrderIds.Add(order.Id))
-            {
-                warnings.Add("oznaka naloga se ponavlja");
-            }
+                var machine = lookup.Machine(order.MachineId);
+                var pickupKnown = lookup.Location(order.PickupLocationId) is not null;
+                var deliveryKnown = lookup.Location(order.DeliveryLocationId) is not null;
 
-            if (machine is null)
-            {
-                warnings.Add($"nepoznat stroj {order.MachineId}");
-            }
-            else if (machine.WeightKg <= 0)
-            {
-                warnings.Add("masa stroja nije pozitivna");
-            }
-
-            if (!pickupKnown || !deliveryKnown)
-            {
-                warnings.Add("nepoznata lokacija");
-            }
-            else if (order.PickupLocationId == order.DeliveryLocationId)
-            {
-                warnings.Add("preuzimanje i isporuka na istoj lokaciji");
-            }
-
-            if (order.MachineId is not null)
-            {
-                if (firstOrderOfMachine.TryGetValue(order.MachineId, out var earlier))
-                {
-                    warnings.Add($"stroj je već u nalogu {earlier}");
-                }
-                else
-                {
-                    firstOrderOfMachine[order.MachineId] = order.Id ?? Dash;
-                }
-            }
-
-            var trucks = machine is null ? [] : lookup.Trucks.Where(t => t.CanCarry(machine)).Select(lookup.Badge).ToList();
-            rows.Add(new OrderRowViewModel(
-                string.IsNullOrEmpty(order.Id) ? Dash : order.Id,
-                order.MachineId ?? Dash,
-                machine is null ? Dash : Format.Kg(machine.WeightKg),
-                order.PickupLocationId ?? Dash,
-                order.DeliveryLocationId ?? Dash,
-                pickupKnown && deliveryKnown ? Format.Km(lookup.Matrix[order.PickupLocationId!, order.DeliveryLocationId!]) : Dash,
-                trucks,
-                warnings.Count == 0 ? null : string.Join(", ", warnings),
-                CanEdit: !string.IsNullOrEmpty(order.Id)));
-        }
-
-        return rows;
-    }
+                // K4 exactly as the planner reports it (spec R37, T28, T63 a); an invalid order has no possible truck.
+                var invalid = lookup.InvalidReason(order);
+                IReadOnlyList<TruckBadgeViewModel> trucks = machine is null || invalid is not null
+                    ? []
+                    : lookup.CarriersOf(machine).Select(lookup.Badge).ToList();
+                return new OrderRowViewModel(
+                    string.IsNullOrEmpty(order.Id) ? Dash : order.Id,
+                    order.MachineId ?? Dash,
+                    machine is null ? Dash : Format.Kg(machine.WeightKg),
+                    order.PickupLocationId ?? Dash,
+                    order.DeliveryLocationId ?? Dash,
+                    pickupKnown && deliveryKnown ? Format.Km(lookup.Matrix[order.PickupLocationId!, order.DeliveryLocationId!]) : Dash,
+                    trucks,
+                    invalid,
+                    CanEdit: !string.IsNullOrEmpty(order.Id));
+            })
+            .ToList();
 
     private static DistanceMatrixViewModel? CreateMatrix(DistanceMatrix matrix)
     {
@@ -383,13 +355,19 @@ public static class InputDataViewModelFactory
         };
     }
 
-    /// <summary>Lookups built once per page; nulls are skipped, the first occurrence of a duplicated ID wins.</summary>
+    /// <summary>
+    /// Lookups built once per page; nulls are skipped. For display (weight, coordinates, km) the first occurrence of a
+    /// duplicated ID is shown; whether an order is valid and which trucks may be used comes only from
+    /// <see cref="Feasibility.Check"/> (a duplicated machine or location makes its orders K4 there).
+    /// </summary>
     private sealed class Lookup
     {
         private readonly Scenario _scenario;
         private readonly Dictionary<string, Machine> _machines;
         private readonly Dictionary<string, Location> _locations;
         private readonly Dictionary<string, string> _colors = [];
+        private readonly Dictionary<TransportOrder, string> _invalid = new(ReferenceEqualityComparer.Instance);
+        private readonly IReadOnlyList<Truck> _usableTrucks;
 
         public Lookup(Scenario scenario)
         {
@@ -401,6 +379,16 @@ public static class InputDataViewModelFactory
             _machines = Machines.Where(m => m.Id is not null).DistinctBy(m => m.Id).ToDictionary(m => m.Id);
             _locations = Locations.Where(l => l.Id is not null).DistinctBy(l => l.Id).ToDictionary(l => l.Id);
             Matrix = new DistanceMatrix(_locations.Values.ToList());
+
+            // The planner's own input check. Rejected is indexed by the position in scenario.Orders (nulls included), so
+            // two orders with the same ID are told apart; the order object is the key.
+            var report = Feasibility.Check(scenario, PlanningOptions.Default);
+            var scenarioOrders = scenario.Orders ?? [];
+            _usableTrucks = report.UsableTrucks;
+            foreach (var rejected in report.Rejected.Where(r => r.Infeasible.Reason == InfeasibilityReason.InvalidOrderData))
+            {
+                _invalid[scenarioOrders[rejected.ScenarioIndex]] = rejected.Infeasible.Message;
+            }
         }
 
         public IReadOnlyList<Truck> Trucks { get; }
@@ -416,6 +404,14 @@ public static class InputDataViewModelFactory
         public Machine? Machine(string? id) => id is not null ? _machines.GetValueOrDefault(id) : null;
 
         public Location? Location(string? id) => id is not null ? _locations.GetValueOrDefault(id) : null;
+
+        /// <summary>The K4 message of <see cref="Feasibility.Check"/> for this order (by position, not by ID), or null.</summary>
+        public string? InvalidReason(TransportOrder order) => _invalid.GetValueOrDefault(order);
+
+        public bool IsInvalid(TransportOrder order) => _invalid.ContainsKey(order);
+
+        /// <summary>Usable trucks (spec R37: first of each ID, capacity and max machines &gt; 0) that can carry the machine.</summary>
+        public IReadOnlyList<Truck> CarriersOf(Machine machine) => _usableTrucks.Where(t => t.CanCarry(machine)).ToList();
 
         // Same colour rule as the plan; cached because PlanMapper.TruckColor builds its lookups on every call.
         public string Color(Truck truck)

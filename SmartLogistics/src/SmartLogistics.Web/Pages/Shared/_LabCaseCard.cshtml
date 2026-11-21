@@ -1,0 +1,27 @@
+@model LabCaseCardViewModel
+@* One test case in the overview grid of /Scenariji; the whole card links to the case (GET, shareable). *@
+
+<a class="@Model.CssClass" asp-page="/Scenariji" asp-all-route-data="@Model.Route.ToDictionary()" asp-fragment="slucaj"
+   aria-current="@(Model.IsSelected ? "true" : null)">
+    <span class="sl-lab-case-head">
+        <span class="sl-lab-case-number">Slučaj @Model.Number</span>
+        <span class="@Model.CategoryCssClass">@Model.Category</span>
+    </span>
+    <span class="sl-lab-case-title">@Model.Title</span>
+    <span class="sl-lab-case-text">@Model.Summary</span>
+    <span class="sl-lab-case-foot">
+        <span class="sl-badge-row">
+            @foreach (var code in Model.ExpectedCodes)
+            {
+                <span class="sl-chip">@code</span>
+            }
+        </span>
+        <span class="sl-badge-row">
+            @if (Model.VerdictDetail is not null)
+            {
+                <span class="sl-chip">@Model.VerdictDetail</span>
+            }
+            <partial name="_LabVerdict" model="Model.Verdict" />
+        </span>
+    </span>
+</a>

@@ -7,6 +7,9 @@ public enum PhaseStatus
 {
     Done,
     AwaitingApproval,
+
+    /// <summary>The phase being worked on now.</summary>
+    InProgress,
     Planned,
 }
 
@@ -17,6 +20,7 @@ public sealed record PhaseViewModel(string Number, string Title, string Descript
     {
         PhaseStatus.Done => "Gotovo",
         PhaseStatus.AwaitingApproval => "Čeka potvrdu",
+        PhaseStatus.InProgress => "U tijeku",
         _ => "Planirano",
     };
 
@@ -24,6 +28,7 @@ public sealed record PhaseViewModel(string Number, string Title, string Descript
     {
         PhaseStatus.Done => "sl-badge sl-badge-ok",
         PhaseStatus.AwaitingApproval => "sl-badge sl-badge-warning",
+        PhaseStatus.InProgress => "sl-badge sl-badge-accent",
         _ => "sl-badge sl-badge-neutral",
     };
 
@@ -31,6 +36,7 @@ public sealed record PhaseViewModel(string Number, string Title, string Descript
     {
         PhaseStatus.Done => "sl-timeline-item sl-timeline-item-done",
         PhaseStatus.AwaitingApproval => "sl-timeline-item sl-timeline-item-review",
+        PhaseStatus.InProgress => "sl-timeline-item sl-timeline-item-current",
         _ => "sl-timeline-item sl-timeline-item-planned",
     };
 
@@ -38,6 +44,7 @@ public sealed record PhaseViewModel(string Number, string Title, string Descript
     {
         PhaseStatus.Done => "check",
         PhaseStatus.AwaitingApproval => "clock",
+        PhaseStatus.InProgress => "play",
         _ => "circle",
     };
 }
