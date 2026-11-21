@@ -35,7 +35,7 @@ file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, 
 | Plan prijevoza (transport plan) | `/Plan` | Plan per truck, warnings, validator result, SVG route map; query parameters `algoritam=exact|ortools`, `nacin=ukupno|voznja`, `maxMinuta=1..1440` (e.g. `/Plan?algoritam=ortools&nacin=voznja&maxMinuta=300`) |
 | Testni scenariji (test scenarios) | `/Scenariji` | Interactive edge cases on the original task data: K1 heavy machine, K2 location too far, K3 short working day, K4 invalid order, and a valid plan with one deliberate defect (overload, too many machines, delivery before pickup, different trucks, no return, wrong km, missing order, working day exceeded) – each shows the expected and the actual planner/validator result; the user's data is never changed (`/Scenariji?slucaj=k2`, `/Scenariji?slucaj=kvar&kvar=preopterecenje`) |
 | Pregled, Dokumentacija, Pravila i provjere | `/Pregled`, `/Dokumentacija`, `/Pravila` | Project progress (optimum computed at runtime), project documents, rules and validator coverage |
-| UpRent web | `/uprent/` | Static copy of the UpRent website (folder `web/`), opened from the navigation in a new tab |
+| UpRent web | `/uprent/` | Static copy of the UpRent website (folder `SmartLogistics/web/`), opened from the navigation in a new tab. The folder is not in the public repository (third-party photos, decision T75); without it the entry is shown as unavailable |
 
 The UI uses the UpRent visual identity (ink, signal yellow, Barlow / Barlow Condensed, self-hosted fonts); the design
 system is documented in [docs/ui-dizajn.md](SmartLogistics/docs/ui-dizajn.md).
