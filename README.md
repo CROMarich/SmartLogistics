@@ -195,7 +195,49 @@ each OR-Tools call takes 2–3 s).
 
 ## 9. AI tools
 
+The project was built with **Claude Code** (model Claude Opus 5.5) in VS Code. A human technical lead set the phases,
+decided every assumption and reviewed every phase; the AI wrote the code, tests and documents.
+
+**How the work was organised**
+- Project rules in `CLAUDE.md` (domain, reference values, UI rules, way of working) and six sub-agents with narrow
+  scopes in `.claude/agents/`: domain analyst, validator engineer, test engineer, solver engineer, UI builder, reviewer.
+- Specification first (rules R1–R40 in `docs/spec.md`), code second. Ambiguities such as "9 h: driving only or driving
+  plus actions?" were decided by the human and turned into rules.
+- **Independent checks instead of trust:** the validator was written without access to the planner and recomputes
+  all km and minutes; the reference values (200.1 / 182.2 km) were computed independently before the planner existed;
+  a second exact implementation (Dijkstra oracle) and the OR-Tools planner cross-check the exact planner.
+- After each phase the AI stops with a report and a proposed commit message; every deviation from the task is
+  recorded in `docs/odluke.md` (T1–T65) with its reason and alternative.
+
+**What worked well**
+- Two independent implementations caught each other's mistakes: the validator rejected a wrong "valid" test plan
+  (R32), and the solver engineer measured that the prescribed OR-Tools setting (one GLS run, 5 s) leaves an order
+  unplanned and reported it instead of accepting it (T55).
+- Sub-agents reported problems outside their scope instead of "fixing" them.
+- Screenshots of the running app and the read-only reviewer found problems that build and tests do not see.
+
+**What needed attention**
+- The AI tends to widen the task silently (extra fields, methods, checks); the rule "every deviation goes into the
+  decision log" was added after this was noticed.
+- Things outside the project folder (the git root one level up, a nested git repository, how GitHub shows the
+  repository) were not treated as part of the task and were caught by the human or the reviewer.
+- Restrictions given only in a prompt (e.g. "the validator agent must not read `Core/Planning/`") cannot be enforced
+  technically.
+
+All AI mistakes, who caught them and how they were fixed: [docs/ai-log.md](SmartLogistics/docs/ai-log.md) (Croatian).
+
 ## 10. Time spent
+
+| Session | Time | Duration | Phases |
+|---------|------|---------:|--------|
+| Development | 20.11.2026 22:07 – 21.11.2026 02:05 | ~3 h 58 min | 0–10: specification, domain, validator and tests, exact planner, infeasible orders, web UI, OR-Tools, reference oracle, review, README |
+| Submission preparation | 21.11.2026 09:21 – ~11:20 | ~2 h | README in the repository root, screenshots, GitHub branches, these sections, updated time and AI log |
+| **Total with Claude Code** | | **~6 h** | |
+
+Times are measured from git commits, file timestamps and the session log, not estimated. From phase 6 on several
+sub-agents worked in parallel, so the durations are wall-clock time. Time outside the sessions (reading the code,
+preparing the presentation, Azure deployment) is added by the author. Per-phase breakdown:
+[docs/vrijeme.md](SmartLogistics/docs/vrijeme.md) (Croatian).
 
 ## 11. Known limitations and next steps
 
