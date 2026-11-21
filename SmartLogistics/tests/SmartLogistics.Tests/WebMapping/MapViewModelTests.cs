@@ -67,8 +67,12 @@ public class MapViewModelTests
             Assert.Equal(-location.Y, y, Tolerance);
         }
 
-        Assert.Equal((9.0, 6.0), MapGeometry.Project(9, -6));
-        Assert.Equal((-8.0, 5.0), MapGeometry.Project(new Location("L9", -8, -5)));
+        var (x4, y4) = MapGeometry.Project(9, -6);
+        Assert.Equal(9.0, x4, Tolerance);
+        Assert.Equal(6.0, y4, Tolerance);
+        var (x9, y9) = MapGeometry.Project(new Location("L9", -8, -5));
+        Assert.Equal(-8.0, x9, Tolerance);
+        Assert.Equal(5.0, y9, Tolerance);
     }
 
     [Fact]
