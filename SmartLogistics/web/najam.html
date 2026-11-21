@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Najam strojeva - Up Rent</title>
+<meta name="description" content="Najam radnih platformi, teleskopskih viličara, auto košara, agregata i rasvjetnih tornjeva.">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="sr-only" href="#sadrzaj">Preskoči na sadržaj</a>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="topbar-tags">Najam <span>/</span> Prodaja <span>/</span> Servis <span>/</span> Transport</div>
+    <div class="topbar-info">
+      <span>Pon – Pet 08:00 – 16:00</span>
+      <a href="mailto:info@uprent.hr">info@uprent.hr</a>
+    </div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="wrap">
+    <a class="logo" href="index.html" title="Početna stranica">
+      <img src="assets/uprent-logo.png" alt="Up Rent" width="208" height="63">
+    </a>
+    <nav class="nav" id="nav" aria-label="Glavna navigacija">
+      <ul>
+        <li><a href="najam.html" aria-current="page">Najam</a></li>
+        <li><a href="prodaja.html">Prodaja</a></li>
+        <li><a href="rabljeni.html">Rabljeni strojevi</a></li>
+        <li><a href="brandovi.html">Brandovi</a></li>
+        <li class="has-sub">
+          <button class="sub-toggle" type="button" aria-haspopup="true" aria-expanded="false">Usluge <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg></button>
+          <ul class="sub"><li><a href="transporti.html">Transporti</a></li><li><a href="edukacija.html">Edukacija</a></li><li><a href="click2rent.html">Click2Rent</a></li></ul>
+        </li>
+        <li class="has-sub">
+          <button class="sub-toggle" type="button" aria-haspopup="true" aria-expanded="false">O nama <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg></button>
+          <ul class="sub"><li><a href="o-nama.html">O tvrtki</a></li><li><a href="novosti.html">Novosti</a></li><li><a href="dokumenti.html">Dokumenti</a></li><li><a href="eu-projekti.html">EU projekti</a></li></ul>
+        </li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </nav>
+    <a class="header-phone" href="tel:+38512455000" aria-label="Nazovite +385 1 24 55 000"><svg viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.300 11.600L304.700 368C234.300 334.700 177.300 277.700 144 207.300L193.300 167c13.700-11.200 18.400-30 11.600-46.300l-40-96z"/></svg><span>+385 1 24 55 000</span></a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-controls="nav" aria-expanded="false" aria-label="Izbornik">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="sadrzaj">
+<section class="page-hero">
+  <img src="assets/slides/slide-03.jpg" alt="" fetchpriority="high">
+  <div class="wrap">
+    <nav aria-label="Putanja"><ol class="crumbs"><li><a href="index.html">Početna</a></li><li aria-current="page">Najam</li></ol></nav>
+    <span class="eyebrow">Strojevi</span>
+    <h1 class="display page-title">Najam strojeva</h1>
+    <p class="lead">Radne platforme, teleskopski viličari, auto košare i ostala oprema za siguran rad na visini — uz dostavu na Vašu lokaciju i servisnu podršku 24 sata dnevno.</p>
+    <div class="seg" role="navigation" aria-label="Vrsta ponude"><a href="najam.html" aria-current="page">Najam</a><a href="prodaja.html">Prodaja</a><a href="rabljeni.html">Rabljeni strojevi</a></div>
+  </div>
+</section>
+
+<section class="section-sm light">
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom:28px">
+      <div>
+        <span class="eyebrow">Flota za najam</span>
+        <h2 class="display section-title">Odaberite kategoriju</h2>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="search"><span class="sr-only">Pretraži</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg><input id="catSearch" type="search" placeholder="Pretraži kategorije…" autocomplete="off"></label>
+      <div class="chips" role="group" aria-label="Filtriraj po vrsti">
+        <button class="chip" type="button" data-group="" aria-pressed="true">Sve</button>
+        <button class="chip" type="button" data-group="Auto košare" aria-pressed="false">Auto košare</button>
+        <button class="chip" type="button" data-group="Platforme" aria-pressed="false">Platforme</button>
+        <button class="chip" type="button" data-group="Rasvjeta i agregati" aria-pressed="false">Rasvjeta i agregati</button>
+        <button class="chip" type="button" data-group="Viličari" aria-pressed="false">Viličari</button>
+      </div>
+      <span class="count" aria-live="polite"><b id="catCount">10 od 10</b> kategorija</span>
+    </div>
+    <div class="catalog-grid" data-catalog>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=187&amp;kategorija=agregati" data-name="Agregati" data-group="Rasvjeta i agregati">
+        <div class="pic"><span class="tag">Rasvjeta i agregati</span><img src="assets/strojevi/21250.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Agregati</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=26&amp;kategorija=zglobne%20platforme" data-name="Zglobne platforme" data-group="Platforme">
+        <div class="pic"><span class="tag">Platforme</span><img src="assets/strojevi/4685.jpg" alt="" loading="lazy"></div>
+        <div class="body"><h3>Zglobne platforme</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=27&amp;kategorija=teleskopske%20platforme%20" data-name="Teleskopske platforme" data-group="Platforme">
+        <div class="pic"><span class="tag">Platforme</span><img src="assets/strojevi/4686.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Teleskopske platforme</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=81&amp;kategorija=stupne%20platforme" data-name="Stupne platforme" data-group="Platforme">
+        <div class="pic"><span class="tag">Platforme</span><img src="assets/strojevi/8293.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Stupne platforme</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=84&amp;kategorija=teleskopski%20vili%C4%8Dar" data-name="Teleskopski viličar" data-group="Viličari">
+        <div class="pic"><span class="tag">Viličari</span><img src="assets/strojevi/8296.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Teleskopski viličar</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=100&amp;kategorija=vertikalne%20platforme" data-name="Vertikalne platforme" data-group="Platforme">
+        <div class="pic"><span class="tag">Platforme</span><img src="assets/strojevi/8600.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Vertikalne platforme</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=106&amp;kategorija=teleskopski%20okretni%20vili%C4%8Dar" data-name="Teleskopski okretni viličar" data-group="Viličari">
+        <div class="pic"><span class="tag">Viličari</span><img src="assets/strojevi/8602.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Teleskopski okretni viličar</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=166&amp;kategorija=rasvijetni%20tornjevi" data-name="Rasvijetni tornjevi" data-group="Rasvjeta i agregati">
+        <div class="pic"><span class="tag">Rasvjeta i agregati</span><img src="assets/strojevi/9632.webp" alt="" loading="lazy"></div>
+        <div class="body"><h3>Rasvijetni tornjevi</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=167&amp;kategorija=teleskopski%20pauk" data-name="Teleskopski pauk" data-group="Platforme">
+        <div class="pic"><span class="tag">Platforme</span><img src="assets/strojevi/9937.jpg" alt="" loading="lazy"></div>
+        <div class="body"><h3>Teleskopski pauk</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+      <a class="m-card" href="https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=168&amp;kategorija=auto%20ko%C5%A1are" data-name="Auto košare" data-group="Auto košare">
+        <div class="pic"><span class="tag">Auto košare</span><img src="assets/strojevi/9938.jpg" alt="" loading="lazy"></div>
+        <div class="body"><h3>Auto košare</h3><span class="more">Pogledaj strojeve <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h14M11 4l6 6-6 6"/></svg></span></div>
+      </a>
+    </div>
+    <div class="empty" id="catEmpty">
+      <p>Nema rezultata za zadanu pretragu.</p>
+      <p style="margin-top:14px"><button class="btn btn-dark" type="button" id="catReset">Prikaži sve</button></p>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm tight-top light">
+  <div class="wrap">
+    <div class="section-head reveal" style="margin-bottom:28px">
+      <div><span class="eyebrow">Kako do stroja</span><h2 class="display section-title">Najam u četiri koraka</h2></div>
+    </div>
+    <div class="steps numbered reveal">
+      <div class="step"><h3>Odaberite stroj</h3><p>Pregledajte kategorije ili nas nazovite — pomoći ćemo Vam pronaći pravu platformu za posao.</p></div>
+      <div class="step"><h3>Zatražite ponudu</h3><p>Javite se na <a class="link" href="tel:+38512455000">+385 1 24 55 000</a> ili <a class="link" href="mailto:najam@uprent.hr">najam@uprent.hr</a>.</p></div>
+      <div class="step"><h3>Dostava na lokaciju</h3><p>Isporuka i odvoz uvijek u dogovorenom vremenu, vlastitom <a class="link" href="transporti.html">kamionskom flotom</a>.</p></div>
+      <div class="step"><h3>Podrška tijekom najma</h3><p>Naš servisni tim stoji Vam na usluzi s 4 servisna vozila, 24 sata dnevno.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm tight-top">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div>
+        <h2 class="display">Niste sigurni koji stroj trebate?</h2>
+        <p>Naše bogato iskustvo omogućava stručne savjete i rješenja prilagođena Vašoj potrebi.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-dark" href="tel:+38512455000">+385 1 24 55 000</a>
+        <a class="btn btn-outline" href="mailto:najam@uprent.hr">najam@uprent.hr</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="newsletter">
+      <div>
+        <h2 class="display">Budite u toku</h2>
+        <p>Prijavite se za letak i prvi saznajte za novosti i ponude.</p>
+      </div>
+      <div>
+        <!-- TODO: povezati s postojećim servisom za prijavu na letak -->
+        <form class="nl-form" id="nlForm" novalidate>
+          <label class="sr-only" for="nlEmail">E-mail adresa</label>
+          <input id="nlEmail" type="email" name="email" placeholder="Vaša e-mail adresa" maxlength="255" autocomplete="email" required>
+          <button class="btn btn-primary" type="submit">Prijavi se</button>
+        </form>
+        <div class="nl-msg" id="nlMsg" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="footer-main">
+      <div>
+        <img src="assets/uprent-logo.png" alt="Up Rent" width="208" height="63" loading="lazy">
+        <p>Najam, prodaja, servis i transport strojeva za rad na visini.</p>
+      </div>
+      <div>
+        <h3>Kontakt</h3>
+        <ul>
+          <li><a class="footer-phone" href="tel:+38512455000">+385 1 24 55 000</a></li>
+          <li><a href="mailto:info@uprent.hr">info@uprent.hr</a></li>
+          <li>Industrijska ulica 24, Hrušćica</li>
+          <li>08:00 – 16:00</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Strojevi</h3>
+        <ul>
+          <li><a href="najam.html">Najam</a></li>
+          <li><a href="prodaja.html">Prodaja</a></li>
+          <li><a href="rabljeni.html">Rabljeni strojevi</a></li>
+          <li><a href="brandovi.html">Naši brandovi</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Up Rent</h3>
+        <ul>
+          <li><a href="o-nama.html">O nama</a></li>
+          <li><a href="transporti.html">Transporti</a></li>
+          <li><a href="edukacija.html">Edukacija</a></li>
+          <li><a href="click2rent.html">Click2Rent</a></li>
+          <li><a href="novosti.html">Novosti</a></li>
+          <li><a href="dokumenti.html">Dokumenti</a></li>
+          <li><a href="eu-projekti.html">EU projekti</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Pratite nas</h3>
+        <ul>
+          <li><a href="https://web.facebook.com/uprent.hr" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://www.instagram.com/up_rent_doo/?hl=hr" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.linkedin.com/company/up-rent-awp" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://www.mascus.hr/up-rent-d-o-o/df454e2b,companycard.html" target="_blank" rel="noopener">Mascus</a></li>
+          <li><a href="https://www.njuskalo.hr/tvrtka/up-rent" target="_blank" rel="noopener">Njuškalo</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="wrap">© <span id="year">2026</span> Up Rent d.o.o.</div>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" type="button" aria-label="Na vrh stranice">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 16V4M4 10l6-6 6 6"/></svg>
+</button>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

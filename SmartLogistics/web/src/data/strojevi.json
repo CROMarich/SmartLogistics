@@ -1,0 +1,313 @@
+{
+ "najam": [
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=187&kategorija=agregati",
+   "img": "assets/strojevi/21250.webp",
+   "name": "Agregati"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=26&kategorija=zglobne%20platforme",
+   "img": "assets/strojevi/4685.jpg",
+   "name": "Zglobne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=27&kategorija=teleskopske%20platforme%20",
+   "img": "assets/strojevi/4686.webp",
+   "name": "Teleskopske platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=81&kategorija=stupne%20platforme",
+   "img": "assets/strojevi/8293.webp",
+   "name": "Stupne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=84&kategorija=teleskopski%20vili%C4%8Dar",
+   "img": "assets/strojevi/8296.webp",
+   "name": "Teleskopski viličar"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=100&kategorija=vertikalne%20platforme",
+   "img": "assets/strojevi/8600.webp",
+   "name": "Vertikalne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=106&kategorija=teleskopski%20okretni%20vili%C4%8Dar",
+   "img": "assets/strojevi/8602.webp",
+   "name": "Teleskopski okretni viličar"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=166&kategorija=rasvijetni%20tornjevi",
+   "img": "assets/strojevi/9632.webp",
+   "name": "Rasvijetni tornjevi"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=167&kategorija=teleskopski%20pauk",
+   "img": "assets/strojevi/9937.jpg",
+   "name": "Teleskopski pauk"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/najam/trazi?strojWebCategory=168&kategorija=auto%20ko%C5%A1are",
+   "img": "assets/strojevi/9938.jpg",
+   "name": "Auto košare"
+  }
+ ],
+ "prodaja": [
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=12&brand=haulotte%20radne%20platforme",
+   "img": "assets/strojevi/4659.webp",
+   "name": "HAULOTTE Radne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=6&brand=dieci%20teleskopski%20vili%C4%8Dari",
+   "img": "assets/strojevi/8631.webp",
+   "name": "DIECI Teleskopski viličari"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=53&brand=oil%26steel%20auto-ko%C5%A1are%20",
+   "img": "assets/strojevi/8119.webp",
+   "name": "OIL&STEEL Auto-košare"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=74&brand=klubb%20kombi-ko%C5%A1are",
+   "img": "assets/strojevi/17671.webp",
+   "name": "KLUBB Kombi-košare"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=21&brand=fiorentini%20industrijske%20%C4%8Distilice%20",
+   "img": "assets/strojevi/4674.webp",
+   "name": "FIORENTINI Industrijske čistilice"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=18&brand=sinoboom",
+   "img": "assets/strojevi/23352.jpg",
+   "name": "SINOBOOM"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=64&brand=italtower%20rasvjetni%20stupovi",
+   "img": "assets/strojevi/23360.webp",
+   "name": "ITALTOWER rasvjetni stupovi"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=65&brand=cgm%20industriski%20agregati%20",
+   "img": "assets/strojevi/23359.webp",
+   "name": "CGM Industriski agregati"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=66&brand=righetti%20vacum%20lifter",
+   "img": "assets/strojevi/11321.webp",
+   "name": "Righetti Vacum LIFTER"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=73&brand=ep%20equipment%20vili%C4%8Dari",
+   "img": "assets/strojevi/17635.jpg",
+   "name": "EP EQUIPMENT viličari"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=7&brand=easy%20lift%20platforme%20na%20gusjenicama",
+   "img": "assets/strojevi/6053.webp",
+   "name": "EASY LIFT platforme na gusjenicama"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=8&brand=faraone%20lagane%20platforme",
+   "img": "assets/strojevi/8632.webp",
+   "name": "FARAONE Lagane platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=22&brand=2lift%20specijalna%20oprema",
+   "img": "assets/strojevi/5587.webp",
+   "name": "2Lift Specijalna oprema"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=27&brand=samoliveliraju%C4%87e%20radne%20platforme",
+   "img": "assets/strojevi/5767.webp",
+   "name": "Samolivelirajuće radne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=28&brand=lcm%20podne%20podlo%C5%A1ke%20za%20stabilizatore%20i%20kota%C4%8De",
+   "img": "assets/strojevi/5986.webp",
+   "name": "LCM Podne podloške za stabilizatore i kotače"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=76&brand=heli%20europe",
+   "img": "assets/strojevi/23361.webp",
+   "name": "HELI EUROPE"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=75&brand=agrimac",
+   "img": "assets/strojevi/17752.webp",
+   "name": "AGRIMAC"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=72&brand=mazzoni%20visokotla%C4%8Dni%20pera%C4%8Di%20",
+   "img": "assets/strojevi/17630.jpg",
+   "name": "MAZZONI visokotlačni perači"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=70&brand=v.mariotti%20kompaktni%20vili%C4%8Dari",
+   "img": "assets/strojevi/17377.webp",
+   "name": "V.MARIOTTI kompaktni viličari"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/prodaja/trazi?proizvodac=63&brand=sigma%20pro.%20priklju%C4%8Dci%20za%20strojeve",
+   "img": "assets/strojevi/8829.webp",
+   "name": "SIGMA Pro. Priključci za strojeve"
+  }
+ ],
+ "rabljeni": [
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=187&kategorija=agregati",
+   "img": "assets/strojevi/21250.webp",
+   "name": "Agregati"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=188&kategorija=geda%20fiksni%20gra%C4%91evinski%20liftovi%20",
+   "img": "assets/strojevi/22432.webp",
+   "name": "GEDA fiksni građevinski liftovi"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=189&kategorija=mobilni%20tank%20za%20gorivo",
+   "img": "assets/strojevi/25524.webp",
+   "name": "MOBILNI TANK ZA GORIVO"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=191&kategorija=klubb%20auto%20ko%C5%A1are%20",
+   "img": "assets/strojevi/29328.webp",
+   "name": "KLUBB Auto košare"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=192&kategorija=multifunkcisku%20stroj%20neomach%20x30",
+   "img": "assets/strojevi/42456.jpg",
+   "name": "Multifunkcisku stroj NEOMACH x30"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=25&kategorija=zglobne%20platforme%20diesel",
+   "img": "assets/strojevi/4684.webp",
+   "name": "Zglobne platforme DIESEL"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=27&kategorija=teleskopske%20platforme%20",
+   "img": "assets/strojevi/4686.webp",
+   "name": "Teleskopske platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=81&kategorija=stupne%20platforme",
+   "img": "assets/strojevi/8293.webp",
+   "name": "Stupne platforme"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=84&kategorija=teleskopski%20vili%C4%8Dar",
+   "img": "assets/strojevi/8296.webp",
+   "name": "Teleskopski viličar"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=101&kategorija=vertikalne%20platforme%20diesel",
+   "img": "assets/strojevi/8601.webp",
+   "name": "Vertikalne platforme DIESEL"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=166&kategorija=rasvijetni%20tornjevi",
+   "img": "assets/strojevi/9632.webp",
+   "name": "Rasvijetni tornjevi"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=167&kategorija=teleskopski%20pauk",
+   "img": "assets/strojevi/9937.jpg",
+   "name": "Teleskopski pauk"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=14&kategorija=okretni%20teleskopski%20vili%C4%8Dari%20gra%C4%91evinski%20program",
+   "img": "assets/strojevi/4670.webp",
+   "name": "OKRETNI teleskopski viličari GRAĐEVINSKI PROGRAM"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=23&kategorija=vertikalne%20platforme%20elektro",
+   "img": "assets/strojevi/4682.webp",
+   "name": "Vertikalne platforme ELEKTRO"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=24&kategorija=vetikalne%20platforme%20diesel",
+   "img": "assets/strojevi/4683.webp",
+   "name": "Vetikalne platforme DIESEL"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=29&kategorija=teleskopski%20vili%C4%8Dari",
+   "img": "assets/strojevi/4688.webp",
+   "name": "Teleskopski viličari"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=34&kategorija=ru%C4%8Dni%20paletar",
+   "img": "assets/strojevi/4693.webp",
+   "name": "Ručni paletar"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=35&kategorija=nisko%20podizni",
+   "img": "assets/strojevi/4694.webp",
+   "name": "Nisko podizni"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=37&kategorija=visoko%20podizni",
+   "img": "assets/strojevi/4696.webp",
+   "name": "Visoko podizni"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=41&kategorija=velike%20%C4%8Distilice%20na%20vodu%20",
+   "img": "assets/strojevi/4700.webp",
+   "name": "Velike čistilice na vodu"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=70&kategorija=elektro%20vili%C4%8Dar%204%20kota%C4%87a%20",
+   "img": "assets/strojevi/5710.webp",
+   "name": "ELEKTRO viličar 4 kotaća"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=71&kategorija=elektro%20vili%C4%8Dar%203%20kota%C4%87a",
+   "img": "assets/strojevi/5711.webp",
+   "name": "ELEKTRO viličar 3 kotaća"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=73&kategorija=elektro%20vili%C4%8Dar%20visoko%20podizni",
+   "img": "assets/strojevi/5713.webp",
+   "name": "ELEKTRO viličar VISOKO PODIZNI"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=80&kategorija=eurocomach%20rovokopa%C4%8Di",
+   "img": "assets/strojevi/6100.webp",
+   "name": "EUROCOMACH rovokopači"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=85&kategorija=oil%26steel%20snake",
+   "img": "assets/strojevi/9184.webp",
+   "name": "Oil&Steel SNAKE"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=87&kategorija=%C4%8Deoni%20vili%C4%8Dari",
+   "img": "assets/strojevi/8299.webp",
+   "name": "Čeoni viličari"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=110&kategorija=zglobne%20elektro",
+   "img": "assets/strojevi/8609.webp",
+   "name": "Zglobne elektro"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=157&kategorija=rasvijetni%20toranj%20pegaso",
+   "img": "assets/strojevi/9222.webp",
+   "name": "Rasvijetni toranj PEGASO"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=163&kategorija=rasvijetni%20toranj%20mt%2055",
+   "img": "assets/strojevi/9228.webp",
+   "name": "Rasvijetni toranj MT 55"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=168&kategorija=auto%20ko%C5%A1are",
+   "img": "assets/strojevi/9938.jpg",
+   "name": "Auto košare"
+  },
+  {
+   "href": "https://www.uprent.hr/strojevi/rabljeni/trazi?strojWebCategory=183&kategorija=elentek%20motorne%20pumpe%20za%20ne%C4%8Distu%20vodu%20",
+   "img": "assets/strojevi/12822.webp",
+   "name": "ELENTEK motorne pumpe za NEČISTU vodu"
+  }
+ ]
+}
