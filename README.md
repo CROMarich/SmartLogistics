@@ -32,7 +32,6 @@ file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, 
 
 ## 2. Screenshots
 
-<!-- Screenshots are added by hand. -->
 ![Transport plan](SmartLogistics/docs/screenshot-plan.png)
 
 ![Route map](SmartLogistics/docs/screenshot-map.png)
