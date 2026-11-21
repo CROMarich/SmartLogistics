@@ -10,15 +10,16 @@ trucks, ordering pickups and deliveries, and minimising the total distance with 
 **Prerequisites:** .NET 10 SDK (the solution also builds with SDK 11). No database and no external services.
 
 ```bash
+cd SmartLogistics
 dotnet build
 dotnet test
 dotnet run --project src/SmartLogistics.Web
 ```
 
 Open the URL printed by `dotnet run` (launch profile: `http://localhost:5186`). In Visual Studio or VS Code open
-`SmartLogistics.slnx` and start `SmartLogistics.Web`.
+`SmartLogistics/SmartLogistics.slnx` and start `SmartLogistics.Web`.
 
-The input data is in [`data/scenario.json`](data/scenario.json). It is loaded into an in-memory store when the
+The input data is in [`data/scenario.json`](SmartLogistics/data/scenario.json). It is loaded into an in-memory store when the
 application starts; orders can then be added, edited and deleted on the **Nalozi** page and reset to the original
 file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, comments and this README are in English.
 
@@ -32,9 +33,9 @@ file with **"Vrati izvorne podatke"**. The user interface is in Croatian; code, 
 ## 2. Screenshots
 
 <!-- Screenshots are added by hand. -->
-![Transport plan](docs/screenshot-plan.png)
+![Transport plan](SmartLogistics/docs/screenshot-plan.png)
 
-![Route map](docs/screenshot-map.png)
+![Route map](SmartLogistics/docs/screenshot-map.png)
 
 ## 3. The problem
 
@@ -49,11 +50,11 @@ This is a **Pickup and Delivery Vehicle Routing Problem (PDP-VRP)** with capacit
 - The driver may drive 9 hours a day.
 - Goal: minimise the total distance; orders that cannot be served must be reported clearly.
 
-The task was turned into 40 numbered, testable rules in [docs/spec.md](docs/spec.md).
+The task was turned into 40 numbered, testable rules in [docs/spec.md](SmartLogistics/docs/spec.md).
 
 ## 4. Assumptions
 
-All assumptions and decisions are recorded with their reasons in [docs/odluke.md](docs/odluke.md). The most important:
+All assumptions and decisions are recorded with their reasons in [docs/odluke.md](SmartLogistics/docs/odluke.md). The most important:
 
 - **"9 hours of driving" is ambiguous.** The default `WorkdayMode.Total` counts driving **and** actions
   (≤ 540 min per truck, including the return to the depot). The alternative `WorkdayMode.DrivingOnly` counts driving
@@ -71,7 +72,7 @@ All assumptions and decisions are recorded with their reasons in [docs/odluke.md
 
 ## 5. Optimisation logic
 
-The exact planner is `Core/Planning/ExactDpPlanner.cs`; a detailed walkthrough is in [docs/planer.md](docs/planer.md).
+The exact planner is `Core/Planning/ExactDpPlanner.cs`; a detailed walkthrough is in [docs/planer.md](SmartLogistics/docs/planer.md).
 
 **Assignment.** An order may go only to a truck that can carry its machine. Orders N06–N10 (3900–9400 kg) fit only
 truck B; for the five orders both trucks can carry (N01–N05) **all 2^5 = 32 assignments** are tried.
@@ -98,7 +99,7 @@ with O(m) work; with caching per (truck, order set) the worst case is O(T · 4^n
 evaluates 32 assignments, solves 63 DPs with 284,366 states and takes about 0.1–0.15 s in the running application (152 ms for `Total`, 114 ms for `DrivingOnly` on first request).
 
 **Scaling.** Measured on synthetic data where every order fits both trucks, each extra order roughly multiplies the
-time by four: 10 orders 0.7 s, 12 orders 11 s, 14 orders 175 s (see [docs/planer.md](docs/planer.md)). For larger
+time by four: 10 orders 0.7 s, 12 orders 11 s, 14 orders 175 s (see [docs/planer.md](SmartLogistics/docs/planer.md)). For larger
 problems the application also offers a heuristic planner, `Core/Planning/OrToolsPlanner.cs` (Google OR-Tools:
 pickup-and-delivery pairs, weight, count and time dimensions, `PATH_CHEAPEST_ARC` + `GUIDED_LOCAL_SEARCH`, 5 s limit).
 Its result goes through the same validator, and the UI marks it as "optimum not guaranteed". See *Results* for the
@@ -168,9 +169,9 @@ validator with 0 violations and no order is infeasible.
 OR-Tools reaches the optimum on the task data, but not in general: with a 300-minute day it leaves out as many
 orders as the exact planner but drives 8.2 km more. A single default guided-local-search run with the 5 s limit
 found only 9 of 10 orders (156.4 km) in `Total` mode; the planner therefore runs two guided-local-search
-configurations with a solution limit (deterministic) and keeps the better plan (see [docs/odluke.md](docs/odluke.md), T55).
+configurations with a solution limit (deterministic) and keeps the better plan (see [docs/odluke.md](SmartLogistics/docs/odluke.md), T55).
 
-Full routes (location, action, order, load after every action): [docs/rezultati.md](docs/rezultati.md).
+Full routes (location, action, order, load after every action): [docs/rezultati.md](SmartLogistics/docs/rezultati.md).
 
 ## 8. Tests
 
@@ -216,11 +217,11 @@ each OR-Tools call takes 2–3 s).
 
 | Document | Content |
 |----------|---------|
-| [docs/zadatak.md](docs/zadatak.md) | Original task (Croatian) |
-| [docs/spec.md](docs/spec.md) | Rules R1–R40, ambiguities, derived facts, edge cases |
-| [docs/odluke.md](docs/odluke.md) | Decision log with status; decisions waiting for approval at the top |
-| [docs/planer.md](docs/planer.md) | Exact planner walkthrough: flow, DP state, optimality, complexity, measured scaling |
-| [docs/rezultati.md](docs/rezultati.md) | Full results for both working-day modes and edge cases |
-| [docs/ai-log.md](docs/ai-log.md) | AI mistakes and how they were caught |
-| [docs/vrijeme.md](docs/vrijeme.md) | Time per phase |
-| [docs/ui-dizajn.md](docs/ui-dizajn.md) | Design system of the web UI |
+| [docs/zadatak.md](SmartLogistics/docs/zadatak.md) | Original task (Croatian) |
+| [docs/spec.md](SmartLogistics/docs/spec.md) | Rules R1–R40, ambiguities, derived facts, edge cases |
+| [docs/odluke.md](SmartLogistics/docs/odluke.md) | Decision log with status; decisions waiting for approval at the top |
+| [docs/planer.md](SmartLogistics/docs/planer.md) | Exact planner walkthrough: flow, DP state, optimality, complexity, measured scaling |
+| [docs/rezultati.md](SmartLogistics/docs/rezultati.md) | Full results for both working-day modes and edge cases |
+| [docs/ai-log.md](SmartLogistics/docs/ai-log.md) | AI mistakes and how they were caught |
+| [docs/vrijeme.md](SmartLogistics/docs/vrijeme.md) | Time per phase |
+| [docs/ui-dizajn.md](SmartLogistics/docs/ui-dizajn.md) | Design system of the web UI |
