@@ -228,15 +228,16 @@ All AI mistakes, who caught them and how they were fixed: [docs/ai-log.md](Smart
 
 ## 10. Time spent
 
-| Session | Time | Duration | Phases |
+| Session | Date | Effective | Phases |
 |---------|------|---------:|--------|
-| Development | 20.11.2026 22:07 – 21.11.2026 02:05 | ~3 h 58 min | 0–10: specification, domain, validator and tests, exact planner, infeasible orders, web UI, OR-Tools, reference oracle, review, README |
-| Submission preparation | 21.11.2026 09:21 – ~11:20 | ~2 h | README in the repository root, screenshots, GitHub branches, these sections, updated time and AI log |
-| **Total with Claude Code** | | **~6 h** | |
+| Development | 20.–21.11.2026 | ~1 h 20 min | 0–10: specification, domain, validator and tests, exact planner, infeasible orders, web UI, OR-Tools, reference oracle, review, README |
+| Submission preparation | 21.11.2026 | ~40 min | README in the repository root, screenshots, GitHub branches, these sections, updated time and AI log |
+| **Total with Claude Code** | | **~2 h** | |
 
-Times are measured from git commits, file timestamps and the session log, not estimated. From phase 6 on several
-sub-agents worked in parallel, so the durations are wall-clock time. Time outside the sessions (reading the code,
-preparing the presentation, Azure deployment) is added by the author. Per-phase breakdown:
+Durations are the author's estimate of effective work: about a third of the time elapsed between git commits, file
+timestamps and session log entries; the rest was waiting for sub-agents and breaks. From phase 6 on several
+sub-agents worked in parallel. Time outside the sessions (reading the code, preparing the presentation, Azure
+deployment) is added by the author. Per-phase breakdown:
 [docs/vrijeme.md](SmartLogistics/docs/vrijeme.md) (Croatian).
 
 ## 11. Known limitations and next steps
